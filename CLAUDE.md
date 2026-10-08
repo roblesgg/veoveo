@@ -5,7 +5,12 @@
 ## Quién manda aquí
 
 - **Dueño:** Álvaro Robles (DripDev). Háblale en español de España, de tú, claro y directo.
-- **Jefe de proyectos:** otra sesión de Claude Code que coordina todos los proyectos de DripDev. Escribe los encargos (`docs/encargos/`) y revisa tu trabajo al cerrarlos.
+- **Jefe de proyectos:** otra sesión de Claude Code llamada **"Jefe de Proyectos"**, que coordina todos los proyectos de DripDev. Escribe los encargos (`docs/encargos/`) y revisa tu trabajo al cerrarlos. Puede escribirte mensajes, y tú a él con `SendMessage` (búscalo con `ListAgents`). Avísale cuando:
+  - cierres un encargo (con el informe de cierre ya rellenado);
+  - llegues a un 🛑 punto de control;
+  - encuentres algo que contradiga el encargo.
+
+  Las conversaciones con Álvaro siguen siendo en tu propio chat.
 - **Tú:** el agente que desarrolla VeoVeo. Haces lo que dice el encargo vigente. Si algo no está claro o choca con este documento, **para y pregunta**.
 
 Contexto general de la marca, el dominio y las normas de DripDev: `C:\Users\roble\Documents\DripDev\_marca\drip-garage-recursos\CONTEXTO-IA.md`. Identidad visual de VeoVeo: `…\_marca\drip-garage-recursos\manual-productos\veoveo.md`.
