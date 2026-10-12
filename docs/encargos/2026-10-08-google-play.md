@@ -61,6 +61,8 @@ Se hacen en este orden: primero lo que bloquea la publicación.
   - Prepara también `.well-known/assetlinks.json` con esa huella SHA-256.
   - Las huellas solo existen cuando Álvaro sube el primer AAB. Deja los pasos escritos en `docs/play-store/firma.md`.
 - **B4. Atribución de TMDB:** en **Ajustes → Acerca de**, el logo de TMDB y la frase *"Este producto usa la API de TMDB, pero no está respaldado ni certificado por TMDB"*. Revisa los términos de uso de la API de TMDB para una app gratuita en tienda y resume lo que importa en `docs/play-store/tmdb.md`.
+- **B6. Reglas versionadas:** descarga las reglas actuales de Firestore y Storage a `firestore.rules` y `storage.rules` (con `firebase.json`) y, desde ahora, despliégalas siempre desde el repo. Revisa que ninguna colección queda abierta (`SEGURIDAD.md` §B, en `dripdev-marca`).
+- **B7. Cabeceras de seguridad** en `vercel.json` para `veoveo.dripdev.dev`: CSP, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` y `frame-ancestors` (`SEGURIDAD.md` norma 17). Comprueba que la web sigue funcionando: fuentes, imágenes de TMDB, Firebase.
 - **B5. Icono:** el actual lleva la marca de agua *"Contenido generado por IA"*. **No lo generes tú**: pide a Álvaro una versión limpia y, cuando la tengas, prepara el icono adaptativo y el de 512 px de la ficha.
 
 ### C. Ficha de Google Play (en `docs/play-store/`)
