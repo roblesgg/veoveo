@@ -1,0 +1,11 @@
+rules_version = '2';
+
+// Reglas de Storage de VeoVeo. La app no sube archivos (la foto de perfil
+// se guarda como URL en Firestore), así que todo queda cerrado hasta que haga falta.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

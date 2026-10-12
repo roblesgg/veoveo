@@ -11,6 +11,7 @@
     "web:alias": "vercel alias set public-iota-sepia.vercel.app veoveo.dripdev.dev",
     "prebuild": "expo prebuild",
     "typecheck": "tsc --noEmit",
+    "test:reglas": "firebase emulators:exec --only firestore,storage --project demo-veoveo \"node --test tests/reglas/firestore.test.mjs\"",
     "security:check": "node scripts/check-security.mjs",
     "clean": "powershell -ExecutionPolicy Bypass -Command \"rm -Recurse -Force .expo, android, backups/recycled/*\"",
     "env:sync": "node scripts/sync-firebase-env.mjs",
@@ -55,6 +56,7 @@
     "react-native-web": "^0.21.0"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "5.0.2",
     "@types/react": "~19.1.10",
     "@typescript-eslint/eslint-plugin": "^8.58.0",
     "@typescript-eslint/parser": "^8.58.0",

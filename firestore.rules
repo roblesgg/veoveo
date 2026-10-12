@@ -1,0 +1,143 @@
+rules_version = '2';
+
+// Reglas de Firestore de VeoVeo (proyecto veoveo-48667).
+// Se despliegan SIEMPRE desde este archivo: firebase deploy --only firestore:rules
+// Deben seguir funcionando con la app 2.0.4 instalada. Los tests están en tests/reglas/.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function conSesion() {
+      return request.auth != null;
+    }
+
+    function esDueno(uid) {
+      return conSesion() && request.auth.uid == uid;
+    }
+
+    function cambiaSolo(campos) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(campos);
+    }
+
+    // El que escribe está en la lista de amigos del dueño de {uid}.
+    function esAmigoDe(uid) {
+      return conSesion()
+        && request.auth.uid in get(/databases/$(database)/documents/usuarios/$(uid)).data.get('amigos', []);
+    }
+
+    // Otro usuario solo puede tocar el campo `amigos` de un perfil ajeno para
+    // añadirse o quitarse a sí mismo (aceptar una solicitud o dejar de ser amigos).
+    function soloSeAnadeOQuitaASiMismo() {
+      let antes = resource.data.get('amigos', []).toSet();
+      let despues = request.resource.data.get('amigos', []).toSet();
+      return cambiaSolo(['amigos'])
+        && despues.difference(antes).union(antes.difference(despues)).hasOnly([request.auth.uid]);
+    }
+
+    // ── Perfiles ────────────────────────────────────────────────
+    match /usuarios/{userId} {
+      // Abierto a cualquiera con sesión: la 2.0.4 lo necesita para el buscador,
+      // los avisos push y la cabecera del chat. Se cierra en la próxima versión.
+      allow read: if conSesion();
+      allow create: if esDueno(userId);
+      allow update: if esDueno(userId) || (conSesion() && soloSeAnadeOQuitaASiMismo());
+      allow delete: if esDueno(userId);
+
+      // Biblioteca: el dueño y sus amigos.
+      match /peliculas/{peliculaId} {
+        allow read: if esDueno(userId) || esAmigoDe(userId);
+        allow write: if esDueno(userId);
+      }
+
+      // Ruta antigua que el Movie Match de la 2.0.4 aún lee de cada participante.
+      match /biblioteca/{docId} {
+        allow read: if conSesion();
+        allow write: if esDueno(userId);
+      }
+
+      // Tier lists, preferencias y cualquier otra subcolección: solo el dueño.
+      match /{subcoleccion}/{resto=**} {
+        allow read, write: if esDueno(userId);
+      }
+    }
+
+    // ── Solicitudes de amistad ──────────────────────────────────
+    match /solicitudes_amistad/{solicitudId} {
+      allow read: if conSesion() && (
+        request.auth.uid == resource.data.deUid ||
+        request.auth.uid == resource.data.paraUid
+      );
+      allow create: if conSesion()
+        && request.auth.uid == request.resource.data.deUid
+        && request.resource.data.paraUid != request.auth.uid
+        && request.resource.data.estado == 'pendiente';
+      // Solo cambia el estado; quién la envía y a quién no se toca.
+      allow update: if conSesion()
+        && (request.auth.uid == resource.data.deUid || request.auth.uid == resource.data.paraUid)
+        && cambiaSolo(['estado'])
+        && request.resource.data.estado in ['pendiente', 'aceptada', 'rechazada'];
+      allow delete: if conSesion() && (
+        request.auth.uid == resource.data.deUid ||
+        request.auth.uid == resource.data.paraUid
+      );
+    }
+
+    // ── Chats ───────────────────────────────────────────────────
+    match /chats/{chatId} {
+      function esParticipante() {
+        return conSesion() && request.auth.uid in resource.data.participants;
+      }
+
+      allow read, delete: if esParticipante();
+      allow create: if conSesion() && request.auth.uid in request.resource.data.participants;
+      // Los participantes, el tipo y la fecha no cambian. El último mensaje
+      // solo puede firmarlo quien escribe.
+      allow update: if esParticipante()
+        && cambiaSolo(['lastMessage', 'activeMatchId', 'name'])
+        && (
+          !('lastMessage' in request.resource.data.diff(resource.data).affectedKeys())
+          || request.resource.data.lastMessage.senderId == request.auth.uid
+        );
+
+      match /msj/{messageId} {
+        function participaEnElChat() {
+          return conSesion() &&
+            request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        }
+
+        allow read: if participaEnElChat();
+        // Nadie puede escribir en nombre de otro.
+        allow create: if participaEnElChat() && request.resource.data.senderId == request.auth.uid;
+        // Cada uno solo edita o borra sus propios mensajes.
+        allow update: if participaEnElChat()
+          && resource.data.senderId == request.auth.uid
+          && request.resource.data.senderId == request.auth.uid;
+        allow delete: if participaEnElChat() && resource.data.senderId == request.auth.uid;
+      }
+    }
+
+    // ── Movie Match ─────────────────────────────────────────────
+    match /matches/{matchId} {
+      function esParticipante() {
+        return conSesion() && request.auth.uid in resource.data.participants;
+      }
+
+      allow read: if esParticipante();
+      // Lo crea uno de los participantes del chat, y solo con gente de ese chat.
+      allow create: if conSesion()
+        && request.resource.data.creatorId == request.auth.uid
+        && request.auth.uid in request.resource.data.participants
+        && request.resource.data.participants.toSet().hasOnly(
+             get(/databases/$(database)/documents/chats/$(request.resource.data.chatId)).data.participants
+           );
+      // Durante la partida solo cambian los votos y el resultado.
+      allow update: if esParticipante()
+        && cambiaSolo(['votes', 'noVotes', 'matchedMovies', 'status', 'finishedAt']);
+    }
+
+    // ── Configuración pública (aviso de versión mínima) ────────
+    match /configuracion/app {
+      allow read: if true;
+    }
+  }
+}

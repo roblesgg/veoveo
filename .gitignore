@@ -75,3 +75,8 @@ public/assets/
 
 .vercel
 .PROJECT_OPS.md
+
+# Emuladores de Firebase
+firestore-debug.log
+storage-debug.log
+firebase-debug.log
