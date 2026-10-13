@@ -249,16 +249,16 @@ export const tmdbApi = {
  */
 export function posterUrl(
   posterPath: string | null | undefined,
-  width: 'w185' | 'w342' | 'w500' | 'w780' | 'w1280' | 'original' = 'w185',
+  width: 'w185' | 'w300' | 'w342' | 'w500' | 'w780' | 'w1280' | 'original' = 'w185',
 ): string | null {
   if (!posterPath) return null;
   return `https://image.tmdb.org/t/p/${width}${posterPath}`;
 }
 
-/** URL del logo de una plataforma (tamaño pequeño, para listas). */
+/** URL del logo de una plataforma. w154 cubre los 36 dp de las listas sin escalar hacia arriba. */
 export function logoUrl(path: string | null | undefined): string | null {
   if (!path) return null;
-  return `https://image.tmdb.org/t/p/w92${path}`;
+  return `https://image.tmdb.org/t/p/w154${path}`;
 }
 
 /**

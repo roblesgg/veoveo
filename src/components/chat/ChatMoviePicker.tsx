@@ -80,7 +80,7 @@ export const ChatMoviePicker = ({ visible, mode, onClose, onSelect, fontFamily }
   const renderItem = ({ item }: { item: any }) => (
     <Pressable style={styles.movieItem} onPress={() => onSelect(item)}>
       <ExpoImage
-        source={{ uri: posterUrl(item.posterPath, 'w185') ?? undefined }}
+        source={{ uri: posterUrl(item.posterPath, 'w342') ?? undefined }}
         style={styles.poster}
         contentFit="cover"
         transition={200}

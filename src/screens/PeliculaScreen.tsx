@@ -7,8 +7,8 @@
  */
 
 import React, { useState, useCallback } from 'react';
+import { Image as ExpoImage } from 'expo-image';
 import {
-  Image,
   ActivityIndicator,
   InteractionManager,
   Pressable,
@@ -131,8 +131,15 @@ export function PeliculaScreen() {
       {/* 🖼️ FONDO: Poster desenfocado con gradiente envolvente */}
       {(detalles.backdrop_path || detalles.poster_path) && (
         <View style={styles.fixedBackdrop}>
-          <Image
-            source={{ uri: posterUrl(detalles.backdrop_path || detalles.poster_path, 'w780')! }}
+          {/* Carga progresiva: la w300 se pinta al momento y la w1280 entra encima con un fundido.
+              La calidad final no se recorta. */}
+          <ExpoImage
+            source={{ uri: posterUrl(detalles.backdrop_path || detalles.poster_path, 'w1280')! }}
+            placeholder={{ uri: posterUrl(detalles.backdrop_path || detalles.poster_path, 'w300')! }}
+            placeholderContentFit="cover"
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            transition={300}
             style={styles.backdropImg}
           />
           <LinearGradient
