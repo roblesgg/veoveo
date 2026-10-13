@@ -46,6 +46,8 @@ necesita el OK de Álvaro.
 
 ## Límites del entorno de pruebas
 
+- **No es un espejo de producción en región:** pruebas está en `nam5` (EE. UU.) y producción en
+  `eur3` (UE). Los tiempos de respuesta medidos en pruebas **no valen** para producción.
 - **Entrar con Google no funciona en el APK de pruebas:** el cliente de Google es el de producción.
   Se entra con correo y contraseña.
 - Los avisos push sí llegan (Expo no depende del proyecto de Firebase).
