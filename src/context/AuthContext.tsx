@@ -29,9 +29,9 @@ import { getFirebaseAuth } from '../services/firebase';
 import {
   actualizarEstadoConexion,
   asegurarPerfilFirestore,
-  sincronizarVersionAppInstalada,
+  registrarSesion,
 } from '../services/repositorioUsuarios';
-import { registrarTokenEnFirestore } from '../services/notificationService';
+import { obtenerTokenSiHayPermiso } from '../services/notificationService';
 import { env } from '../config/env';
 
 /**
@@ -84,17 +84,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     const unsub = onAuthStateChanged(auth, (u) => {
-      console.log('🛡️ [Auth] Sesión detectada:', u ? u.email : 'Ninguna');
       setUser(u);
       setLoading(false);
-      
-      // Si el usuario inicia sesión, realizamos tareas de sincronización inicial
+
+      // Al iniciar sesión: perfil (1 lectura) y estado, versión y token en 1 sola escritura.
       if (u) {
-        void asegurarPerfilFirestore(u);                 // Crear perfil en Firestore si no existe
-        void actualizarEstadoConexion('online');        // Marcar usuario como conectado
-        void sincronizarVersionAppInstalada(u.uid);     // Reportar versión instalada para releases segmentados
-        void require('../services/userPreferences').sincronizarPreferenciasConFirestore(u.uid); // Cargar ajustes
-        void registrarTokenEnFirestore(u.uid);           // Registro para notificaciones Push
+        void (async () => {
+          try {
+            const [perfil, token] = await Promise.all([
+              asegurarPerfilFirestore(u),
+              obtenerTokenSiHayPermiso(),
+            ]);
+            await registrarSesion(u.uid, perfil, token);
+          } catch {
+            // Sin conexión: se reintenta en el próximo arranque
+          }
+        })();
+        void require('../services/userPreferences').sincronizarPreferenciasConFirestore(u.uid);
       }
     });
 

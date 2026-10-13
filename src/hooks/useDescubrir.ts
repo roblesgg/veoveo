@@ -1,71 +1,66 @@
 /**
  * ARCHIVO: hooks/useDescubrir.ts
- * DESCRIPCIÓN: Hook personalizado para gestionar los carruseles de películas.
- * Utiliza TanStack Query para orquestar múltiples consultas paralelas a TMDB.
- * Permite recarga individual, global y limpieza de caché.
+ * DESCRIPCIÓN: Datos de los carruseles de Descubrir con TanStack Query.
+ * Cada carrusel pide lo suyo solo cuando se monta: la lista de Descubrir
+ * solo monta los que están en pantalla o a punto de entrar.
  */
 
-import { useQueries, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useMemo } from 'react';
+import { useIsFetching, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback } from 'react';
 import { fetchCarouselData } from '../services/tmdbQueries';
-import type { Movie } from '../types';
+import { tmdbApi } from '../services/tmdbClient';
+
+const MEDIA_HORA = 1000 * 60 * 30;
+const UNA_SEMANA = 1000 * 60 * 60 * 24 * 7;
+
+/** Películas de un carrusel. Se guardan en el móvil para el próximo arranque. */
+export function useCarrusel(titulo: string) {
+  return useQuery({
+    queryKey: ['carousel', titulo],
+    queryFn: () => fetchCarouselData(titulo),
+    staleTime: MEDIA_HORA,
+    retry: 1,
+    meta: { persistir: true },
+  });
+}
+
+/** Recarga de todos los carruseles (tirar hacia abajo) y estado de carga global. */
+export function useRecargaCarruseles() {
+  const queryClient = useQueryClient();
+  const cargando = useIsFetching({ queryKey: ['carousel'] }) > 0;
+
+  const recargarTodos = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: ['carousel'] });
+  }, [queryClient]);
+
+  const recargarCarrusel = useCallback(
+    (titulo: string) => {
+      void queryClient.invalidateQueries({ queryKey: ['carousel', titulo] });
+    },
+    [queryClient],
+  );
+
+  return { cargando, recargarTodos, recargarCarrusel };
+}
 
 /**
- * Gestiona el estado de carga y datos de una lista de títulos de carrusel.
- * @param titulos Array de nombres de categorías (Tendencias, Popular, etc.)
+ * Plataformas de España (suscripción y alquiler o compra) de una peli.
+ * Solo se pide si el usuario ha elegido sus plataformas, y se guarda una semana.
  */
-export function useDescubrir(titulos: string[] = []) {
-  const queryClient = useQueryClient();
-
-  // Ejecuta múltiples consultas en paralelo según los títulos recibidos
-  const results = useQueries({
-    queries: titulos.map((t) => ({
-      queryKey: ['carousel', t],
-      queryFn: () => fetchCarouselData(t),
-      staleTime: 1000 * 60 * 30, // Los datos se consideran "frescos" durante 30 min
-      retry: 1,
-    })),
+export function usePlataformasPelicula(movieId: number, activa: boolean) {
+  return useQuery({
+    queryKey: ['plataformas', movieId],
+    queryFn: async () => {
+      const res = await tmdbApi.obtenerDondeVerConCache(movieId);
+      const es = res.results.ES;
+      return {
+        flatrate: es?.flatrate?.map((p) => p.provider_id) ?? [],
+        rent: [...(es?.rent ?? []), ...(es?.buy ?? [])].map((p) => p.provider_id),
+      };
+    },
+    enabled: activa,
+    staleTime: UNA_SEMANA,
+    gcTime: UNA_SEMANA,
+    meta: { persistir: true },
   });
-
-  /** Mapea los resultados de las queries a un objeto indexado por el título */
-  const peliculasPorCarrusel = useMemo(() => {
-    const map: Record<string, Movie[]> = {};
-    titulos.forEach((t, i) => {
-      const query = results[i];
-      if (query?.data) {
-        map[t] = query.data;
-      }
-    });
-    return map;
-  }, [titulos, results]);
-
-  /** Estado global de carga (si al menos uno está cargando) */
-  const cargando = results.some((r) => r.isLoading);
-
-  /** 
-   * Fuerza la recarga de un carrusel específico invalidando su caché.
-   */
-  const cargarCarrusel = useCallback((titulo: string, forzar?: boolean) => {
-    if (forzar) {
-      queryClient.invalidateQueries({ queryKey: ['carousel', titulo] });
-    }
-  }, [queryClient]);
-
-  /** Invalida todos los carruseles activos */
-  const recargarTodosLosCarruseles = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['carousel'] });
-  }, [queryClient]);
-
-  /** Elimina los datos de un carrusel de la caché */
-  const limpiarCarrusel = useCallback((titulo: string) => {
-    queryClient.removeQueries({ queryKey: ['carousel', titulo] });
-  }, [queryClient]);
-
-  return {
-    peliculasPorCarrusel,
-    cargando,
-    cargarCarrusel,
-    recargarTodosLosCarruseles,
-    limpiarCarrusel,
-  };
 }

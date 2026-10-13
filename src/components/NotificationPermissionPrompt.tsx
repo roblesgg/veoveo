@@ -11,6 +11,7 @@ import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
+import { EXPO_PROJECT_ID } from '../services/notificationService';
 
 const STORAGE_KEY = 'veoveo_notif_prompt_seen';
 
@@ -48,9 +49,7 @@ export function NotificationPermissionPrompt({ onTokenRegistered }: Props) {
     const { status } = await Notifications.requestPermissionsAsync();
     if (status === 'granted') {
       try {
-        const tokenData = await Notifications.getExpoPushTokenAsync({
-          projectId: 'db438c91-21eb-4020-a3ad-efec69cef405',
-        });
+        const tokenData = await Notifications.getExpoPushTokenAsync({ projectId: EXPO_PROJECT_ID });
         onTokenRegistered?.(tokenData.data);
       } catch {}
     }

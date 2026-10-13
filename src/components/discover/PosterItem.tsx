@@ -1,11 +1,13 @@
 import React, { memo } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { posterUrl } from '../../services/tmdbClient';
 import type { Movie } from '../../types';
 import { RatingBadge } from '../RatingBadge';
 import { marcarHito } from '../../utils/medicionArranque';
+import { usePlataformasPelicula } from '../../hooks/useDescubrir';
 
 type Props = {
   item: Movie;
@@ -15,8 +17,11 @@ type Props = {
 };
 
 export const PosterItem = memo(({ item, onPeliculaClick, misPlataformas = [], libraryMap = {} }: Props) => {
-  const isFlatrate = item.providers?.flatrate?.some((p) => misPlataformas.includes(p));
-  const isRent = !isFlatrate && item.providers?.rent?.some((p) => misPlataformas.includes(p));
+  // Solo se piden las plataformas de la peli si el usuario ha elegido las suyas en Ajustes.
+  const { data: providers } = usePlataformasPelicula(item.id, misPlataformas.length > 0);
+  const isFlatrate = providers?.flatrate.some((p) => misPlataformas.includes(p));
+  const isRent = !isFlatrate && providers?.rent.some((p) => misPlataformas.includes(p));
+  const uri = posterUrl(item.poster_path, 'w342');
 
   return (
     <View style={styles.posterWrapper}>
@@ -24,10 +29,14 @@ export const PosterItem = memo(({ item, onPeliculaClick, misPlataformas = [], li
         onPress={() => onPeliculaClick(item.id)}
         style={({ pressed }) => [styles.posterCard, { transform: [{ scale: pressed ? 0.96 : 1 }] }]}
       >
-        {posterUrl(item.poster_path, 'w342') ? (
+        {uri ? (
           <Image
-            source={{ uri: posterUrl(item.poster_path, 'w342')! }}
+            source={{ uri }}
             style={styles.posterImg}
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            recyclingKey={String(item.id)}
+            transition={150}
             onLoad={() => marcarHito('primera carátula pintada')}
           />
         ) : (

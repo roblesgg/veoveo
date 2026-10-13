@@ -110,8 +110,13 @@ export async function desbloquearUsuario(bloqueadoUid: string): Promise<void> {
   });
 }
 
+// Último estado de presencia escrito, para no escribir en Firestore en cada cambio de plano.
+let ultimoEstado: { estado: string; momento: number } | null = null;
+const PAUSA_ENTRE_ESTADOS = 1000 * 60 * 2;
+
 /**
- * Actualiza el estado de presencia (online/offline) en Firestore.
+ * Actualiza el estado de presencia (online/offline/ausente) en Firestore.
+ * Si es el mismo estado que el último escrito hace menos de 2 minutos, no escribe.
  */
 export async function actualizarEstadoConexion(
   estado: 'online' | 'offline' | 'ausente',
@@ -121,26 +126,46 @@ export async function actualizarEstadoConexion(
   const uid = auth?.currentUser?.uid;
   if (!db || !uid) return;
 
+  const ahora = Date.now();
+  if (
+    estado !== 'offline' &&
+    ultimoEstado?.estado === estado &&
+    ahora - ultimoEstado.momento < PAUSA_ENTRE_ESTADOS
+  ) {
+    return;
+  }
+  ultimoEstado = { estado, momento: ahora };
+
   await updateDoc(doc(db, 'usuarios', uid), {
     estado,
-    ultimoAcceso: Date.now(),
+    ultimoAcceso: ahora,
   });
 }
 
-export async function sincronizarVersionAppInstalada(uid: string): Promise<void> {
+/**
+ * Al iniciar sesión: estado online, versión instalada y token de notificaciones
+ * en UNA sola escritura. El token solo se escribe si ha cambiado.
+ */
+export async function registrarSesion(
+  uid: string,
+  perfil: UsuarioPerfil | null,
+  pushToken: string | null,
+): Promise<void> {
   const db = getFirestoreDb();
   if (!db || !uid) return;
 
-  await setDoc(
-    doc(db, 'usuarios', uid),
-    {
-      appVersion: Constants.expoConfig?.version || '0.0.0',
-      appVersionCode: Constants.expoConfig?.android?.versionCode ?? 0,
-      platform: Platform.OS,
-      ultimoAcceso: Date.now(),
-    },
-    { merge: true },
-  );
+  const ahora = Date.now();
+  const cambios: Partial<UsuarioPerfil> = {
+    estado: 'online',
+    ultimoAcceso: ahora,
+    appVersion: Constants.expoConfig?.version || '0.0.0',
+    appVersionCode: Constants.expoConfig?.android?.versionCode ?? 0,
+    platform: Platform.OS,
+  };
+  if (pushToken && pushToken !== perfil?.pushToken) cambios.pushToken = pushToken;
+
+  ultimoEstado = { estado: 'online', momento: ahora };
+  await setDoc(doc(db, 'usuarios', uid), cambios, { merge: true });
 }
 
 /**
@@ -149,25 +174,27 @@ export async function sincronizarVersionAppInstalada(uid: string): Promise<void>
  * estén replicados en el documento de usuario de Firestore.
  * Se ejecuta cada vez que la app inicia con una sesión activa.
  */
-export async function asegurarPerfilFirestore(user: User): Promise<void> {
+export async function asegurarPerfilFirestore(user: User): Promise<UsuarioPerfil | null> {
   const db = getFirestoreDb();
-  if (!db || !user) return;
+  if (!db || !user) return null;
 
   const docRef = doc(db, 'usuarios', user.uid);
   const snap = await getDoc(docRef);
 
   if (!snap.exists()) {
     // Escenario A: Usuario nuevo o primer inicio de sesión
+    const username = user.displayName || `Usuario_${user.uid.slice(0, 6)}`;
     const nuevoPerfil: UsuarioPerfil = {
       uid: user.uid,
-      username: user.displayName || `Usuario_${user.uid.slice(0, 6)}`,
-      username_servido: (user.displayName || '').toLowerCase(),
+      username,
+      username_servido: username.toLowerCase(),
       email: user.email || 'sin_email',
       fotoPerfil: user.photoURL || null,
       amigos: [],
       fechaCreacion: Date.now(),
     };
     await setDoc(docRef, nuevoPerfil);
+    return nuevoPerfil;
   } else {
     // Escenario B: Usuario existente, sincronizamos datos si han cambiado en el proveedor (Google/Apple)
     const data = snap.data() as UsuarioPerfil;
@@ -186,5 +213,6 @@ export async function asegurarPerfilFirestore(user: User): Promise<void> {
     if (Object.keys(updates).length > 0) {
       await updateDoc(docRef, updates);
     }
+    return { ...data, ...updates };
   }
 }

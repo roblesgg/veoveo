@@ -11,6 +11,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  onSnapshot,
   query,
   setDoc,
   updateDoc,
@@ -24,7 +25,22 @@ function refPelicula(uid: string, idPelicula: number) {
   return doc(dbOrThrow(), 'usuarios', uid, 'peliculas', String(idPelicula));
 }
 
-/** 
+/**
+ * Escucha en tiempo real toda la biblioteca de un usuario. Devuelve la función para dejar de escuchar.
+ */
+export function escucharBiblioteca(
+  uid: string,
+  onCambio: (peliculas: PeliculaUsuario[]) => void,
+  onError: (e: Error) => void,
+): () => void {
+  return onSnapshot(
+    collection(dbOrThrow(), 'usuarios', uid, 'peliculas'),
+    (snap) => onCambio(snap.docs.map((d) => d.data() as PeliculaUsuario)),
+    onError,
+  );
+}
+
+/**
  * Recupera la información de una película específica dentro de la biblioteca del usuario actual.
  */
 export async function obtenerPeliculaUsuario(idPelicula: number): Promise<PeliculaUsuario | null> {

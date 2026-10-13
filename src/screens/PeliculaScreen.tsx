@@ -138,7 +138,7 @@ export function PeliculaScreen() {
       {(detalles.backdrop_path || detalles.poster_path) && (
         <View style={styles.fixedBackdrop}>
           <Image
-            source={{ uri: posterUrl(detalles.backdrop_path || detalles.poster_path, 'w1280')! }}
+            source={{ uri: posterUrl(detalles.backdrop_path || detalles.poster_path, 'w780')! }}
             style={styles.backdropImg}
           />
           <LinearGradient

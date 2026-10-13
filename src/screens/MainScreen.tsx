@@ -63,12 +63,9 @@ export function MainScreen() {
     }
   }, []);
 
-  /** EFECTO: Transición de Splash a App una vez cargado el diseño. */
+  /** EFECTO: En cuanto están las fuentes, fuera el splash (sin esperas artificiales). */
   useEffect(() => {
-    if (loaded) {
-      const timer = setTimeout(() => setAppReady(true), 1500);
-      return () => clearTimeout(timer);
-    }
+    if (loaded) setAppReady(true);
   }, [loaded]);
 
   const [resetToken, setResetToken] = useState(0);

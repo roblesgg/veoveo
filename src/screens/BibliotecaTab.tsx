@@ -9,9 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useState, useRef, useMemo } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
-  Image,
   Pressable,
-  RefreshControl,
   StyleSheet,
   Text,
   TextInput,
@@ -24,7 +22,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 
-import { useLibraryData as useBiblioteca } from '../hooks/movie/useLibraryData';
+import { Image } from 'expo-image';
+import { useBiblioteca } from '../context/BibliotecaContext';
 import { tmdbApi, posterUrl } from '../services/tmdbClient';
 import * as preferences from '../storage/preferences';
 import { COLORS, CardSurface } from '../theme/colors';
@@ -59,7 +58,6 @@ export function BibliotecaTab({
   const [showPlatModal, setShowPlatModal] = useState(false);
   const [buscar, setBuscar] = useState(false);
   const [textoBuscar, setTextoBuscar] = useState('');
-  const [refreshToken, setRefreshToken] = useState(0);
 
   // Lista de plataformas que el usuario tiene contratadas
   const [userPlats, setUserPlats] = useState<{ name: string, ids: number[] }[]>([]);
@@ -67,8 +65,8 @@ export function BibliotecaTab({
   const searchInputRef = useRef<TextInput>(null);
   const scrollerRef = useRef<ScrollView>(null);
 
-  // HOOK: Obtiene los datos de la biblioteca desde Firestore
-  const { porVer, vistas, cargando } = useBiblioteca(user, refreshToken);
+  // Biblioteca compartida de la sesión (una sola escucha de Firestore, siempre al día)
+  const { porVer, vistas } = useBiblioteca();
 
   // Efecto para scroll al inicio cuando se pulsa el icono de la tab dos veces
   useEffect(() => {
@@ -172,7 +170,13 @@ export function BibliotecaTab({
     return (
       <View key={p.idPelicula} style={styles.gridItem}>
         <Pressable style={[styles.card, SHADOWS.macLight]} onPress={() => onPeliculaClick(p.idPelicula)}>
-          <Image source={{ uri: posterUrl(p.rutaPoster, 'w342')! }} style={styles.poster} />
+          <Image
+            source={{ uri: posterUrl(p.rutaPoster, 'w342')! }}
+            style={styles.poster}
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            transition={150}
+          />
           {/* Badge de valoración (Solo en sección de Vistas) */}
           {seccion === 1 && p.valoracion !== undefined && (
             <RatingBadge rating={p.valoracion} fontFamily={fontFamily} hideText />
@@ -230,8 +234,7 @@ export function BibliotecaTab({
         <View style={styles.webCenteringWrapper}>
           <ScrollView 
             ref={scrollerRef} 
-            contentContainerStyle={{ paddingTop: insets.top + (buscar ? 240 : 160), paddingBottom: 140, paddingHorizontal: 8 }} 
-            refreshControl={<RefreshControl refreshing={cargando} onRefresh={() => setRefreshToken(p => p + 1)} tintColor="#fff" progressViewOffset={100} />}
+            contentContainerStyle={{ paddingTop: insets.top + (buscar ? 240 : 160), paddingBottom: 140, paddingHorizontal: 8 }}
           >
             {/* BARRA DE FILTROS ACTIVOS */}
             {platsSeleccionadas.length > 0 && (

@@ -6,8 +6,9 @@
 
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { getFirestoreDb } from './firebase';
 
 export const DEFAULT_NOTIFICATION_CHANNEL_ID = 'default';
@@ -39,49 +40,24 @@ export async function ensureNotificationChannelConfigured() {
   });
 }
 
+/** ID del proyecto de Expo, necesario para pedir el token de notificaciones. */
+export const EXPO_PROJECT_ID: string | undefined = Constants.expoConfig?.extra?.eas?.projectId;
+
 /**
- * Solicita permisos de notificacion al SO y obtiene el token unico de Expo Push (pushToken).
- * Este token se guarda en Firestore para poder enviar notificaciones a este usuario desde otros dispositivos.
+ * Devuelve el token de Expo Push si el usuario YA ha dado permiso de notificaciones.
+ * No pide el permiso: de eso se encarga solo NotificationPermissionPrompt, una vez.
  */
-export async function registrarTokenEnFirestore(uid: string) {
-  if (Platform.OS === 'web') return null;
-
-  if (!Device.isDevice) {
-    console.warn('Debe ser un dispositivo fisico para recibir notificaciones push');
+export async function obtenerTokenSiHayPermiso(): Promise<string | null> {
+  if (Platform.OS === 'web' || !Device.isDevice) return null;
+  try {
+    const { status } = await Notifications.getPermissionsAsync();
+    if (status !== 'granted') return null;
+    await ensureNotificationChannelConfigured();
+    const token = await Notifications.getExpoPushTokenAsync({ projectId: EXPO_PROJECT_ID });
+    return token.data;
+  } catch {
     return null;
   }
-
-  await ensureNotificationChannelConfigured();
-
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
-
-  if (existingStatus !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
-  }
-
-  if (finalStatus !== 'granted') {
-    console.warn('Permiso de notificaciones denegado');
-    return null;
-  }
-
-  const token = (
-    await Notifications.getExpoPushTokenAsync({
-      projectId: 'db438c91-21eb-4020-a3ad-efec69cef405',
-    })
-  ).data;
-
-  console.log('Expo Push Token:', token);
-
-  const db = getFirestoreDb();
-  if (db) {
-    await updateDoc(doc(db, 'usuarios', uid), {
-      pushToken: token,
-    });
-  }
-
-  return token;
 }
 
 /**

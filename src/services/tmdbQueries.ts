@@ -2,7 +2,7 @@
  * ARCHIVO: services/tmdbQueries.ts
  * DESCRIPCIÓN: Abstracciones de alto nivel para obtener datos complejos de TMDB.
  * Se utiliza principalmente para alimentar los carruseles dinámicos de la pantalla 'Descubrir'.
- * Incluye lógica de paginación aleatoria y enriquecimiento con proveedores de streaming.
+ * Incluye lógica de paginación aleatoria.
  */
 
 import { obtenerConfiguracionCarrusel } from '../constants/carruseles';
@@ -51,27 +51,7 @@ export const fetchCarouselData = async (titulo: string) => {
       res = await tmdbApi.buscarPeliculasPorGenero(config.payload, 'es-ES', 'popularity.desc', randomPage);
   }
 
-  /**
-   * ENRIQUECIMIENTO (Data Hydration):
-   * Para cada película obtenida, consultamos sus proveedores de streaming (Netflix, HBO, etc.).
-   * Esto permite mostrar los logos de las plataformas directamente en el carrusel.
-   */
-  const moviesWithProviders = await Promise.all(
-    res.results.map(async (movie: Movie) => {
-      try {
-        const providersRes = await tmdbApi.obtenerDondeVerConCache(movie.id);
-        const resES = providersRes.results['ES']; // Filtramos por España
-        const providers = {
-          flatrate: resES?.flatrate?.map((p: any) => p.provider_id) || [], // Suscripción
-          rent: [...(resES?.rent || []), ...(resES?.buy || [])].map((p: any) => p.provider_id), // Alquiler/Compra
-        };
-        return { ...movie, providers };
-      } catch {
-        // Si falla la consulta de proveedores, devolvemos la película sin los datos extra
-        return movie;
-      }
-    }),
-  );
-
-  return moviesWithProviders;
+  // Las plataformas de cada peli ya no se piden aquí (eran 20 llamadas más por carrusel):
+  // cada póster las pide solo si hace falta (usePlataformasPelicula).
+  return res.results as Movie[];
 };

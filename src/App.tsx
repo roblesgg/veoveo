@@ -5,7 +5,10 @@
  * el escudo de versiones y la jerarquía de proveedores (Context Providers).
  */
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, type Query } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Linking, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -15,6 +18,7 @@ import { getAuth } from 'firebase/auth';
 import { BlurView } from 'expo-blur';
 
 import { AuthProvider } from './context/AuthContext';
+import { BibliotecaProvider } from './context/BibliotecaContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { RootNavigator } from './navigation/RootNavigator';
 import { COLORS } from './theme/colors';
@@ -41,8 +45,22 @@ import * as Notifications from 'expo-notifications';
 import { useFonts } from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 
-// Cliente para React Query (Gestión de estado asíncrono y caché)
-const queryClient = new QueryClient();
+// Cliente para React Query. Lo que se marca con `meta: { persistir: true }` (datos de TMDB)
+// se guarda en el móvil durante un día, para que un arranque en frío pinte al momento.
+const UN_DIA = 1000 * 60 * 60 * 24;
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { gcTime: UN_DIA } },
+});
+const persister = createAsyncStoragePersister({ storage: AsyncStorage, key: 'veoveo-cache-consultas' });
+const persistOptions = {
+  persister,
+  maxAge: UN_DIA,
+  buster: Constants.expoConfig?.version ?? '0',
+  dehydrateOptions: {
+    shouldDehydrateQuery: (query: Query) =>
+      query.state.status === 'success' && query.meta?.persistir === true,
+  },
+};
 
 function compareVersions(v1: string, v2: string) {
   const p1 = v1.split('.').map((value) => parseInt(value.replace(/[^0-9]/g, ''), 10) || 0);
@@ -268,10 +286,11 @@ export default function App() {
 
   // RENDER: Arbol de componentes con proveedores de contexto
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <LanguageProvider>
           <AuthProvider>
+            <BibliotecaProvider>
             <View style={styles.appWrapper}>
                <View style={styles.mainContainer}>
                   <RootNavigator />
@@ -288,10 +307,11 @@ export default function App() {
                   )}
                </View>
             </View>
+            </BibliotecaProvider>
           </AuthProvider>
         </LanguageProvider>
       </GestureHandlerRootView>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }
 

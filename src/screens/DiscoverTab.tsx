@@ -28,11 +28,11 @@ import Animated, { FadeInDown, FadeIn, FadeOut } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 
-import { useDescubrir } from '../hooks/useDescubrir';
+import { useRecargaCarruseles } from '../hooks/useDescubrir';
 import { useDiscoverSearch } from '../hooks/useDiscoverSearch';
 import { posterUrl, profileUrl } from '../services/tmdbClient';
 import { RatingBadge } from '../components/RatingBadge';
-import { useLibraryStatus } from '../hooks/useLibraryStatus';
+import { useBiblioteca } from '../context/BibliotecaContext';
 import {
   cargarCarruselesActivos,
   guardarCarruselesActivos,
@@ -59,6 +59,8 @@ const MovieResultItem = memo(({ item, onPeliculaClick, libraryMap }: { item: any
         source={{ uri: posterUrl(item.poster_path, 'w342')! }}
         style={styles.fullImg}
         contentFit="cover"
+        cachePolicy="memory-disk"
+        recyclingKey={String(item.id)}
         transition={200}
       />
       {/* Badge de estado: Indica si ya la hemos visto o está en 'Por ver' */}
@@ -85,6 +87,8 @@ const ActorResultItem = memo(({ item, onActorClick }: { item: any, onActorClick:
         source={{ uri: profileUrl(item.profile_path)! }}
         style={styles.fullImg}
         contentFit="cover"
+        cachePolicy="memory-disk"
+        recyclingKey={String(item.id)}
         transition={200}
       />
       <Text style={styles.actorName} numberOfLines={1}>{item.name}</Text>
@@ -121,8 +125,8 @@ export function DiscoverTab({
   const mainListRef = useRef<any>(null);
   const searchInputRef = useRef<TextInput>(null);
   
-  // Hook que devuelve un mapa [id_pelicula]: {estado, valoracion} para pintar badges rápidamente
-  const libraryMap = useLibraryStatus(); 
+  // Mapa [id_pelicula]: {estado, valoracion} para pintar los iconos de los pósters
+  const { mapa: libraryMap } = useBiblioteca();
 
   // ESTADO: Configuración de la Home
   const [carruselesActivos, setCarruselesActivos] = useState<string[]>([]);
@@ -131,13 +135,8 @@ export function DiscoverTab({
   const [mostrarDialogo, setMostrarDialogo] = useState(false);
   const [misPlataformas, setMisPlataformas] = useState<number[]>([]);
 
-  // HOOK: Lógica de carga de datos TMDB (populares, tendencias, etc.)
-  const {
-    peliculasPorCarrusel,
-    cargando,
-    cargarCarrusel,
-    recargarTodosLosCarruseles,
-  } = useDescubrir(carruselesActivos);
+  // Cada carrusel carga sus datos al montarse; aquí solo la recarga global
+  const { cargando, recargarTodos } = useRecargaCarruseles();
 
   // HOOK: Lógica de búsqueda interactiva
   const {
@@ -286,8 +285,6 @@ export function DiscoverTab({
                   isActive={params.isActive}
                   modoEdicion
                   fontFamily={fontFamily}
-                  peliculas={peliculasPorCarrusel[params.item] ?? []}
-                  cargarCarrusel={cargarCarrusel}
                   onPeliculaClick={onPeliculaClick}
                   onEliminar={() => persistCarruseles(carruselesActivos.filter(c => c !== params.item))}
                   misPlataformas={misPlataformas}
@@ -303,14 +300,14 @@ export function DiscoverTab({
             ref={mainListRef}
             data={carruselesActivos}
             keyExtractor={(item) => item}
-            initialNumToRender={4}
+            // Solo se montan (y piden datos) los carruseles visibles y el siguiente
+            initialNumToRender={3}
+            maxToRenderPerBatch={2}
             windowSize={3}
             renderItem={({ item }) => (
               <CarruselPeliculas
                 titulo={item}
-                peliculas={peliculasPorCarrusel[item] ?? []}
                 onPeliculaClick={onPeliculaClick}
-                cargarCarrusel={cargarCarrusel}
                 misPlataformas={misPlataformas}
                 fontFamily={fontFamily}
                 modoEdicion={false}
@@ -320,7 +317,7 @@ export function DiscoverTab({
                 libraryMap={libraryMap}
               />
             )}
-            refreshControl={<RefreshControl refreshing={cargando} onRefresh={recargarTodosLosCarruseles} tintColor="#fff" progressViewOffset={100} />}
+            refreshControl={<RefreshControl refreshing={cargando} onRefresh={recargarTodos} tintColor="#fff" progressViewOffset={100} />}
              contentContainerStyle={{ paddingTop: insets.top + (buscarAtiva ? 230 : 90), paddingBottom: 140 }}
             keyboardDismissMode="on-drag"
           />
@@ -355,30 +352,13 @@ export function DiscoverTab({
                 paddingBottom: 140 
               }}
               onScrollBeginDrag={() => Keyboard.dismiss()}
-              renderItem={({ item }) => (
-                <View style={tipoBusqueda === 'movie' ? styles.movieGridItem : styles.actorGridItem}>
-                  <Pressable
-                    onPress={() => tipoBusqueda === 'movie' ? onPeliculaClick(item.id) : onActorClick(item.id, item.name)}
-                    style={[styles.resultCard, SHADOWS.macLight]}
-                  >
-                    <Image
-                      source={{ uri: tipoBusqueda === 'movie' ? posterUrl(item.poster_path, 'w342')! : profileUrl(item.profile_path)! }}
-                      style={styles.fullImg}
-                    />
-                    {/* Indicadores de biblioteca embebidos en los resultados de búsqueda */}
-                    {tipoBusqueda === 'movie' && (
-                       libraryMap[item.id]?.estado === 'vista' ? (
-                         <RatingBadge rating={libraryMap[item.id].valoracion} hideText />
-                       ) : libraryMap[item.id]?.estado === 'por_ver' ? (
-                         <View style={styles.eyeBadge}><Ionicons name="eye" size={14} color="#3498db" /></View>
-                       ) : null
-                     )}
-                    {tipoBusqueda === 'person' && (
-                      <Text style={styles.actorName} numberOfLines={1}>{item.name}</Text>
-                    )}
-                  </Pressable>
-                </View>
-              )}
+              renderItem={({ item }) =>
+                tipoBusqueda === 'movie' ? (
+                  <MovieResultItem item={item} onPeliculaClick={onPeliculaClick} libraryMap={libraryMap} />
+                ) : (
+                  <ActorResultItem item={item} onActorClick={onActorClick} />
+                )
+              }
             />
           )}
         </Animated.View>

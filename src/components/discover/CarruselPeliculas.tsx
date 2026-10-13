@@ -6,7 +6,7 @@
  * y estados de biblioteca (visto/por ver) integrados en los carteles.
  */
 
-import React, { memo, useEffect, useState, useRef } from 'react';
+import React, { memo, useRef } from 'react';
 import {
   FlatList,
   Pressable,
@@ -22,14 +22,12 @@ import { PosterItem } from './PosterItem';
 import type { Movie } from '../../types';
 import { COLORS, GLASS } from '../../theme/colors';
 import { marcarHito } from '../../utils/medicionArranque';
+import { useCarrusel, useRecargaCarruseles } from '../../hooks/useDescubrir';
 
 type Props = {
   titulo: string;
   modoEdicion: boolean;
   fontFamily: string;
-  peliculas: Movie[];
-  /** Callback para solicitar carga de datos a TMDB */
-  cargarCarrusel: (titulo: string, forzar?: boolean) => void;
   onEliminar: () => void;
   onPeliculaClick: (id: number) => void;
   /** Inicia el gesto de arrastre (DraggableFlatList) */
@@ -46,8 +44,6 @@ export const CarruselPeliculas = memo(
     titulo,
     modoEdicion,
     fontFamily,
-    peliculas,
-    cargarCarrusel,
     onEliminar,
     onPeliculaClick,
     drag,
@@ -55,33 +51,18 @@ export const CarruselPeliculas = memo(
     misPlataformas = [],
     libraryMap = {},
   }: Props) => {
-    const [refreshing, setRefreshing] = useState(false);
-    const lastCall = useRef(0);
-    const listRef = useRef<FlatList>(null);
+    const { data: peliculas = [], isFetching } = useCarrusel(titulo);
+    const { recargarCarrusel } = useRecargaCarruseles();
+    const listRef = useRef<FlatList<Movie>>(null);
     if (peliculas.length > 0) marcarHito('primera fila con datos');
 
-    // CARGA INICIAL: Si no hay datos, los pedimos automáticamente
-    useEffect(() => {
-      if (peliculas.length === 0) cargarCarrusel(titulo);
-    }, [titulo, peliculas.length, cargarCarrusel]);
-
-    /** Lógica de recarga manual al llegar al final del carrusel */
+    /** Recarga manual con el botón del final del carrusel */
     const handleManualRefresh = () => {
-      if (refreshing) return;
-      const now = Date.now();
-      // Throttling de 2 segundos para evitar spam a la API
-      if (now - lastCall.current > 2000) {
-        lastCall.current = now;
-        setRefreshing(true);
-        cargarCarrusel(titulo, true);
-        
-        // Efecto scroll automático al inicio tras recargar
-        setTimeout(() => {
-          setRefreshing(false);
-          listRef.current?.scrollToOffset({ offset: 0, animated: true });
-        }, 1500);
-      }
+      if (isFetching) return;
+      recargarCarrusel(titulo);
+      listRef.current?.scrollToOffset({ offset: 0, animated: true });
     };
+    const refreshing = isFetching;
 
     return (
       <View style={{ marginBottom: 28, opacity: isActive ? 0.5 : 1 }}>
