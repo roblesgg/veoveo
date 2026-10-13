@@ -49,35 +49,39 @@ import { useLanguage } from '../context/LanguageContext';
  * 🚀 [MEMO] Item de Película para la Grilla de Búsqueda.
  * Optimizado para renderizar cientos de resultados sin lag.
  */
-const MovieResultItem = memo(({ item, onPeliculaClick, libraryMap }: { item: any, onPeliculaClick: any, libraryMap: any }) => (
-  <View style={styles.movieGridItem}>
-    <Pressable
-      onPress={() => onPeliculaClick(item.id)}
-      style={[styles.resultCard, SHADOWS.macLight]}
-    >
-      <ExpoImage
-        source={{ uri: posterUrl(item.poster_path, 'w342')! }}
-        style={styles.fullImg}
-        contentFit="cover"
-        cachePolicy="memory-disk"
-        recyclingKey={String(item.id)}
-        transition={200}
-      />
-      {/* Badge de estado: Indica si ya la hemos visto o está en 'Por ver' */}
-      {libraryMap[item.id]?.estado === 'vista' ? (
-        <RatingBadge rating={libraryMap[item.id].valoracion} hideText />
-      ) : libraryMap[item.id]?.estado === 'por_ver' ? (
-        <View style={styles.eyeBadge}><Ionicons name="eye" size={14} color="#3498db" /></View>
-      ) : null}
-    </Pressable>
-  </View>
-));
+const MovieResultItem = memo(
+  ({ item, onPeliculaClick, libraryMap }: { item: any; onPeliculaClick: any; libraryMap: any }) => (
+    <View style={styles.movieGridItem}>
+      <Pressable
+        onPress={() => onPeliculaClick(item.id)}
+        style={[styles.resultCard, SHADOWS.macLight]}
+      >
+        <ExpoImage
+          source={{ uri: posterUrl(item.poster_path, 'w342')! }}
+          style={styles.fullImg}
+          contentFit="cover"
+          cachePolicy="memory-disk"
+          recyclingKey={String(item.id)}
+          transition={200}
+        />
+        {/* Badge de estado: Indica si ya la hemos visto o está en 'Por ver' */}
+        {libraryMap[item.id]?.estado === 'vista' ? (
+          <RatingBadge rating={libraryMap[item.id].valoracion} hideText />
+        ) : libraryMap[item.id]?.estado === 'por_ver' ? (
+          <View style={styles.eyeBadge}>
+            <Ionicons name="eye" size={14} color="#3498db" />
+          </View>
+        ) : null}
+      </Pressable>
+    </View>
+  ),
+);
 MovieResultItem.displayName = 'MovieResultItem';
 
 /**
  * 🚀 [MEMO] Item de Actor para la Grilla de Búsqueda.
  */
-const ActorResultItem = memo(({ item, onActorClick }: { item: any, onActorClick: any }) => (
+const ActorResultItem = memo(({ item, onActorClick }: { item: any; onActorClick: any }) => (
   <View style={styles.actorGridItem}>
     <Pressable
       onPress={() => onActorClick(item.id, item.name)}
@@ -91,7 +95,9 @@ const ActorResultItem = memo(({ item, onActorClick }: { item: any, onActorClick:
         recyclingKey={String(item.id)}
         transition={200}
       />
-      <Text style={styles.actorName} numberOfLines={1}>{item.name}</Text>
+      <Text style={styles.actorName} numberOfLines={1}>
+        {item.name}
+      </Text>
     </Pressable>
   </View>
 ));
@@ -124,7 +130,7 @@ export function DiscoverTab({
 
   const mainListRef = useRef<any>(null);
   const searchInputRef = useRef<TextInput>(null);
-  
+
   // Mapa [id_pelicula]: {estado, valoracion} para pintar los iconos de los pósters
   const { mapa: libraryMap } = useBiblioteca();
 
@@ -169,7 +175,11 @@ export function DiscoverTab({
       setCarruselesActivos(next);
       void guardarCarruselesActivos(next);
       if (user) {
-        void require('../services/userPreferences').guardarPreferenciaFirestore(user.uid, 'carruseles', next);
+        void require('../services/userPreferences').guardarPreferenciaFirestore(
+          user.uid,
+          'carruseles',
+          next,
+        );
       }
     },
     [user],
@@ -197,19 +207,27 @@ export function DiscoverTab({
       };
       const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
       return () => sub.remove();
-    }, [buscarAtiva, textoBuscar])
+    }, [buscarAtiva, textoBuscar]),
   );
 
   return (
     <View style={styles.flex}>
       {/* 🔮 CABECERA PREMIUM: Efecto Glassmorphism con Blur dinámico */}
-      <BlurView 
-        intensity={85} 
-        tint="dark" 
+      <BlurView
+        intensity={85}
+        tint="dark"
         experimentalBlurMethod="dimezisBlurView"
-        style={[styles.headerContainer, { height: insets.top + (buscarAtiva ? 220 : 80) }]} 
+        style={[styles.headerContainer, { height: insets.top + (buscarAtiva ? 220 : 80) }]}
       />
-      <View style={[styles.headerContainer, { height: insets.top + (buscarAtiva ? 220 : 80), backgroundColor: 'rgba(15, 23, 42, 0.12)' }]}>
+      <View
+        style={[
+          styles.headerContainer,
+          {
+            height: insets.top + (buscarAtiva ? 220 : 80),
+            backgroundColor: 'rgba(15, 23, 42, 0.12)',
+          },
+        ]}
+      >
         <View style={styles.headerBorder} />
         <View style={[styles.headerRow, { top: Math.max(insets.top, 12) + 12 }]}>
           <Text style={[styles.titulo, { fontFamily, flex: 1 }]}>Explorar</Text>
@@ -221,14 +239,22 @@ export function DiscoverTab({
               </Pressable>
             )}
             <Pressable onPress={() => setModoEdicion(!modoEdicion)} style={styles.iconBtn}>
-              <Ionicons name={modoEdicion ? 'checkmark-circle' : 'create-outline'} size={26} color="#fff" />
+              <Ionicons
+                name={modoEdicion ? 'checkmark-circle' : 'create-outline'}
+                size={26}
+                color="#fff"
+              />
             </Pressable>
             <Pressable onPress={toggleSearch} style={styles.iconBtn}>
               <Ionicons name="search-outline" size={28} color="#fff" />
             </Pressable>
             <Pressable onPress={() => onPerfilClick?.()} style={styles.perfilBtnMini}>
               <View style={styles.perfilInnerMini}>
-                {userFoto ? <Image source={{ uri: userFoto }} style={styles.perfilFotoMini} /> : <Ionicons name="person" size={22} color="#fff" />}
+                {userFoto ? (
+                  <Image source={{ uri: userFoto }} style={styles.perfilFotoMini} />
+                ) : (
+                  <Ionicons name="person" size={22} color="#fff" />
+                )}
               </View>
             </Pressable>
           </View>
@@ -236,7 +262,10 @@ export function DiscoverTab({
 
         {/* ÁREA DE BÚSQUEDA DINÁMICA */}
         {buscarAtiva && (
-          <Animated.View entering={FadeInDown} style={[styles.searchArea, { top: Math.max(insets.top, 12) + 80 }]}>
+          <Animated.View
+            entering={FadeInDown}
+            style={[styles.searchArea, { top: Math.max(insets.top, 12) + 80 }]}
+          >
             <View style={[styles.searchField, SHADOWS.macLight]}>
               <TextInput
                 ref={searchInputRef}
@@ -253,11 +282,21 @@ export function DiscoverTab({
               )}
             </View>
             <View style={styles.typeSelector}>
-              <Pressable onPress={() => setTipoBusqueda('movie')} style={[styles.typeBtn, tipoBusqueda === 'movie' && styles.typeBtnActive]}>
-                <Text style={[styles.typeBtnText, tipoBusqueda === 'movie' && { color: '#000' }]}>Películas</Text>
+              <Pressable
+                onPress={() => setTipoBusqueda('movie')}
+                style={[styles.typeBtn, tipoBusqueda === 'movie' && styles.typeBtnActive]}
+              >
+                <Text style={[styles.typeBtnText, tipoBusqueda === 'movie' && { color: '#000' }]}>
+                  Películas
+                </Text>
               </Pressable>
-              <Pressable onPress={() => setTipoBusqueda('person')} style={[styles.typeBtn, tipoBusqueda === 'person' && styles.typeBtnActive]}>
-                <Text style={[styles.typeBtnText, tipoBusqueda === 'person' && { color: '#000' }]}>Actores</Text>
+              <Pressable
+                onPress={() => setTipoBusqueda('person')}
+                style={[styles.typeBtn, tipoBusqueda === 'person' && styles.typeBtnActive]}
+              >
+                <Text style={[styles.typeBtnText, tipoBusqueda === 'person' && { color: '#000' }]}>
+                  Actores
+                </Text>
               </Pressable>
             </View>
           </Animated.View>
@@ -268,73 +307,90 @@ export function DiscoverTab({
       <View style={styles.content}>
         <View style={styles.webCenteringWrapper}>
           {modoEdicion ? (
-          /* MODO EDICIÓN: Lista interactiva para reordenar carruseles */
-          <DraggableFlatList
-            data={carruselesActivos}
-            keyExtractor={(item) => item}
-            onDragEnd={({ data }) => persistCarruseles(data)}
-            renderItem={(params) => (
-              <ScaleDecorator>
+            /* MODO EDICIÓN: Lista interactiva para reordenar carruseles */
+            <DraggableFlatList
+              data={carruselesActivos}
+              keyExtractor={(item) => item}
+              onDragEnd={({ data }) => persistCarruseles(data)}
+              renderItem={(params) => (
+                <ScaleDecorator>
+                  <CarruselPeliculas
+                    id={params.item}
+                    drag={params.drag}
+                    isActive={params.isActive}
+                    modoEdicion
+                    fontFamily={fontFamily}
+                    onPeliculaClick={onPeliculaClick}
+                    onEliminar={() =>
+                      persistCarruseles(carruselesActivos.filter((c) => c !== params.item))
+                    }
+                    misPlataformas={misPlataformas}
+                    libraryMap={libraryMap}
+                  />
+                </ScaleDecorator>
+              )}
+              contentContainerStyle={{
+                paddingTop: insets.top + (buscarAtiva ? 230 : 90),
+                paddingBottom: 140,
+              }}
+            />
+          ) : (
+            /* MODO EXPLORACIÓN: Lista optimizada de carruseles con carga bajo demanda */
+            <FlatList
+              ref={mainListRef}
+              data={carruselesActivos}
+              keyExtractor={(item) => item}
+              // Solo se montan (y piden datos) los carruseles visibles y el siguiente
+              initialNumToRender={3}
+              maxToRenderPerBatch={2}
+              windowSize={3}
+              renderItem={({ item }) => (
                 <CarruselPeliculas
-                  id={params.item}
-                  drag={params.drag}
-                  isActive={params.isActive}
-                  modoEdicion
-                  fontFamily={fontFamily}
+                  id={item}
                   onPeliculaClick={onPeliculaClick}
-                  onEliminar={() => persistCarruseles(carruselesActivos.filter(c => c !== params.item))}
                   misPlataformas={misPlataformas}
+                  fontFamily={fontFamily}
+                  modoEdicion={false}
+                  onEliminar={() => {}}
+                  drag={() => {}}
+                  isActive={false}
                   libraryMap={libraryMap}
                 />
-              </ScaleDecorator>
-            )}
-            contentContainerStyle={{ paddingTop: insets.top + (buscarAtiva ? 230 : 90), paddingBottom: 140 }}
-          />
-        ) : (
-          /* MODO EXPLORACIÓN: Lista optimizada de carruseles con carga bajo demanda */
-          <FlatList
-            ref={mainListRef}
-            data={carruselesActivos}
-            keyExtractor={(item) => item}
-            // Solo se montan (y piden datos) los carruseles visibles y el siguiente
-            initialNumToRender={3}
-            maxToRenderPerBatch={2}
-            windowSize={3}
-            renderItem={({ item }) => (
-              <CarruselPeliculas
-                id={item}
-                onPeliculaClick={onPeliculaClick}
-                misPlataformas={misPlataformas}
-                fontFamily={fontFamily}
-                modoEdicion={false}
-                onEliminar={() => {}}
-                drag={() => {}}
-                isActive={false}
-                libraryMap={libraryMap}
-              />
-            )}
-            refreshControl={<RefreshControl refreshing={cargando} onRefresh={recargarTodos} tintColor="#fff" progressViewOffset={100} />}
-             contentContainerStyle={{ paddingTop: insets.top + (buscarAtiva ? 230 : 90), paddingBottom: 140 }}
-            keyboardDismissMode="on-drag"
-          />
-        )}
+              )}
+              refreshControl={
+                <RefreshControl
+                  refreshing={cargando}
+                  onRefresh={recargarTodos}
+                  tintColor="#fff"
+                  progressViewOffset={100}
+                />
+              }
+              contentContainerStyle={{
+                paddingTop: insets.top + (buscarAtiva ? 230 : 90),
+                paddingBottom: 140,
+              }}
+              keyboardDismissMode="on-drag"
+            />
+          )}
         </View>
       </View>
 
       {/* 🔍 CAPA DE RESULTADOS DE BÚSQUEDA (Overlay) */}
       {(buscarAtiva || textoBuscar.length >= 2) && (
-        <Pressable style={[StyleSheet.absoluteFillObject, { zIndex: 1200 }]} onPress={() => { setBuscarAtiva(false); Keyboard.dismiss(); }}>
+        <Pressable
+          style={[StyleSheet.absoluteFillObject, { zIndex: 1200 }]}
+          onPress={() => {
+            setBuscarAtiva(false);
+            Keyboard.dismiss();
+          }}
+        >
           <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFill} />
         </Pressable>
       )}
 
       {/* Renderizado de la grilla de búsqueda al escribir */}
       {textoBuscar.length >= 2 && (
-        <Animated.View 
-          entering={FadeIn} 
-          exiting={FadeOut} 
-          style={[styles.busquedaBox, { top: 0 }]}
-        >
+        <Animated.View entering={FadeIn} exiting={FadeOut} style={[styles.busquedaBox, { top: 0 }]}>
           {buscando ? (
             <ActivityIndicator color="#fff" style={{ marginTop: insets.top + 140 }} />
           ) : (
@@ -342,15 +398,19 @@ export function DiscoverTab({
               data={resultadosBusqueda}
               keyExtractor={(item) => String(item.id)}
               numColumns={tipoBusqueda === 'movie' ? 3 : 2}
-              contentContainerStyle={{ 
-                paddingHorizontal: 12, 
-                paddingTop: insets.top + (buscarAtiva ? 230 : 95), 
-                paddingBottom: 140 
+              contentContainerStyle={{
+                paddingHorizontal: 12,
+                paddingTop: insets.top + (buscarAtiva ? 230 : 95),
+                paddingBottom: 140,
               }}
               onScrollBeginDrag={() => Keyboard.dismiss()}
               renderItem={({ item }) =>
                 tipoBusqueda === 'movie' ? (
-                  <MovieResultItem item={item} onPeliculaClick={onPeliculaClick} libraryMap={libraryMap} />
+                  <MovieResultItem
+                    item={item}
+                    onPeliculaClick={onPeliculaClick}
+                    libraryMap={libraryMap}
+                  />
                 ) : (
                   <ActorResultItem item={item} onActorClick={onActorClick} />
                 )
@@ -365,7 +425,13 @@ export function DiscoverTab({
         visible={mostrarDialogo}
         onClose={() => setMostrarDialogo(false)}
         carruselesActivos={carruselesActivos}
-        onToggle={(name) => persistCarruseles(carruselesActivos.includes(name) ? carruselesActivos.filter(c => c !== name) : [...carruselesActivos, name])}
+        onToggle={(name) =>
+          persistCarruseles(
+            carruselesActivos.includes(name)
+              ? carruselesActivos.filter((c) => c !== name)
+              : [...carruselesActivos, name],
+          )
+        }
         fontFamily={fontFamily}
       />
     </View>
@@ -376,7 +442,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: '#020617' },
   webCenteringWrapper: {
     width: '100%',
-    maxWidth: 1000, 
+    maxWidth: 1000,
     alignSelf: 'center',
     flex: 1,
   },
@@ -387,26 +453,83 @@ const styles = StyleSheet.create({
   actionsTopRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   iconBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   perfilBtnMini: { marginLeft: 4 },
-  perfilInnerMini: { width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.3)', overflow: 'hidden', justifyContent: 'center', alignItems: 'center' },
+  perfilInnerMini: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.3)',
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   perfilFotoMini: { width: '100%', height: '100%' },
-  
+
   searchArea: { position: 'absolute', left: 20, right: 20 },
-  searchField: { height: 50, borderRadius: 25, backgroundColor: 'rgba(255,255,255,0.1)', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', marginBottom: 12 },
+  searchField: {
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+    marginBottom: 12,
+  },
   clearBtn: { paddingLeft: 8 },
   typeSelector: { flexDirection: 'row', gap: 8 },
-  typeBtn: { paddingHorizontal: 16, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  typeBtn: {
+    paddingHorizontal: 16,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
   typeBtnActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   typeBtnText: { color: '#fff', fontSize: 13, fontWeight: '700' },
-  
+
   glassOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(15, 23, 42, 0.8)' },
-  headerBorder: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 1, backgroundColor: 'rgba(255, 255, 255, 0.1)' },
-  
-  busquedaBox: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: '#020617', zIndex: 1500 },
+  headerBorder: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+
+  busquedaBox: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#020617',
+    zIndex: 1500,
+  },
   movieGridItem: { width: '33.33%', padding: 4 },
   actorGridItem: { width: '50%', padding: 6 },
-  resultCard: { width: '100%', aspectRatio: 2/3, borderRadius: 12, overflow: 'hidden', backgroundColor: CardSurface },
+  resultCard: {
+    width: '100%',
+    aspectRatio: 2 / 3,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: CardSurface,
+  },
   fullImg: { width: '100%', height: '100%' },
-  actorName: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: 12, textAlign: 'center', paddingVertical: 4 },
+  actorName: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    color: '#fff',
+    fontSize: 12,
+    textAlign: 'center',
+    paddingVertical: 4,
+  },
   eyeBadge: {
     position: 'absolute',
     bottom: 8,

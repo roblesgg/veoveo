@@ -21,7 +21,7 @@ admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 const db = admin.firestore();
 
 async function sendBatch(tokens) {
-  const messages = tokens.map(token => ({
+  const messages = tokens.map((token) => ({
     to: token,
     sound: 'default',
     priority: 'high',
@@ -34,7 +34,7 @@ async function sendBatch(tokens) {
   const res = await fetch('https://exp.host/--/api/v2/push/send', {
     method: 'POST',
     headers: {
-      'Accept': 'application/json',
+      Accept: 'application/json',
       'Accept-Encoding': 'gzip, deflate',
       'Content-Type': 'application/json',
     },
@@ -43,12 +43,12 @@ async function sendBatch(tokens) {
 
   const json = await res.json();
   const results = json.data || [];
-  const ok = results.filter(r => r.status === 'ok').length;
-  const errors = results.filter(r => r.status !== 'ok');
+  const ok = results.filter((r) => r.status === 'ok').length;
+  const errors = results.filter((r) => r.status !== 'ok');
 
   console.log(`  ✅ ${ok} enviadas`);
   if (errors.length > 0) {
-    errors.forEach(e => console.warn(`  ⚠️  ${e.message || JSON.stringify(e)}`));
+    errors.forEach((e) => console.warn(`  ⚠️  ${e.message || JSON.stringify(e)}`));
   }
 }
 
@@ -57,7 +57,7 @@ async function main() {
   const snap = await db.collection('usuarios').get();
 
   const tokens = [];
-  snap.forEach(doc => {
+  snap.forEach((doc) => {
     const token = doc.data().pushToken;
     if (token && typeof token === 'string' && token.startsWith('ExponentPushToken')) {
       tokens.push(token);
@@ -65,7 +65,9 @@ async function main() {
   });
 
   if (tokens.length === 0) {
-    console.log('⚠️  No se encontraron tokens de push. Los usuarios deben haber abierto la app al menos una vez.');
+    console.log(
+      '⚠️  No se encontraron tokens de push. Los usuarios deben haber abierto la app al menos una vez.',
+    );
     process.exit(0);
   }
 
@@ -80,7 +82,7 @@ async function main() {
   console.log('\n🎉 Notificaciones enviadas.');
 }
 
-main().catch(e => {
+main().catch((e) => {
   console.error('❌ Error:', e.message);
   process.exit(1);
 });

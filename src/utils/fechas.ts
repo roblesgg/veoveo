@@ -9,5 +9,9 @@ export function formatearFechaVista(fecha: number): string {
   const diferencia = Math.round((hoy.getTime() - dia.getTime()) / DIA);
   if (diferencia === 0) return 'hoy';
   if (diferencia === 1) return 'ayer';
-  return new Date(fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(fecha).toLocaleDateString('es-ES', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
 }

@@ -32,8 +32,8 @@ export function useDiscoverSearch() {
         if (tipoBusqueda === 'movie') {
           // 🎬 BÚSQUEDA DE PELÍCULAS
           const res = await tmdbApi.buscarPeliculas(textoBuscar, 'es-ES');
-          
-          /** Enriquecimiento: Para cada resultado de búsqueda, consultamos 
+
+          /** Enriquecimiento: Para cada resultado de búsqueda, consultamos
            * sus plataformas de streaming para mostrar los iconos de una vez.
            */
           const moviesWithProviders = await Promise.all(

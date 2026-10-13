@@ -19,13 +19,18 @@ export const MovieActions = React.memo(
   ({ user, estadoPelicula, accionBib, bibCargando, onPorVer, onVista, fontFamily }: Props) => {
     return (
       <View style={[styles.actionsGlass, SHADOWS.mac]}>
-        <BlurView 
-          intensity={80} 
-          style={[StyleSheet.absoluteFill, { borderRadius: 28, overflow: 'hidden', zIndex: -1 }]} 
-          tint="dark" 
+        <BlurView
+          intensity={80}
+          style={[StyleSheet.absoluteFill, { borderRadius: 28, overflow: 'hidden', zIndex: -1 }]}
+          tint="dark"
           experimentalBlurMethod="dimezisBlurView"
         />
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(15, 23, 42, 0.05)', borderRadius: 28, zIndex: -1 }]} />
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            { backgroundColor: 'rgba(15, 23, 42, 0.05)', borderRadius: 28, zIndex: -1 },
+          ]}
+        />
 
         <View style={[styles.actionsInner, { zIndex: 1 }]}>
           {!user ? (
@@ -47,7 +52,10 @@ export const MovieActions = React.memo(
                 <Text
                   style={[
                     styles.btnBibText,
-                    { fontFamily, color: estadoPelicula === 1 ? COLORS.background : COLORS.primary },
+                    {
+                      fontFamily,
+                      color: estadoPelicula === 1 ? COLORS.background : COLORS.primary,
+                    },
                   ]}
                 >
                   {estadoPelicula === 1 ? 'En Por Ver' : 'Por Ver'}
@@ -66,7 +74,10 @@ export const MovieActions = React.memo(
                 <Text
                   style={[
                     styles.btnBibText,
-                    { fontFamily, color: estadoPelicula === 2 ? COLORS.background : COLORS.success },
+                    {
+                      fontFamily,
+                      color: estadoPelicula === 2 ? COLORS.background : COLORS.success,
+                    },
                   ]}
                 >
                   {estadoPelicula === 2 ? 'Vista' : 'Vista'}

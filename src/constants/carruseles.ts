@@ -19,12 +19,22 @@ export type DefinicionCarrusel = {
 
 const VOTOS_GENERO = '200';
 
-const genero = (id: string, titulo: string, generos: string, extra: Record<string, string> = {}): DefinicionCarrusel => ({
+const genero = (
+  id: string,
+  titulo: string,
+  generos: string,
+  extra: Record<string, string> = {},
+): DefinicionCarrusel => ({
   id,
   titulo,
   grupo: 'Géneros',
   ruta: 'discover/movie',
-  params: { with_genres: generos, 'vote_count.gte': VOTOS_GENERO, sort_by: 'popularity.desc', ...extra },
+  params: {
+    with_genres: generos,
+    'vote_count.gte': VOTOS_GENERO,
+    sort_by: 'popularity.desc',
+    ...extra,
+  },
 });
 
 const tema = (id: string, titulo: string, keywords: string): DefinicionCarrusel => ({
@@ -35,7 +45,13 @@ const tema = (id: string, titulo: string, keywords: string): DefinicionCarrusel 
   params: { with_keywords: keywords, 'vote_count.gte': '50', sort_by: 'popularity.desc' },
 });
 
-const epoca = (id: string, titulo: string, desde: string, hasta: string, votos: string): DefinicionCarrusel => ({
+const epoca = (
+  id: string,
+  titulo: string,
+  desde: string,
+  hasta: string,
+  votos: string,
+): DefinicionCarrusel => ({
   id,
   titulo,
   grupo: 'Épocas',
@@ -51,11 +67,34 @@ const epoca = (id: string, titulo: string, desde: string, hasta: string, votos: 
 export const CATALOGO_CARRUSELES: DefinicionCarrusel[] = [
   { id: 'para-ti', titulo: 'Recomendado para ti', grupo: 'Para ti' },
 
-  { id: 'en-cartelera', titulo: 'En cines', grupo: 'Cartelera', ruta: 'movie/now_playing', params: { region: 'ES' } },
-  { id: 'proximamente', titulo: 'Próximamente', grupo: 'Cartelera', ruta: 'movie/upcoming', params: { region: 'ES' } },
+  {
+    id: 'en-cartelera',
+    titulo: 'En cines',
+    grupo: 'Cartelera',
+    ruta: 'movie/now_playing',
+    params: { region: 'ES' },
+  },
+  {
+    id: 'proximamente',
+    titulo: 'Próximamente',
+    grupo: 'Cartelera',
+    ruta: 'movie/upcoming',
+    params: { region: 'ES' },
+  },
 
-  { id: 'tendencias', titulo: 'Tendencias de la semana', grupo: 'Listas', ruta: 'trending/movie/week' },
-  { id: 'populares', titulo: 'Populares', grupo: 'Listas', ruta: 'movie/popular', params: { region: 'ES' } },
+  {
+    id: 'tendencias',
+    titulo: 'Tendencias de la semana',
+    grupo: 'Listas',
+    ruta: 'trending/movie/week',
+  },
+  {
+    id: 'populares',
+    titulo: 'Populares',
+    grupo: 'Listas',
+    ruta: 'movie/popular',
+    params: { region: 'ES' },
+  },
   { id: 'mejor-valoradas', titulo: 'Mejor valoradas', grupo: 'Listas', ruta: 'movie/top_rated' },
 
   epoca('decada-2010', 'Cine de los 2010', '2010-01-01', '2019-12-31', '1000'),
@@ -69,7 +108,11 @@ export const CATALOGO_CARRUSELES: DefinicionCarrusel[] = [
     titulo: 'Clásicos de oro',
     grupo: 'Épocas',
     ruta: 'discover/movie',
-    params: { 'primary_release_date.lte': '1949-12-31', 'vote_count.gte': '500', sort_by: 'vote_average.desc' },
+    params: {
+      'primary_release_date.lte': '1949-12-31',
+      'vote_count.gte': '500',
+      sort_by: 'vote_average.desc',
+    },
   },
 
   genero('accion', 'Acción', '28'),

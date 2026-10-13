@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 36,
     borderTopRightRadius: 36,
     overflow: 'hidden',
-    backgroundColor: 'rgba(15, 23, 42, 0.9)', 
+    backgroundColor: 'rgba(15, 23, 42, 0.9)',
   },
   modalCard: { flex: 1, padding: 24 },
   modalHeader: {

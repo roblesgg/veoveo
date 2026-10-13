@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withRepeat, 
-  withSequence, 
-  withTiming, 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+  withTiming,
   withDelay,
-  Easing
+  Easing,
 } from 'react-native-reanimated';
 import { COLORS } from '../theme/colors';
 
@@ -28,10 +28,10 @@ export function SplashView({ fontFamily = 'System' }: { fontFamily?: string }) {
       scale.value = withRepeat(
         withSequence(
           withTiming(1.03, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
-          withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) })
+          withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
         ),
         -1,
-        true
+        true,
       );
     }, 1200);
   }, []);
@@ -44,22 +44,14 @@ export function SplashView({ fontFamily = 'System' }: { fontFamily?: string }) {
 
   return (
     <View style={styles.container}>
-      <LinearGradient 
-        colors={[COLORS.background, '#1e1b4b']} 
-        style={StyleSheet.absoluteFill} 
-      />
-      
+      <LinearGradient colors={[COLORS.background, '#1e1b4b']} style={StyleSheet.absoluteFill} />
+
       <Animated.View style={styles.content}>
         <Animated.Text style={[styles.text, animatedTextStyle, { fontFamily }]}>
           VEOVEO
         </Animated.Text>
         <View style={styles.accentLineContainer}>
-          <Animated.View 
-            style={[
-              styles.accentLine, 
-              { opacity: 0.3 }
-            ]} 
-          />
+          <Animated.View style={[styles.accentLine, { opacity: 0.3 }]} />
         </View>
         <Animated.Text style={[styles.betaText, animatedTextStyle, { fontFamily }]}>
           BETA
@@ -67,18 +59,18 @@ export function SplashView({ fontFamily = 'System' }: { fontFamily?: string }) {
       </Animated.View>
 
       <View style={[styles.footer, { paddingBottom: 40 }]}>
-         <Text style={[styles.footerText, { fontFamily }]}>DE DRIPDEV</Text>
+        <Text style={[styles.footerText, { fontFamily }]}>DE DRIPDEV</Text>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    backgroundColor: COLORS.background 
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.background,
   },
   content: {
     alignItems: 'center',
@@ -122,5 +114,5 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 3,
     textTransform: 'uppercase',
-  }
+  },
 });

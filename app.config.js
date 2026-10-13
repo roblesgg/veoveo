@@ -29,7 +29,5 @@ module.exports = {
     package: IS_TEST ? 'com.roblesgg.veoveo.test' : appJson.expo.android.package,
   },
   scheme: IS_TEST ? 'veoveotest' : 'veoveo',
-  plugins: [
-    ...(appJson.expo.plugins || []),
-  ],
+  plugins: [...(appJson.expo.plugins || [])],
 };

@@ -44,10 +44,13 @@ export const MovieHeader = React.memo(
       <View style={styles.container}>
         <View style={styles.content}>
           <View style={[styles.macCardWrap, SHADOWS.mac]}>
-            <BlurView 
-              intensity={80} 
-              style={[StyleSheet.absoluteFill, { borderRadius: 24, overflow: 'hidden', zIndex: -1 }]} 
-              tint="dark" 
+            <BlurView
+              intensity={80}
+              style={[
+                StyleSheet.absoluteFill,
+                { borderRadius: 24, overflow: 'hidden', zIndex: -1 },
+              ]}
+              tint="dark"
               experimentalBlurMethod="dimezisBlurView"
             />
             <View

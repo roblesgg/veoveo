@@ -55,7 +55,9 @@ export function SelectorFechaVista({ fecha, onCambio, fontFamily }: Props) {
       {Platform.OS !== 'web' && (
         <Pressable onPress={() => setAbierto(true)} style={styles.fechaExacta} hitSlop={8}>
           <Ionicons name="calendar-outline" size={16} color="#38BDF8" />
-          <Text style={[styles.fechaExactaTexto, { fontFamily }]}>{formatearFechaVista(fecha)}</Text>
+          <Text style={[styles.fechaExactaTexto, { fontFamily }]}>
+            {formatearFechaVista(fecha)}
+          </Text>
         </Pressable>
       )}
       {abierto && (

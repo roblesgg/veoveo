@@ -13,18 +13,35 @@ export type GrupoPlataforma = { ids: number[]; name: string; logo: string; searc
 const UNA_SEMANA = 1000 * 60 * 60 * 24 * 7;
 
 /** Agrupa las variantes de una misma plataforma (por ejemplo, "Amazon Prime Video with Ads"). */
-export function agruparPlataformas(lista: { provider_id: number; provider_name: string; logo_path: string }[]): GrupoPlataforma[] {
+export function agruparPlataformas(
+  lista: { provider_id: number; provider_name: string; logo_path: string }[],
+): GrupoPlataforma[] {
   const grupos: Record<string, GrupoPlataforma> = {};
   lista.forEach((p) => {
     let name = p.provider_name;
     let alias = name.toLowerCase();
-    if (name.includes('Amazon') || name.includes('Prime Video')) { name = 'Prime Video'; alias += ' amazon prime amz'; }
-    else if (name.includes('Apple TV')) { name = 'Apple TV+'; alias += ' itunes apple+'; }
-    else if (name.includes('Disney')) { name = 'Disney+'; alias += ' dsn disneyplus'; }
-    else if (name.includes('HBO')) { name = 'HBO Max'; alias += ' hbomax max'; }
-    else if (name.includes('Netflix')) { name = 'Netflix'; alias += ' nflx netf'; }
-    else if (name.includes('SkyShowtime')) { name = 'SkyShowtime'; alias += ' sky showtime'; }
-    else if (name.includes('Movistar')) { name = 'Movistar Plus+'; alias += ' m+ movstar movistar+'; }
+    if (name.includes('Amazon') || name.includes('Prime Video')) {
+      name = 'Prime Video';
+      alias += ' amazon prime amz';
+    } else if (name.includes('Apple TV')) {
+      name = 'Apple TV+';
+      alias += ' itunes apple+';
+    } else if (name.includes('Disney')) {
+      name = 'Disney+';
+      alias += ' dsn disneyplus';
+    } else if (name.includes('HBO')) {
+      name = 'HBO Max';
+      alias += ' hbomax max';
+    } else if (name.includes('Netflix')) {
+      name = 'Netflix';
+      alias += ' nflx netf';
+    } else if (name.includes('SkyShowtime')) {
+      name = 'SkyShowtime';
+      alias += ' sky showtime';
+    } else if (name.includes('Movistar')) {
+      name = 'Movistar Plus+';
+      alias += ' m+ movstar movistar+';
+    }
 
     if (!grupos[name]) grupos[name] = { ids: [], name, logo: p.logo_path, searchTerms: alias };
     grupos[name].ids.push(p.provider_id);

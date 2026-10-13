@@ -16,8 +16,12 @@ type Props = {
   hideText?: boolean; // Si es true, solo muestra las estrellas en formato compacto.
 };
 
-export function RatingBadge({ rating: rawRating, maxRating = 5, fontFamily, hideText = true }: Props) {
-  
+export function RatingBadge({
+  rating: rawRating,
+  maxRating = 5,
+  fontFamily,
+  hideText = true,
+}: Props) {
   // NORMALIZACIÓN: Siempre trabajamos internamente sobre una base de 5 estrellas.
   const rating = maxRating === 10 ? rawRating / 2 : rawRating;
 
@@ -31,17 +35,18 @@ export function RatingBadge({ rating: rawRating, maxRating = 5, fontFamily, hide
   const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
   // LÓGICA DE COLOR (Gradación según nota)
-  let iconColor = '#FFD700'; 
-  let glow = rating >= 4.5; // Efecto premium para 'Obras Maestras'
+  let iconColor = '#FFD700';
+  const glow = rating >= 4.5; // Efecto premium para 'Obras Maestras'
 
-  if (rating >= 4.5) iconColor = '#FFD700';      // Oro
-  else if (rating >= 3.5) iconColor = '#FFC107'; // Ámbar
-  else iconColor = '#FF9800';                    // Naranja
+  if (rating >= 4.5)
+    iconColor = '#FFD700'; // Oro
+  else if (rating >= 3.5)
+    iconColor = '#FFC107'; // Ámbar
+  else iconColor = '#FF9800'; // Naranja
 
   return (
     <View style={[styles.badge, glow && styles.glow, hideText && styles.miniBadge]}>
       <View style={[styles.inner, hideText && styles.miniInner]}>
-        
         {isPoop ? (
           <Text style={{ fontSize: 16 }}>💩</Text>
         ) : (
@@ -50,22 +55,26 @@ export function RatingBadge({ rating: rawRating, maxRating = 5, fontFamily, hide
             {[...Array(fullStars)].map((_, i) => (
               <Ionicons key={`f-${i}`} name="star" size={hideText ? 10 : 12} color={iconColor} />
             ))}
-            
+
             {/* MEDIA ESTRELLA */}
             {hasHalfStar && (
               <Ionicons name="star-half" size={hideText ? 10 : 12} color={iconColor} />
             )}
-            
+
             {/* ESTRELLAS VACÍAS (Solo en modo extendido) */}
-            {!hideText && [...Array(emptyStars)].map((_, i) => (
-              <Ionicons key={`e-${i}`} name="star-outline" size={12} color="rgba(255,255,255,0.3)" />
-            ))}
-            
+            {!hideText &&
+              [...Array(emptyStars)].map((_, i) => (
+                <Ionicons
+                  key={`e-${i}`}
+                  name="star-outline"
+                  size={12}
+                  color="rgba(255,255,255,0.3)"
+                />
+              ))}
+
             {/* NOTA NUMÉRICA (Solo en modo extendido) */}
             {!hideText && (
-              <Text style={[styles.text, { fontFamily, color: '#fff' }]}>
-                {rating.toFixed(1)}
-              </Text>
+              <Text style={[styles.text, { fontFamily, color: '#fff' }]}>{rating.toFixed(1)}</Text>
             )}
           </View>
         )}

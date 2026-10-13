@@ -5,13 +5,13 @@
  */
 
 import { initializeApp, getApps, type FirebaseApp, type FirebaseOptions } from 'firebase/app';
-import { 
-  getAuth, 
-  initializeAuth, 
+import {
+  getAuth,
+  initializeAuth,
   // @ts-ignore
-  getReactNativePersistence, 
-  browserLocalPersistence, 
-  type Auth 
+  getReactNativePersistence,
+  browserLocalPersistence,
+  type Auth,
 } from 'firebase/auth';
 import { Platform } from 'react-native';
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';

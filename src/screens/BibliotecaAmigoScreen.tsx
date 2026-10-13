@@ -19,10 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { listarPeliculasPorEstadoDeUsuario } from '../services/repositorioPeliculasUsuario';
 import { obtenerPerfilUsuarioPorUid } from '../services/repositorioUsuarios';
 import { posterUrl } from '../services/tmdbClient';
-import {
-  eliminarAmigo,
-  bloquearUsuario as bloquearSocial,
-} from '../services/repositorioSocial';
+import { eliminarAmigo, bloquearUsuario as bloquearSocial } from '../services/repositorioSocial';
 import { crearChat } from '../services/repositorioChats';
 import { useAuth } from '../context/AuthContext';
 import { PeliculaUsuario, UsuarioPerfil } from '../types';
@@ -48,7 +45,7 @@ export function BibliotecaAmigoScreen() {
   const route = useRoute<RouteProp<RootStackParamList, 'BibliotecaAmigo'>>();
   const { amigoUid } = route.params;
   const { user } = useAuth();
-  
+
   const insets = useSafeAreaInsets();
   const { fontFamily, loaded: fontLoaded } = useMontserrat();
   const ff = fontFamily || 'System';
@@ -84,14 +81,14 @@ export function BibliotecaAmigoScreen() {
       }
     })();
   }, [amigoUid]);
-  
+
   // 🛡️ [NUEVO] Cerrar buscador al pulsar "Atrás" en Android
   useEffect(() => {
     const onBackPress = () => {
       if (buscar.length > 0) {
         setBuscar('');
         Keyboard.dismiss();
-        return true; 
+        return true;
       }
       return false;
     };
@@ -147,7 +144,11 @@ export function BibliotecaAmigoScreen() {
         onPress={async () => {
           if (!user) return;
           const chatId = await crearChat([user.uid, amigoUid], 'individual');
-          navigation.navigate('ChatDetail', { chatId, participants: [user.uid, amigoUid], chatName: usuario?.username });
+          navigation.navigate('ChatDetail', {
+            chatId,
+            participants: [user.uid, amigoUid],
+            chatName: usuario?.username,
+          });
         }}
         style={[styles.chatBtn, { top: Math.max(insets.top, 12) + 8 }]}
         hitSlop={12}
@@ -213,46 +214,48 @@ export function BibliotecaAmigoScreen() {
 
       {/* Menú de Acciones Sociales */}
       <FilterSortMenu
-         visible={mostrarSocialMenu}
-         onClose={() => setMostrarSocialMenu(false)}
-         title="Gestionar Amistad"
-         options={[]}
-         currentValue=""
-         onSelect={() => {}}
+        visible={mostrarSocialMenu}
+        onClose={() => setMostrarSocialMenu(false)}
+        title="Gestionar Amistad"
+        options={[]}
+        currentValue=""
+        onSelect={() => {}}
       >
-          <View style={styles.menuSocialSection}>
-            <Pressable 
-              style={styles.menuSocialBtn} 
-              onPress={async () => {
-                try {
-                  await eliminarAmigo(amigoUid);
-                  setMostrarSocialMenu(false);
-                  navigation.goBack();
-                } catch (e) {
-                  console.error(e);
-                }
-              }}
-            >
-               <Ionicons name="person-remove-outline" size={20} color="rgba(255,255,255,0.6)" />
-               <Text style={[styles.menuSocialText, { fontFamily: ff }]}>Dejar de ser amigo</Text>
-            </Pressable>
-            <View style={styles.menuDivider} />
-            <Pressable 
-              style={styles.menuSocialBtn} 
-              onPress={async () => {
-                try {
-                  await bloquearSocial(amigoUid);
-                  setMostrarSocialMenu(false);
-                  navigation.goBack();
-                } catch (e) {
-                  console.error(e);
-                }
-              }}
-            >
-               <Ionicons name="ban-outline" size={20} color="#ff4444" />
-               <Text style={[styles.menuSocialText, { fontFamily: ff, color: '#ff4444' }]}>Bloquear contacto</Text>
-            </Pressable>
-          </View>
+        <View style={styles.menuSocialSection}>
+          <Pressable
+            style={styles.menuSocialBtn}
+            onPress={async () => {
+              try {
+                await eliminarAmigo(amigoUid);
+                setMostrarSocialMenu(false);
+                navigation.goBack();
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+          >
+            <Ionicons name="person-remove-outline" size={20} color="rgba(255,255,255,0.6)" />
+            <Text style={[styles.menuSocialText, { fontFamily: ff }]}>Dejar de ser amigo</Text>
+          </Pressable>
+          <View style={styles.menuDivider} />
+          <Pressable
+            style={styles.menuSocialBtn}
+            onPress={async () => {
+              try {
+                await bloquearSocial(amigoUid);
+                setMostrarSocialMenu(false);
+                navigation.goBack();
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+          >
+            <Ionicons name="ban-outline" size={20} color="#ff4444" />
+            <Text style={[styles.menuSocialText, { fontFamily: ff, color: '#ff4444' }]}>
+              Bloquear contacto
+            </Text>
+          </Pressable>
+        </View>
       </FilterSortMenu>
 
       <ScrollView
@@ -286,8 +289,8 @@ export function BibliotecaAmigoScreen() {
 
         {/* 🛡️ [NUEVO] Detector con Z-INDEX para capturar toques fuera */}
         {buscar.length > 0 && (
-          <Pressable 
-            style={[StyleSheet.absoluteFillObject, { zIndex: 99 }]} 
+          <Pressable
+            style={[StyleSheet.absoluteFillObject, { zIndex: 99 }]}
             onPress={() => {
               setBuscar('');
               Keyboard.dismiss();
@@ -311,11 +314,7 @@ export function BibliotecaAmigoScreen() {
             style={[styles.searchField, { fontFamily: ff }]}
           />
           {buscar.length > 0 && (
-            <Pressable 
-              onPress={() => setBuscar('')} 
-              style={styles.clearBtn}
-              hitSlop={8}
-            >
+            <Pressable onPress={() => setBuscar('')} style={styles.clearBtn} hitSlop={8}>
               <Ionicons name="close-circle" size={18} color="rgba(255,255,255,0.4)" />
             </Pressable>
           )}
@@ -358,7 +357,10 @@ export function BibliotecaAmigoScreen() {
                   onPress={() => navigation.push('Pelicula', { movieId: p.idPelicula })}
                 >
                   {p.rutaPoster ? (
-                    <Image source={{ uri: posterUrl(p.rutaPoster, 'w342')! }} style={styles.poster} />
+                    <Image
+                      source={{ uri: posterUrl(p.rutaPoster, 'w342')! }}
+                      style={styles.poster}
+                    />
                   ) : (
                     <View style={[styles.poster, styles.fallback]}>
                       <Text style={[styles.fallbackText, { fontFamily: ff }]} numberOfLines={3}>
@@ -542,7 +544,19 @@ const styles = StyleSheet.create({
   },
   overlayPoop: { backgroundColor: 'rgba(139,69,19,0.85)' },
   menuSocialSection: { paddingHorizontal: 4, marginTop: 8 },
-  menuDivider: { height: 1.5, backgroundColor: 'rgba(255,255,255,0.06)', marginVertical: 12, marginHorizontal: 16 },
-  menuSocialBtn: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14, paddingHorizontal: 20, borderRadius: 16 },
+  menuDivider: {
+    height: 1.5,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    marginVertical: 12,
+    marginHorizontal: 16,
+  },
+  menuSocialBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 16,
+  },
   menuSocialText: { color: 'rgba(255,255,255,0.7)', fontSize: 16, fontWeight: '600' },
 });

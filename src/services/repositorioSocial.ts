@@ -66,7 +66,11 @@ export async function obtenerFavoritasDeAmigos(): Promise<FavoritaDeAmigos[]> {
     amigosUids.map(async (uid, i) => {
       try {
         const snap = await getDocs(
-          query(collection(db, 'usuarios', uid, 'peliculas'), where('valoracion', '>=', 4), limit(10)),
+          query(
+            collection(db, 'usuarios', uid, 'peliculas'),
+            where('valoracion', '>=', 4),
+            limit(10),
+          ),
         );
         const nombre = amigos[i]?.username ?? 'Un amigo';
         snap.docs.forEach((d) => {
@@ -96,7 +100,7 @@ export async function buscarUsuarios(queryText: string): Promise<UsuarioPerfil[]
   const db = dbOrThrow();
   const uidActual = uidOrThrow();
   if (!queryText.trim()) return [];
-  
+
   // Optimizable en el futuro con índices de búsqueda o un campo 'username_servido'
   const snap = await getDocs(collection(db, 'usuarios'));
   const q = queryText.toLowerCase().trim();
@@ -165,9 +169,7 @@ export function observarAmigos(callback: (amigos: UsuarioPerfil[]) => void): () 
     );
 
     unsubAmigos = onSnapshot(qAmigos, (amigosSnap) => {
-      const listaAmigos = amigosSnap.docs.map(
-        (d) => ({ uid: d.id, ...d.data() }) as UsuarioPerfil,
-      );
+      const listaAmigos = amigosSnap.docs.map((d) => ({ uid: d.id, ...d.data() }) as UsuarioPerfil);
       callback(listaAmigos);
     });
   });
@@ -211,7 +213,10 @@ export async function obtenerSolicitudesEnviadasPendientesUids(): Promise<Set<st
 /**
  * Envía una nueva solicitud de amistad a otro usuario.
  */
-export async function enviarSolicitudAmistad(destUid: string, paraUsername?: string): Promise<void> {
+export async function enviarSolicitudAmistad(
+  destUid: string,
+  paraUsername?: string,
+): Promise<void> {
   const db = dbOrThrow();
   const uid = uidOrThrow();
 

@@ -117,14 +117,9 @@ export const MovieRatingModal = React.memo(
                 <Pressable
                   onPress={handleGuardar}
                   disabled={valorSel === 0 && !valorNegativa}
-                  style={[
-                    styles.saveBtnMain,
-                    valorSel === 0 && !valorNegativa && { opacity: 0.4 },
-                  ]}
+                  style={[styles.saveBtnMain, valorSel === 0 && !valorNegativa && { opacity: 0.4 }]}
                 >
-                  <Text
-                    style={{ color: '#fff', fontFamily, fontWeight: '800', fontSize: 16 }}
-                  >
+                  <Text style={{ color: '#fff', fontFamily, fontWeight: '800', fontSize: 16 }}>
                     Guardar
                   </Text>
                 </Pressable>
@@ -178,7 +173,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   modalActionSec: { padding: 10, alignSelf: 'center' },
-  saveBtnMain: { 
+  saveBtnMain: {
     backgroundColor: '#38bdf8',
     paddingHorizontal: 24,
     paddingVertical: 10,

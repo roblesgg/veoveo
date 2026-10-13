@@ -101,7 +101,7 @@ export function RootNavigator() {
               <Stack.Screen name="ChatDetail" component={ChatDetailScreen} />
               <Stack.Screen name="MovieMatch" component={MovieMatchScreen} />
               <Stack.Screen name="MatchConfig" component={MatchConfigScreen} />
-          </>
+            </>
           )}
         </Stack.Navigator>
       )}

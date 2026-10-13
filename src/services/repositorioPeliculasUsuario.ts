@@ -40,7 +40,7 @@ export function escucharBiblioteca(
   );
 }
 
-/** 
+/**
  * Recupera la información de una película específica de CUALQUIER usuario (ej: un amigo).
  */
 export async function obtenerPeliculaDeUsuario(
@@ -54,7 +54,7 @@ export async function obtenerPeliculaDeUsuario(
   return snap.data() as PeliculaUsuario;
 }
 
-/** 
+/**
  * Obtiene la lista de películas del usuario actual filtradas por estado (por_ver / vista).
  */
 export async function listarPeliculasPorEstado(
@@ -67,7 +67,7 @@ export async function listarPeliculasPorEstado(
   return snap.docs.map((d: any) => d.data() as PeliculaUsuario);
 }
 
-/** 
+/**
  * Obtiene la biblioteca de un usuario específico filtrada por estado.
  */
 export async function listarPeliculasPorEstadoDeUsuario(
@@ -105,25 +105,31 @@ export async function marcarComoVista(
   } else if (existente?.estado === 'por_ver') {
     await updateDoc(ref, { estado: 'vista', valoracion, fechaVisto: fechaVisto ?? Date.now() });
   } else {
-    await setDoc(ref, sinIndefinidos({
-      ...datos,
-      estado: 'vista',
-      valoracion,
-      fechaAnadido: Date.now(),
-      fechaVisto: fechaVisto ?? Date.now(),
-    }));
+    await setDoc(
+      ref,
+      sinIndefinidos({
+        ...datos,
+        estado: 'vista',
+        valoracion,
+        fechaAnadido: Date.now(),
+        fechaVisto: fechaVisto ?? Date.now(),
+      }),
+    );
   }
 }
 
 /** Pone una peli en Por ver (si estaba vista, pierde la valoración y la fecha de vista). */
 export async function guardarEnPorVer(datos: DatosPeliculaBiblioteca): Promise<void> {
   const uid = uidOrThrow();
-  await setDoc(refPelicula(uid, datos.idPelicula), sinIndefinidos({
-    ...datos,
-    estado: 'por_ver',
-    valoracion: 0,
-    fechaAnadido: Date.now(),
-  }));
+  await setDoc(
+    refPelicula(uid, datos.idPelicula),
+    sinIndefinidos({
+      ...datos,
+      estado: 'por_ver',
+      valoracion: 0,
+      fechaAnadido: Date.now(),
+    }),
+  );
 }
 
 /** Cambia la fecha en que el usuario vio la peli. */
@@ -142,7 +148,7 @@ function sinIndefinidos<T extends object>(obj: T): T {
   return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as T;
 }
 
-/** 
+/**
  * Actualiza la puntuación de estrellas (1-10) dada por el usuario.
  */
 export async function actualizarValoracion(idPelicula: number, valoracion: number): Promise<void> {
@@ -150,7 +156,7 @@ export async function actualizarValoracion(idPelicula: number, valoracion: numbe
   await updateDoc(refPelicula(uid, idPelicula), { valoracion });
 }
 
-/** 
+/**
  * Elimina una película de la biblioteca del usuario.
  */
 export async function eliminarPelicula(idPelicula: number): Promise<void> {
@@ -158,7 +164,7 @@ export async function eliminarPelicula(idPelicula: number): Promise<void> {
   await deleteDoc(refPelicula(uid, idPelicula));
 }
 
-/** 
+/**
  * Cuenta cuántas películas tiene el usuario en un estado determinado.
  */
 export async function contarPeliculasPorEstado(estado: string): Promise<number> {

@@ -45,7 +45,9 @@ export function elegirSemillas(vistas: PeliculaUsuario[], dia: number): Pelicula
   const fecha = (p: PeliculaUsuario) => p.fechaVisto ?? p.fechaAnadido;
   let favoritas = vistas.filter((p) => p.valoracion >= 4);
   if (favoritas.length < 2) favoritas = vistas.filter((p) => p.valoracion >= 3);
-  const ordenadas = [...favoritas].sort((a, b) => b.valoracion - a.valoracion || fecha(b) - fecha(a));
+  const ordenadas = [...favoritas].sort(
+    (a, b) => b.valoracion - a.valoracion || fecha(b) - fecha(a),
+  );
   const grupo = ordenadas.slice(0, 8);
   if (grupo.length <= MAX_SEMILLAS) return grupo;
   const inicio = dia % grupo.length;
@@ -97,8 +99,12 @@ export async function calcularRecomendaciones(
         }
       }),
     ),
-    Promise.all(semillas.map((s) => tmdbApi.obtenerDetallesPelicula(s.idPelicula).catch(() => null))),
-    Promise.all(semillas.map((s) => tmdbApi.obtenerCreditosPelicula(s.idPelicula).catch(() => null))),
+    Promise.all(
+      semillas.map((s) => tmdbApi.obtenerDetallesPelicula(s.idPelicula).catch(() => null)),
+    ),
+    Promise.all(
+      semillas.map((s) => tmdbApi.obtenerCreditosPelicula(s.idPelicula).catch(() => null)),
+    ),
   ]);
 
   semillas.forEach((semilla, i) => {
@@ -121,23 +127,33 @@ export async function calcularRecomendaciones(
   const director = contar(
     creditosSemillas.flatMap((c) => c?.crew.filter((p) => p.job === 'Director') ?? []),
   );
-  const actor = contar(
-    creditosSemillas.flatMap((c) => c?.cast.filter((p) => p.order < 3) ?? []),
-  );
+  const actor = contar(creditosSemillas.flatMap((c) => c?.cast.filter((p) => p.order < 3) ?? []));
   const [pelisDirector, pelisActor] = await Promise.all([
     director
       ? tmdbApi
-          .listaPeliculas('discover/movie', { with_crew: String(director[0]), sort_by: 'vote_average.desc', 'vote_count.gte': '100' })
+          .listaPeliculas('discover/movie', {
+            with_crew: String(director[0]),
+            sort_by: 'vote_average.desc',
+            'vote_count.gte': '100',
+          })
           .catch(() => null)
       : null,
     actor
       ? tmdbApi
-          .listaPeliculas('discover/movie', { with_cast: String(actor[0]), sort_by: 'popularity.desc', 'vote_count.gte': '100' })
+          .listaPeliculas('discover/movie', {
+            with_cast: String(actor[0]),
+            sort_by: 'popularity.desc',
+            'vote_count.gte': '100',
+          })
           .catch(() => null)
       : null,
   ]);
-  pelisDirector?.results.slice(0, 10).forEach((p) => sumar(p, 0.6, `Porque te gusta ${director![1].name}`));
-  pelisActor?.results.slice(0, 10).forEach((p) => sumar(p, 0.45, `Porque te gusta ${actor![1].name}`));
+  pelisDirector?.results
+    .slice(0, 10)
+    .forEach((p) => sumar(p, 0.6, `Porque te gusta ${director![1].name}`));
+  pelisActor?.results
+    .slice(0, 10)
+    .forEach((p) => sumar(p, 0.45, `Porque te gusta ${actor![1].name}`));
 
   // 3. Lo que les encanta a tus amigos
   favoritasAmigos.forEach((f) => {
@@ -156,9 +172,13 @@ export async function calcularRecomendaciones(
   });
 
   // 4. Afinidad de géneros con tus favoritas
-  const generosFavoritos = new Set(detallesSemillas.flatMap((d) => d?.genres.map((g) => g.id) ?? []));
+  const generosFavoritos = new Set(
+    detallesSemillas.flatMap((d) => d?.genres.map((g) => g.id) ?? []),
+  );
   candidatas.forEach((c) => {
-    const coincidencias = (c.pelicula.genre_ids ?? []).filter((g) => generosFavoritos.has(g)).length;
+    const coincidencias = (c.pelicula.genre_ids ?? []).filter((g) =>
+      generosFavoritos.has(g),
+    ).length;
     c.puntos += 0.1 * Math.min(coincidencias, 3);
     // Variedad: un poco de ruido estable durante el día
     c.puntos += 0.15 * ruido(c.pelicula.id, dia);

@@ -37,7 +37,10 @@ async function buildAndDeployWeb() {
   execSync('xcopy /E /I /Y dist\\_expo public\\_expo > nul', { stdio: 'inherit', shell: true });
   execSync('xcopy /E /I /Y dist\\assets public\\assets > nul', { stdio: 'inherit', shell: true });
   execSync('copy /Y dist\\index.html public\\index.html > nul', { stdio: 'inherit', shell: true });
-  execSync('copy /Y dist\\metadata.json public\\metadata.json > nul', { stdio: 'inherit', shell: true });
+  execSync('copy /Y dist\\metadata.json public\\metadata.json > nul', {
+    stdio: 'inherit',
+    shell: true,
+  });
 
   console.log('\n🚀 Paso 3 — Deploying a Vercel (producción)...');
   execSync('npx vercel --cwd public --prod', { stdio: 'inherit' });
@@ -47,12 +50,18 @@ async function buildAndDeployWeb() {
 // ── Paso 7: Actualizar min_version en Firestore ──────────────────────────────
 async function actualizarVersion() {
   console.log(`\n📦 Paso 7 — Actualizando min_version a ${version} en Firestore...`);
-  await db.collection('configuracion').doc('app').set({
-    min_version: version,
-    download_url: 'https://veoveo.dripdev.dev/descargar',
-    release_title: 'Nueva actualización disponible',
-    release_body: `VeoVeo ${version} ya está disponible con mejoras y correcciones. Actualiza para disfrutar de la mejor experiencia.`,
-  }, { merge: true });
+  await db
+    .collection('configuracion')
+    .doc('app')
+    .set(
+      {
+        min_version: version,
+        download_url: 'https://veoveo.dripdev.dev/descargar',
+        release_title: 'Nueva actualización disponible',
+        release_body: `VeoVeo ${version} ya está disponible con mejoras y correcciones. Actualiza para disfrutar de la mejor experiencia.`,
+      },
+      { merge: true },
+    );
   console.log(`✅ min_version actualizada a ${version}`);
 }
 
@@ -61,7 +70,7 @@ async function enviarNotificaciones() {
   console.log('\n📲 Paso 8 — Enviando notificación push a todos los usuarios...');
   const snap = await db.collection('usuarios').get();
   const tokens = [];
-  snap.forEach(doc => {
+  snap.forEach((doc) => {
     const token = doc.data().pushToken;
     if (token && typeof token === 'string' && token.startsWith('ExponentPushToken')) {
       tokens.push(token);
@@ -78,7 +87,7 @@ async function enviarNotificaciones() {
   const BATCH_SIZE = 100;
   for (let i = 0; i < tokens.length; i += BATCH_SIZE) {
     const batch = tokens.slice(i, i + BATCH_SIZE);
-    const messages = batch.map(token => ({
+    const messages = batch.map((token) => ({
       to: token,
       sound: 'default',
       priority: 'high',
@@ -90,15 +99,15 @@ async function enviarNotificaciones() {
 
     const res = await fetch('https://exp.host/--/api/v2/push/send', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(messages),
     });
     const json = await res.json();
     const results = json.data || [];
-    const ok = results.filter(r => r.status === 'ok').length;
-    const errors = results.filter(r => r.status !== 'ok');
+    const ok = results.filter((r) => r.status === 'ok').length;
+    const errors = results.filter((r) => r.status !== 'ok');
     console.log(`  ✅ Lote ${Math.floor(i / BATCH_SIZE) + 1}: ${ok} enviadas`);
-    if (errors.length > 0) errors.forEach(e => console.warn(`  ⚠️  ${e.message}`));
+    if (errors.length > 0) errors.forEach((e) => console.warn(`  ⚠️  ${e.message}`));
   }
 }
 
@@ -120,4 +129,7 @@ async function main() {
   process.exit(0);
 }
 
-main().catch(e => { console.error('❌', e.message); process.exit(1); });
+main().catch((e) => {
+  console.error('❌', e.message);
+  process.exit(1);
+});

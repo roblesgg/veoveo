@@ -28,6 +28,10 @@ import { IOSInstallPrompt } from './components/IOSInstallPrompt';
 import { InAppNotificationBanner } from './components/InAppNotificationBanner';
 import { NotificationPermissionPrompt } from './components/NotificationPermissionPrompt';
 
+import * as Notifications from 'expo-notifications';
+import { useFonts } from 'expo-font';
+import { Ionicons } from '@expo/vector-icons';
+
 // 🛑 CONFIGURACIÓN DE ACCESIBILIDAD: Cap global de escalado de fuentes
 // Evita que configuraciones externas del sistema rompan los layouts de la app.
 if ((Text as any).defaultProps) {
@@ -41,17 +45,16 @@ if ((TextInput as any).defaultProps) {
   (TextInput as any).defaultProps = { maxFontSizeMultiplier: 1.3 };
 }
 
-import * as Notifications from 'expo-notifications';
-import { useFonts } from 'expo-font';
-import { Ionicons } from '@expo/vector-icons';
-
 // Cliente para React Query. Lo que se marca con `meta: { persistir: true }` (datos de TMDB)
 // se guarda en el móvil durante un día, para que un arranque en frío pinte al momento.
 const UN_DIA = 1000 * 60 * 60 * 24;
 const queryClient = new QueryClient({
   defaultOptions: { queries: { gcTime: UN_DIA } },
 });
-const persister = createAsyncStoragePersister({ storage: AsyncStorage, key: 'veoveo-cache-consultas' });
+const persister = createAsyncStoragePersister({
+  storage: AsyncStorage,
+  key: 'veoveo-cache-consultas',
+});
 const persistOptions = {
   persister,
   maxAge: UN_DIA,
@@ -86,9 +89,11 @@ function VersionShield() {
   const [needsUpdate, setNeedsUpdate] = React.useState(false);
   const [downloadUrl, setDownloadUrl] = React.useState('https://veoveo.dripdev.dev/descargar');
   const [releaseTitle, setReleaseTitle] = React.useState('Nueva versión disponible');
-  const [releaseBody, setReleaseBody] = React.useState('Hemos lanzado mejoras críticas. Actualiza ahora para seguir disfrutando de VeoVeo en la versión más reciente.');
+  const [releaseBody, setReleaseBody] = React.useState(
+    'Hemos lanzado mejoras críticas. Actualiza ahora para seguir disfrutando de VeoVeo en la versión más reciente.',
+  );
   const lastNotifiedVersion = React.useRef<string | null>(null);
-  
+
   const currentVersion = Constants.expoConfig?.version || '1.0.0';
   const isTest = Constants.expoConfig?.name?.includes('Test') ?? false;
 
@@ -159,7 +164,11 @@ function VersionShield() {
  */
 export default function App() {
   const [fontsLoaded] = useFonts({ ...Ionicons.font });
-  const [inAppNotif, setInAppNotif] = React.useState<{ title: string; body: string; url?: string } | null>(null);
+  const [inAppNotif, setInAppNotif] = React.useState<{
+    title: string;
+    body: string;
+    url?: string;
+  } | null>(null);
 
   const handleTokenRegistered = React.useCallback((token: string) => {
     void guardarPushToken(token).catch(() => {});
@@ -168,17 +177,18 @@ export default function App() {
   // EFECTO: Configuración Visual específica para WEB
   React.useEffect(() => {
     if (Platform.OS === 'web') {
-       const head = document.head;
-       
-       // Inyección de Google Fonts (Montserrat) para una estética Premium
-       const fontLink = document.createElement('link');
-       fontLink.rel = 'stylesheet';
-       fontLink.href = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap';
-       head.appendChild(fontLink);
+      const head = document.head;
 
-       // Polofill de fuentes de iconos para que se vean correctamente en el navegador
-       const iconStyle = document.createElement('style');
-       iconStyle.innerHTML = `
+      // Inyección de Google Fonts (Montserrat) para una estética Premium
+      const fontLink = document.createElement('link');
+      fontLink.rel = 'stylesheet';
+      fontLink.href =
+        'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap';
+      head.appendChild(fontLink);
+
+      // Polofill de fuentes de iconos para que se vean correctamente en el navegador
+      const iconStyle = document.createElement('style');
+      iconStyle.innerHTML = `
          @font-face {
            font-family: 'Ionicons';
            src: url('https://cdn.jsdelivr.net/npm/@expo/vector-icons@15.0.3/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf') format('truetype');
@@ -204,11 +214,11 @@ export default function App() {
            font-family: 'MaterialCommunityIcons' !important;
          }
        `;
-       head.appendChild(iconStyle);
+      head.appendChild(iconStyle);
 
-       // Estilos globales de CSS para limpiar la UI web (scrollbars, backgrounds radiales)
-       const style = document.createElement('style');
-       style.innerHTML = `
+      // Estilos globales de CSS para limpiar la UI web (scrollbars, backgrounds radiales)
+      const style = document.createElement('style');
+      style.innerHTML = `
          * {
            outline: none;
            -webkit-tap-highlight-color: transparent;
@@ -232,7 +242,7 @@ export default function App() {
            overflow-y: auto;
          }
        `;
-       head.appendChild(style);
+      head.appendChild(style);
     }
   }, []);
 
@@ -242,7 +252,7 @@ export default function App() {
     void ensureNotificationChannelConfigured();
 
     // Notificación recibida con la app ABIERTA → muestra banner in-app
-    const receivedSub = Notifications.addNotificationReceivedListener(notification => {
+    const receivedSub = Notifications.addNotificationReceivedListener((notification) => {
       const { title, body, data } = notification.request.content;
       setInAppNotif({
         title: title ?? 'VeoVeo',
@@ -252,13 +262,13 @@ export default function App() {
     });
 
     // Usuario toca la notificación desde bandeja (app en fondo o cerrada)
-    const responseSub = Notifications.addNotificationResponseReceivedListener(response => {
+    const responseSub = Notifications.addNotificationResponseReceivedListener((response) => {
       const url = response.notification.request.content.data?.url;
       if (typeof url === 'string' && url.length > 0) void Linking.openURL(url);
     });
 
     // App abierta pulsando una notificación desde estado completamente cerrado
-    void Notifications.getLastNotificationResponseAsync().then(response => {
+    void Notifications.getLastNotificationResponseAsync().then((response) => {
       const url = response?.notification.request.content.data?.url;
       if (typeof url === 'string' && url.length > 0) void Linking.openURL(url);
     });
@@ -276,8 +286,8 @@ export default function App() {
         <LanguageProvider>
           <AuthProvider>
             <BibliotecaProvider>
-            <View style={styles.appWrapper}>
-               <View style={styles.mainContainer}>
+              <View style={styles.appWrapper}>
+                <View style={styles.mainContainer}>
                   <RootNavigator />
                   <VersionShield />
                   <IOSInstallPrompt />
@@ -290,8 +300,8 @@ export default function App() {
                       onDismiss={() => setInAppNotif(null)}
                     />
                   )}
-               </View>
-            </View>
+                </View>
+              </View>
             </BibliotecaProvider>
           </AuthProvider>
         </LanguageProvider>
@@ -305,16 +315,38 @@ const styles = StyleSheet.create({
   // Estilos visuales del escudo de actualización
   updateContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
   updateEmoji: { fontSize: 60, marginBottom: 20 },
-  updateTitle: { color: '#fff', fontSize: 26, fontWeight: '900', textAlign: 'center', marginBottom: 16 },
-  updateText: { color: 'rgba(255,255,255,0.6)', fontSize: 16, textAlign: 'center', lineHeight: 24, marginBottom: 40 },
+  updateTitle: {
+    color: '#fff',
+    fontSize: 26,
+    fontWeight: '900',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  updateText: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 40,
+  },
   updateBtnContainer: { width: '100%', borderRadius: 20, overflow: 'hidden' },
-  updateBtn: { backgroundColor: COLORS.primary, color: '#fff', paddingVertical: 18, textAlign: 'center', fontSize: 18, fontWeight: '800', borderRadius: 20 },
+  updateBtn: {
+    backgroundColor: COLORS.primary,
+    color: '#fff',
+    paddingVertical: 18,
+    textAlign: 'center',
+    fontSize: 18,
+    fontWeight: '800',
+    borderRadius: 20,
+  },
   appWrapper: {
     flex: 1,
     backgroundColor: '#020617',
-    ...(Platform.OS === 'web' ? {
-      backgroundImage: 'radial-gradient(circle at center, #1e1b4b 0%, #020617 100%)',
-    } : {}),
+    ...(Platform.OS === 'web'
+      ? {
+          backgroundImage: 'radial-gradient(circle at center, #1e1b4b 0%, #020617 100%)',
+        }
+      : {}),
   },
   mainContainer: {
     flex: 1,

@@ -1,6 +1,6 @@
 /**
  * ARCHIVO: services/userPreferences.ts
- * DESCRIPCIÓN: Gestiona la sincronización de ajustes de usuario (plataformas, filtros) 
+ * DESCRIPCIÓN: Gestiona la sincronización de ajustes de usuario (plataformas, filtros)
  * entre el almacenamiento local (AsyncStorage) y la nube (Firestore).
  */
 

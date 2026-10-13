@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Modal, 
-  View, 
-  Text, 
-  StyleSheet, 
-  Pressable, 
-  TextInput, 
-  FlatList, 
-  ActivityIndicator 
+import {
+  Modal,
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  TextInput,
+  FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Image as ExpoImage } from 'expo-image';
@@ -44,11 +44,13 @@ export const ChatMoviePicker = ({ visible, mode, onClose, onSelect, fontFamily }
     setLoading(true);
     try {
       const res = await listarPeliculasPorEstado(estado);
-      setMovies(res.map(m => ({
-        id: m.idPelicula,
-        title: m.titulo,
-        posterPath: m.rutaPoster
-      })));
+      setMovies(
+        res.map((m) => ({
+          id: m.idPelicula,
+          title: m.titulo,
+          posterPath: m.rutaPoster,
+        })),
+      );
     } catch (e) {
       console.error(e);
     } finally {
@@ -61,11 +63,13 @@ export const ChatMoviePicker = ({ visible, mode, onClose, onSelect, fontFamily }
     setLoading(true);
     try {
       const res = await tmdbApi.buscarPeliculas(search);
-      setMovies(res.results.map((m: Movie) => ({
-        id: m.id,
-        title: m.title,
-        posterPath: m.poster_path
-      })));
+      setMovies(
+        res.results.map((m: Movie) => ({
+          id: m.id,
+          title: m.title,
+          posterPath: m.poster_path,
+        })),
+      );
     } catch (e) {
       console.error(e);
     } finally {
@@ -75,22 +79,34 @@ export const ChatMoviePicker = ({ visible, mode, onClose, onSelect, fontFamily }
 
   const renderItem = ({ item }: { item: any }) => (
     <Pressable style={styles.movieItem} onPress={() => onSelect(item)}>
-      <ExpoImage 
+      <ExpoImage
         source={{ uri: posterUrl(item.posterPath, 'w185') ?? undefined }}
-        style={styles.poster} 
+        style={styles.poster}
         contentFit="cover"
         transition={200}
       />
-      <Text style={[styles.movieTitle, { fontFamily }]} numberOfLines={2}>{item.title}</Text>
+      <Text style={[styles.movieTitle, { fontFamily }]} numberOfLines={2}>
+        {item.title}
+      </Text>
     </Pressable>
   );
 
-  const title = mode === 'vista' ? 'Mis Vistas' : mode === 'por_ver' ? 'Mi Lista por Ver' : 'Explorar Películas';
+  const title =
+    mode === 'vista'
+      ? 'Mis Vistas'
+      : mode === 'por_ver'
+        ? 'Mi Lista por Ver'
+        : 'Explorar Películas';
 
   return (
     <Modal visible={visible} transparent animationType="slide">
       <View style={styles.backdrop}>
-        <BlurView intensity={90} tint="dark" experimentalBlurMethod="dimezisBlurView" style={styles.modal}>
+        <BlurView
+          intensity={90}
+          tint="dark"
+          experimentalBlurMethod="dimezisBlurView"
+          style={styles.modal}
+        >
           <View style={styles.header}>
             <Text style={[styles.title, { fontFamily }]}>{title}</Text>
             <Pressable onPress={onClose} style={styles.closeBtn}>
@@ -120,13 +136,15 @@ export const ChatMoviePicker = ({ visible, mode, onClose, onSelect, fontFamily }
             <FlatList
               data={movies}
               renderItem={renderItem}
-              keyExtractor={item => String(item.id)}
+              keyExtractor={(item) => String(item.id)}
               numColumns={3}
               contentContainerStyle={styles.list}
               columnWrapperStyle={styles.columnWrapper}
               ListEmptyComponent={
                 <Text style={[styles.empty, { fontFamily }]}>
-                  {mode === 'explorar' ? 'Busca algo para compartir' : 'No hay películas en esta lista'}
+                  {mode === 'explorar'
+                    ? 'Busca algo para compartir'
+                    : 'No hay películas en esta lista'}
                 </Text>
               }
             />
@@ -139,24 +157,55 @@ export const ChatMoviePicker = ({ visible, mode, onClose, onSelect, fontFamily }
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modal: { 
-    height: '80%', 
-    borderTopLeftRadius: 32, 
-    borderTopRightRadius: 32, 
+  modal: {
+    height: '80%',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
     padding: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)'
+    borderColor: 'rgba(255,255,255,0.1)',
   },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
   title: { color: '#fff', fontSize: 20, fontWeight: '900' },
-  closeBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center' },
+  closeBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   searchBox: { flexDirection: 'row', gap: 10, marginBottom: 20 },
-  input: { flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 14, color: '#fff' },
-  searchBtn: { width: 52, height: 52, borderRadius: 16, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center' },
+  input: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 16,
+    padding: 14,
+    color: '#fff',
+  },
+  searchBtn: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   list: { paddingBottom: 40 },
   columnWrapper: { justifyContent: 'space-between', marginBottom: 16 },
   movieItem: { width: '31%', alignItems: 'center' },
-  poster: { width: '100%', aspectRatio: 2/3, borderRadius: 12, marginBottom: 8, backgroundColor: 'rgba(255,255,255,0.05)' },
+  poster: {
+    width: '100%',
+    aspectRatio: 2 / 3,
+    borderRadius: 12,
+    marginBottom: 8,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
   movieTitle: { color: '#fff', fontSize: 11, fontWeight: '600', textAlign: 'center' },
-  empty: { color: 'rgba(255,255,255,0.3)', textAlign: 'center', marginTop: 40, fontSize: 16 }
+  empty: { color: 'rgba(255,255,255,0.3)', textAlign: 'center', marginTop: 40, fontSize: 16 },
 });

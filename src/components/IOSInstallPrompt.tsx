@@ -31,7 +31,9 @@ export function IOSInstallPrompt() {
 
   const dismiss = () => {
     setVisible(false);
-    try { localStorage.setItem(STORAGE_KEY, '1'); } catch {}
+    try {
+      localStorage.setItem(STORAGE_KEY, '1');
+    } catch {}
   };
 
   return (
@@ -45,8 +47,7 @@ export function IOSInstallPrompt() {
               <Text style={styles.title}>Añadir a inicio</Text>
               <Text style={styles.body}>
                 Instala VeoVeo como app: pulsa{' '}
-                <Ionicons name="share-outline" size={14} color="#38bdf8" />{' '}
-                y luego{' '}
+                <Ionicons name="share-outline" size={14} color="#38bdf8" /> y luego{' '}
                 <Text style={styles.bold}>«Añadir a pantalla de inicio»</Text>
               </Text>
             </View>

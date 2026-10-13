@@ -3,11 +3,7 @@ import { StyleSheet, View, Pressable, Platform, useWindowDimensions } from 'reac
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
-import Animated, { 
-  useSharedValue, 
-  withSpring, 
-  useAnimatedStyle 
-} from 'react-native-reanimated';
+import Animated, { useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated';
 
 const BAR_HEIGHT = 64;
 
@@ -45,18 +41,20 @@ export function LiquidBottomBar({ onTabChange, paginaActual }: Props) {
   }));
 
   return (
-    <View style={[
-      styles.container, 
-      { 
-        bottom: Platform.OS === 'web' ? Math.max(insets.bottom, 40) : Math.max(insets.bottom, 20),
-        width: BAR_WIDTH,
-        left: (windowWidth - BAR_WIDTH) / 2, // Centrado perfecto
-      }
-    ]}>
+    <View
+      style={[
+        styles.container,
+        {
+          bottom: Platform.OS === 'web' ? Math.max(insets.bottom, 40) : Math.max(insets.bottom, 20),
+          width: BAR_WIDTH,
+          left: (windowWidth - BAR_WIDTH) / 2, // Centrado perfecto
+        },
+      ]}
+    >
       {/* 🔮 Real Android Blur Strategy: experimentalBlurMethod="dimezisBlurView" */}
-      <BlurView 
-        intensity={80} 
-        tint="dark" 
+      <BlurView
+        intensity={80}
+        tint="dark"
         style={StyleSheet.absoluteFill}
         experimentalBlurMethod={Platform.OS === 'android' ? 'dimezisBlurView' : undefined}
       >
@@ -65,11 +63,13 @@ export function LiquidBottomBar({ onTabChange, paginaActual }: Props) {
 
       <View style={styles.content}>
         {/* 💊 Premium Pill Indicator */}
-        <Animated.View style={[
-          styles.indicator, 
-          { width: TAB_WIDTH * 0.8, left: (TAB_WIDTH - TAB_WIDTH * 0.8) / 2 },
-          indicatorStyle
-        ]} />
+        <Animated.View
+          style={[
+            styles.indicator,
+            { width: TAB_WIDTH * 0.8, left: (TAB_WIDTH - TAB_WIDTH * 0.8) / 2 },
+            indicatorStyle,
+          ]}
+        />
 
         {items.map((item) => {
           const isActive = paginaActual === item.index;

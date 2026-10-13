@@ -1,12 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import {
-  Animated,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-  Linking,
-} from 'react-native';
+import { Animated, Pressable, StyleSheet, Text, View, Linking } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -32,7 +25,9 @@ export function InAppNotificationBanner({ title, body, url, onDismiss }: Props) 
     }).start();
 
     timer.current = setTimeout(dismiss, 6000);
-    return () => { if (timer.current) clearTimeout(timer.current); };
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+    };
   }, []);
 
   const dismiss = () => {
@@ -61,8 +56,12 @@ export function InAppNotificationBanner({ title, body, url, onDismiss }: Props) 
               <Ionicons name="notifications" size={20} color="#38bdf8" />
             </View>
             <View style={styles.textWrap}>
-              <Text style={styles.title} numberOfLines={1}>{title}</Text>
-              <Text style={styles.body} numberOfLines={2}>{body}</Text>
+              <Text style={styles.title} numberOfLines={1}>
+                {title}
+              </Text>
+              <Text style={styles.body} numberOfLines={2}>
+                {body}
+              </Text>
             </View>
             <Pressable onPress={dismiss} hitSlop={10} style={styles.closeBtn}>
               <Ionicons name="close" size={16} color="rgba(255,255,255,0.4)" />

@@ -14,9 +14,9 @@ type Language = 'es' | 'en';
  * Estructura de los datos expuestos por el contexto de idioma.
  */
 type LanguageContextValue = {
-  language: Language;                       // Idioma actual
+  language: Language; // Idioma actual
   setLanguage: (lang: Language) => Promise<void>; // Función para cambiar idioma
-  t: (key: string) => string;              // Función de traducción
+  t: (key: string) => string; // Función de traducción
 };
 
 /**

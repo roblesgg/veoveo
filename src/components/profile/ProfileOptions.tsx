@@ -11,15 +11,15 @@ type OptionProps = {
 };
 
 const OpcionRow = ({ texto, icon, onPress, destructive, fontFamily }: OptionProps) => (
-  <Pressable 
+  <Pressable
     style={({ pressed }) => [
-      styles.opcionRow, 
-      pressed && { backgroundColor: 'rgba(255,255,255,0.05)' }
-    ]} 
+      styles.opcionRow,
+      pressed && { backgroundColor: 'rgba(255,255,255,0.05)' },
+    ]}
     onPress={onPress}
   >
     <View style={styles.iconContainer}>
-       <Ionicons name={icon} size={20} color={destructive ? '#ff4444' : 'rgba(255,255,255,0.7)'} />
+      <Ionicons name={icon} size={20} color={destructive ? '#ff4444' : 'rgba(255,255,255,0.7)'} />
     </View>
     <Text style={[styles.opcionText, destructive && { color: '#ff4444' }, { fontFamily }]}>
       {texto}

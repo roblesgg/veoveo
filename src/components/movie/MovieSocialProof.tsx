@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Image, ScrollView, ActivityIndicator, Pressable } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  ScrollView,
+  ActivityIndicator,
+  Pressable,
+} from 'react-native';
 import { obtenerActividadAmigosPelicula } from '../../services/repositorioSocial';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
@@ -52,7 +60,11 @@ export function MovieSocialProof({ movieId, fontFamily }: Props) {
             contentContainerStyle={styles.scroll}
           >
             {vistas.map((a) => (
-              <Pressable key={a.uid} style={styles.chip} onPress={() => navigation.navigate('BibliotecaAmigo', { amigoUid: a.uid })}>
+              <Pressable
+                key={a.uid}
+                style={styles.chip}
+                onPress={() => navigation.navigate('BibliotecaAmigo', { amigoUid: a.uid })}
+              >
                 <BlurView intensity={30} tint="dark" style={styles.chipInner}>
                   {a.foto ? (
                     <Image source={{ uri: a.foto }} style={styles.foto} />
@@ -84,7 +96,11 @@ export function MovieSocialProof({ movieId, fontFamily }: Props) {
             contentContainerStyle={styles.scroll}
           >
             {porVer.map((a) => (
-              <Pressable key={a.uid} style={styles.chip} onPress={() => navigation.navigate('BibliotecaAmigo', { amigoUid: a.uid })}>
+              <Pressable
+                key={a.uid}
+                style={styles.chip}
+                onPress={() => navigation.navigate('BibliotecaAmigo', { amigoUid: a.uid })}
+              >
                 <BlurView intensity={20} tint="dark" style={styles.chipInner}>
                   {a.foto ? (
                     <Image source={{ uri: a.foto }} style={styles.foto} />

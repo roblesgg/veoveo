@@ -18,7 +18,6 @@ type Props = {
 };
 
 export const FriendRow = React.memo(({ amigo, onPress, fontFamily }: Props) => {
-  
   /** Lógica cromática del estado de presencia */
   const statusColor =
     amigo.estado === 'online' ? '#7CFC9A' : amigo.estado === 'ausente' ? '#FFB74D' : '#9E9E9E';
@@ -29,16 +28,14 @@ export const FriendRow = React.memo(({ amigo, onPress, fontFamily }: Props) => {
         {/* AVATAR: Con caché de ExpoImage o inicial de respaldo */}
         <View style={styles.avatar}>
           {amigo.fotoPerfil && amigo.fotoPerfil.trim() !== '' ? (
-            <ExpoImage 
-              source={{ uri: amigo.fotoPerfil }} 
-              style={styles.avatarImg} 
+            <ExpoImage
+              source={{ uri: amigo.fotoPerfil }}
+              style={styles.avatarImg}
               contentFit="cover"
               transition={200}
             />
           ) : (
-            <Text style={styles.avatarText}>
-              {(amigo.username || 'U').charAt(0).toUpperCase()}
-            </Text>
+            <Text style={styles.avatarText}>{(amigo.username || 'U').charAt(0).toUpperCase()}</Text>
           )}
         </View>
 
@@ -48,14 +45,14 @@ export const FriendRow = React.memo(({ amigo, onPress, fontFamily }: Props) => {
             {amigo.username || amigo.email}
           </Text>
           <View style={styles.statusRow}>
-             <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
-             <Text style={[styles.status, { fontFamily, color: 'rgba(255,255,255,0.4)' }]}>
-               {amigo.estado === 'online'
-                 ? 'En línea'
-                 : amigo.estado === 'ausente'
-                    ? 'Ausente'
-                    : 'Desconectado'}
-             </Text>
+            <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+            <Text style={[styles.status, { fontFamily, color: 'rgba(255,255,255,0.4)' }]}>
+              {amigo.estado === 'online'
+                ? 'En línea'
+                : amigo.estado === 'ausente'
+                  ? 'Ausente'
+                  : 'Desconectado'}
+            </Text>
           </View>
         </View>
 

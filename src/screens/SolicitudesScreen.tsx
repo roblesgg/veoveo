@@ -75,9 +75,9 @@ export function SolicitudesScreen() {
     <GradientBackground style={styles.flex}>
       <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <Pressable onPress={() => navigation.goBack()} style={styles.backBtn} hitSlop={12}>
-           <BlurView intensity={80} tint="dark" style={styles.backInner}>
-              <Ionicons name="chevron-back" size={26} color="#fff" />
-           </BlurView>
+          <BlurView intensity={80} tint="dark" style={styles.backInner}>
+            <Ionicons name="chevron-back" size={26} color="#fff" />
+          </BlurView>
         </Pressable>
         <Text style={styles.titulo}>Solicitudes</Text>
       </View>
@@ -115,7 +115,9 @@ export function SolicitudesScreen() {
                     <Text style={styles.avatarText}>{s.deUsername.charAt(0).toUpperCase()}</Text>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.name} numberOfLines={1}>{s.deUsername}</Text>
+                    <Text style={styles.name} numberOfLines={1}>
+                      {s.deUsername}
+                    </Text>
                     <Text style={styles.uid}>ID: {s.deUid.substring(0, 12)}</Text>
                   </View>
                 </View>
@@ -156,7 +158,14 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   backBtn: { width: 44, height: 44 },
-  backInner: { flex: 1, borderRadius: 22, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.05)' },
+  backInner: {
+    flex: 1,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
   titulo: {
     fontSize: 28,
     color: '#fff',
@@ -173,7 +182,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.4)',
     fontSize: 16,
     textAlign: 'center',
-    fontWeight: '600'
+    fontWeight: '600',
   },
   errorContainer: {
     flexDirection: 'row',
@@ -201,7 +210,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12
+    gap: 12,
   },
   userInfo: {
     flexDirection: 'row',

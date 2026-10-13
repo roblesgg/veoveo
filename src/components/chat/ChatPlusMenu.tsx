@@ -16,7 +16,12 @@ export const ChatPlusMenu = ({ visible, onSelect, fontFamily }: Props) => {
 
   return (
     <View style={styles.container}>
-      <BlurView intensity={90} tint="dark" experimentalBlurMethod="dimezisBlurView" style={[styles.menu, SHADOWS.mac]}>
+      <BlurView
+        intensity={90}
+        tint="dark"
+        experimentalBlurMethod="dimezisBlurView"
+        style={[styles.menu, SHADOWS.mac]}
+      >
         <Pressable style={styles.item} onPress={() => onSelect('vista')}>
           <View style={[styles.iconCircle, { backgroundColor: '#2ecc7120' }]}>
             <Ionicons name="eye" size={20} color="#2ecc71" />

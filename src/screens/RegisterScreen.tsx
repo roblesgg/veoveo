@@ -20,7 +20,7 @@ import { useMontserrat } from '../theme/useMontserrat';
 export function RegisterScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
-  
+
   // HOOK DE AUTENTICACIÓN: Acceso al método 'register' de Firebase
   const { register, firebaseReady } = useAuth();
   const { fontFamily: ff_base, loaded } = useMontserrat();
@@ -82,7 +82,7 @@ export function RegisterScreen() {
           disabled={loading || !firebaseReady}
           onPress={async () => {
             setErrorMessage('');
-            
+
             // Validaciones previas al envío
             if (password.length < 6) {
               setErrorMessage('La contraseña debe tener al menos 6 caracteres');
@@ -118,7 +118,7 @@ export function RegisterScreen() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  pad: { 
+  pad: {
     paddingHorizontal: 32,
     width: '100%',
     maxWidth: 420,

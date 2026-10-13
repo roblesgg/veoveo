@@ -12,9 +12,9 @@ export const ProfileStats = React.memo(({ vistas, porVer, resenas, fontFamily }:
   return (
     <View style={styles.statsCardContainer}>
       <View style={styles.statsRow}>
-        <StatItem num={String(vistas)} label={'Vistas'} ff={fontFamily} />
+        <StatItem num={String(vistas)} label="Vistas" ff={fontFamily} />
         <View style={styles.divider} />
-        <StatItem num={String(porVer)} label={'Por Ver'} ff={fontFamily} />
+        <StatItem num={String(porVer)} label="Por Ver" ff={fontFamily} />
         <View style={styles.divider} />
         <StatItem num={String(resenas)} label="Reseñas" ff={fontFamily} />
       </View>
@@ -46,6 +46,18 @@ const styles = StyleSheet.create({
   },
   statItem: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   statNum: { color: '#ffffff', fontSize: 24, fontWeight: '900' },
-  statLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '700', marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
-  divider: { width: 1, height: '50%', backgroundColor: 'rgba(255,255,255,0.08)', alignSelf: 'center' },
+  statLabel: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  divider: {
+    width: 1,
+    height: '50%',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    alignSelf: 'center',
+  },
 });

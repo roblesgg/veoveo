@@ -8,7 +8,6 @@ const KEY_ORDEN_POR_VER = 'orden_por_ver';
 const KEY_ORDEN_VISTAS = 'orden_vistas';
 const KEY_PLATAFORMAS = 'mis_plataformas';
 
-
 let cachedAdultPreference: boolean | null = null;
 let cachedAdultPreferencePromise: Promise<boolean> | null = null;
 let cachedPlatforms: string[] | null = null;

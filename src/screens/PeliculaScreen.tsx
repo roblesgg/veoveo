@@ -66,15 +66,8 @@ export function PeliculaScreen() {
   } = useMovieData(movieId);
 
   // HOOK: Verifica si el usuario ya tiene esta peli en su biblioteca y gestiona acciones
-  const {
-    peliculaBib,
-    bibCargando,
-    accionBib,
-    userError,
-    onPorVer,
-    onMarcarVista,
-    onQuitar,
-  } = useUserMovieStatus(movieId, detalles, providers?.results?.ES);
+  const { peliculaBib, bibCargando, accionBib, userError, onPorVer, onMarcarVista, onQuitar } =
+    useUserMovieStatus(movieId, detalles, providers?.results?.ES);
 
   const [descExp, setDescExp] = useState(false); // Control de expansión de sinopsis
   const [showRatingModal, setShowRatingModal] = useState(false);
@@ -135,7 +128,6 @@ export function PeliculaScreen() {
 
   return (
     <View style={[styles.flex, { backgroundColor: GradientBottom }]}>
-      
       {/* 🖼️ FONDO: Poster desenfocado con gradiente envolvente */}
       {(detalles.backdrop_path || detalles.poster_path) && (
         <View style={styles.fixedBackdrop}>

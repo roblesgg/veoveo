@@ -124,7 +124,12 @@ export function PerfilScreen() {
             onPress={() => setShowAvatarModal(true)}
           >
             {fotoUri ? (
-              <ExpoImage source={{ uri: fotoUri }} style={styles.avatarImg} contentFit="cover" transition={200} />
+              <ExpoImage
+                source={{ uri: fotoUri }}
+                style={styles.avatarImg}
+                contentFit="cover"
+                transition={200}
+              />
             ) : (
               <View style={[styles.avatarImg, styles.avatarPlaceholder]}>
                 <Ionicons name="person" size={48} color="rgba(255,255,255,0.85)" />
@@ -138,7 +143,7 @@ export function PerfilScreen() {
           <Pressable style={styles.nameRow} onPress={() => setShowUserModal(true)}>
             <Text style={[styles.nameText, { fontFamily }]}>{usuario.username}</Text>
             <View style={styles.editIconCircle}>
-               <Ionicons name="pencil" size={12} color="#fff" />
+              <Ionicons name="pencil" size={12} color="#fff" />
             </View>
           </Pressable>
         </View>
@@ -186,7 +191,7 @@ export function PerfilScreen() {
       </ScrollView>
 
       {/* --- MODALES DE EDICIÓN --- */}
-      
+
       {/* Editar Nombre de Usuario */}
       <UsernameModal
         visible={showUserModal}
@@ -219,7 +224,6 @@ export function PerfilScreen() {
         fontFamily={fontFamily}
       />
     </GradientBackground>
-
   );
 }
 
@@ -238,14 +242,20 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   avatarSection: { alignItems: 'center', marginBottom: 32 },
-  avatarWrap: { 
+  avatarWrap: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.4,
     shadowRadius: 16,
-    elevation: 20
+    elevation: 20,
   },
-  avatarImg: { width: 120, height: 120, borderRadius: 60, borderWidth: 4, borderColor: 'rgba(255,255,255,0.15)' },
+  avatarImg: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 4,
+    borderColor: 'rgba(255,255,255,0.15)',
+  },
   avatarPlaceholder: {
     backgroundColor: 'rgba(255,255,255,0.05)',
     alignItems: 'center',
@@ -263,11 +273,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 3,
     borderColor: '#0f172a',
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 20 },
   nameText: { color: '#fff', fontSize: 26, fontWeight: '900', letterSpacing: -0.5 },
-  editIconCircle: { width: 24, height: 24, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center' },
+  editIconCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   feedbackErr: { color: '#ff8a80', marginTop: 16 },
   feedbackOk: { color: '#4CAF50', marginTop: 16 },
   errText: { color: '#ff8a80', textAlign: 'center', fontSize: 16 },

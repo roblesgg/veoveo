@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Animated,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BlurView } from 'expo-blur';
@@ -74,7 +67,8 @@ export function NotificationPermissionPrompt({ onTokenRegistered }: Props) {
           </View>
           <Text style={styles.title}>Activa las notificaciones</Text>
           <Text style={styles.body}>
-            Entérate cuando un amigo quiere hacer match contigo, te manda un mensaje o hay una nueva versión disponible.
+            Entérate cuando un amigo quiere hacer match contigo, te manda un mensaje o hay una nueva
+            versión disponible.
           </Text>
           <Pressable style={styles.btnAllow} onPress={handleAllow}>
             <Text style={styles.btnAllowText}>Permitir notificaciones</Text>

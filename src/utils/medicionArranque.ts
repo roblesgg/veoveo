@@ -19,5 +19,7 @@ export function contarPeticionTmdb() {
 export function marcarHito(hito: string) {
   if (!activa || hitosMarcados.has(hito)) return;
   hitosMarcados.add(hito);
-  console.info(`[VeoVeo:arranque] ${hito}: ${Date.now() - inicio} ms · TMDB: ${peticionesTmdb} peticiones`);
+  console.info(
+    `[VeoVeo:arranque] ${hito}: ${Date.now() - inicio} ms · TMDB: ${peticionesTmdb} peticiones`,
+  );
 }

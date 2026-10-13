@@ -15,7 +15,7 @@ import {
   updateDoc,
   getDoc,
   getDocs,
-  deleteDoc
+  deleteDoc,
 } from 'firebase/firestore';
 import { Chat, Message, ChatType } from '../types';
 import { dbOrThrow } from './firebase';
@@ -27,16 +27,16 @@ import { notificarAUsuario } from './notificationService';
 export function observarMisChats(uid: string, callback: (chats: Chat[]) => void) {
   const db = dbOrThrow();
   const chatsRef = collection(db, 'chats');
-  
+
   // Buscamos chats donde el UID del usuario esté contenido en el array 'participants'
   const q = query(
-    chatsRef, 
-    where('participants', 'array-contains', uid), 
-    orderBy('createdAt', 'desc')
+    chatsRef,
+    where('participants', 'array-contains', uid),
+    orderBy('createdAt', 'desc'),
   );
-  
+
   return onSnapshot(q, (snap) => {
-    callback(snap.docs.map(d => ({ id: d.id, ...d.data() } as Chat)));
+    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Chat));
   });
 }
 
@@ -44,15 +44,23 @@ export function observarMisChats(uid: string, callback: (chats: Chat[]) => void)
  * Crea una nueva sala de chat (individual o grupal).
  * Para chats individuales, reutiliza el existente si ya hay uno entre los mismos dos usuarios.
  */
-export async function crearChat(uids: string[], type: ChatType = 'individual', name?: string): Promise<string> {
+export async function crearChat(
+  uids: string[],
+  type: ChatType = 'individual',
+  name?: string,
+): Promise<string> {
   const db = dbOrThrow();
   const chatsRef = collection(db, 'chats');
 
   if (type === 'individual' && uids.length === 2) {
     const snap = await getDocs(
-      query(chatsRef, where('type', '==', 'individual'), where('participants', 'array-contains', uids[0]))
+      query(
+        chatsRef,
+        where('type', '==', 'individual'),
+        where('participants', 'array-contains', uids[0]),
+      ),
     );
-    const existing = snap.docs.find(d => {
+    const existing = snap.docs.find((d) => {
       const parts = d.data().participants as string[];
       return parts.length === 2 && parts.includes(uids[1]);
     });
@@ -78,9 +86,9 @@ export function obtenerMensajesChat(chatId: string, callback: (msgs: Message[]) 
   const db = dbOrThrow();
   const msgsRef = collection(db, 'chats', chatId, 'msj');
   const q = query(msgsRef, orderBy('timestamp', 'asc'));
-  
+
   return onSnapshot(q, (snap) => {
-    callback(snap.docs.map(d => ({ id: d.id, ...d.data() } as Message)));
+    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Message));
   });
 }
 
@@ -92,18 +100,18 @@ export async function enviarMensaje(chatId: string, msg: Partial<Message>) {
   const db = dbOrThrow();
   const msgsRef = collection(db, 'chats', chatId, 'msj');
   const now = Date.now();
-  
+
   // 1. Guardar el mensaje en la subcolección
   await addDoc(msgsRef, {
     ...msg,
-    timestamp: now
+    timestamp: now,
   });
-  
+
   // 2. Actualizar el 'metadata' del chat para la lista de conversaciones
   await updateDoc(doc(db, 'chats', chatId), {
     'lastMessage.text': msg.text,
     'lastMessage.senderId': msg.senderId,
-    'lastMessage.timestamp': now
+    'lastMessage.timestamp': now,
   });
 
   // 3. Sistema de Notificaciones Push
@@ -112,14 +120,14 @@ export async function enviarMensaje(chatId: string, msg: Partial<Message>) {
     if (chatSnap.exists()) {
       const chatData = chatSnap.data() as Chat;
       // Notificamos a todos excepto al que envía
-      const otherParticipants = chatData.participants.filter(pid => pid !== msg.senderId);
-      
+      const otherParticipants = chatData.participants.filter((pid) => pid !== msg.senderId);
+
       for (const pid of otherParticipants) {
         await notificarAUsuario(
-          pid, 
-          `Nuevo mensaje de ${msg.senderName || 'alguien'}`, 
+          pid,
+          `Nuevo mensaje de ${msg.senderName || 'alguien'}`,
           msg.text || '',
-          { chatId, type: 'message' }
+          { chatId, type: 'message' },
         );
       }
     }

@@ -126,7 +126,9 @@ export function MainScreen() {
               navigation.navigate('BibliotecaAmigo', { amigoUid: uid });
             }}
             onSolicitudesClick={() => navigation.navigate('Solicitudes')}
-            onChatClick={(chatId, participants, chatName) => navigation.navigate('ChatDetail', { chatId, participants, chatName })}
+            onChatClick={(chatId, participants, chatName) =>
+              navigation.navigate('ChatDetail', { chatId, participants, chatName })
+            }
             onPerfilClick={() => navigation.navigate('Perfil')}
             userFoto={userFoto}
           />

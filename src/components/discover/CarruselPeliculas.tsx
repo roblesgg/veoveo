@@ -7,18 +7,9 @@
  */
 
 import React, { memo } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, {
-  FadeInRight,
-} from 'react-native-reanimated';
+import Animated, { FadeInRight } from 'react-native-reanimated';
 import { PosterItem } from './PosterItem';
 import type { Movie } from '../../types';
 import { COLORS, GLASS } from '../../theme/colors';
@@ -39,7 +30,7 @@ type Props = {
   isActive: boolean;
   misPlataformas?: number[];
   /** Mapa de cache de la biblioteca del usuario para pintar badges */
-  libraryMap?: { [id: number]: { estado: 'por_ver' | 'vista', valoracion: number } };
+  libraryMap?: { [id: number]: { estado: 'por_ver' | 'vista'; valoracion: number } };
 };
 
 export const CarruselPeliculas = memo(
@@ -59,7 +50,7 @@ export const CarruselPeliculas = memo(
     const catalogo = useCarrusel(id, Boolean(def?.ruta));
     const recomendaciones = useRecomendaciones(esParaTi);
     const peliculas: (Movie & { motivo?: string })[] = esParaTi
-      ? recomendaciones.data ?? []
+      ? (recomendaciones.data ?? [])
       : catalogo.peliculas;
     const cargando = esParaTi ? recomendaciones.isLoading : catalogo.isLoading;
     const error = esParaTi ? recomendaciones.isError : catalogo.isError;
@@ -117,34 +108,34 @@ export const CarruselPeliculas = memo(
             </Text>
           </Pressable>
         ) : (
-        /* LISTADO HORIZONTAL: carga más pelis al llegar al final */
-        <FlatList
-          horizontal
-          data={peliculas}
-          keyExtractor={(item) => String(item.id)}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 25, gap: 14 }}
-          nestedScrollEnabled
-          removeClippedSubviews
-          initialNumToRender={5}
-          onEndReached={cargarMas}
-          onEndReachedThreshold={0.6}
-          ListFooterComponent={
-            catalogo.isFetchingNextPage ? (
-              <View style={styles.footerCargando}>
-                <ActivityIndicator color={COLORS.primary} />
-              </View>
-            ) : null
-          }
-          renderItem={({ item }) => (
-            <PosterItem
-              item={item}
-              onPeliculaClick={onPeliculaClick}
-              misPlataformas={misPlataformas}
-              libraryMap={libraryMap}
-            />
-          )}
-        />
+          /* LISTADO HORIZONTAL: carga más pelis al llegar al final */
+          <FlatList
+            horizontal
+            data={peliculas}
+            keyExtractor={(item) => String(item.id)}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 25, gap: 14 }}
+            nestedScrollEnabled
+            removeClippedSubviews
+            initialNumToRender={5}
+            onEndReached={cargarMas}
+            onEndReachedThreshold={0.6}
+            ListFooterComponent={
+              catalogo.isFetchingNextPage ? (
+                <View style={styles.footerCargando}>
+                  <ActivityIndicator color={COLORS.primary} />
+                </View>
+              ) : null
+            }
+            renderItem={({ item }) => (
+              <PosterItem
+                item={item}
+                onPeliculaClick={onPeliculaClick}
+                misPlataformas={misPlataformas}
+                libraryMap={libraryMap}
+              />
+            )}
+          />
         )}
       </View>
     );

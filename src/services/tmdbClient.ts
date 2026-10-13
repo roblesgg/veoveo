@@ -124,7 +124,12 @@ export const tmdbApi = {
   },
 
   /** Lista de películas de cualquier ruta de TMDB (carruseles del catálogo). */
-  async listaPeliculas(ruta: string, params: Record<string, string> = {}, pagina = 1, idioma = 'es-ES') {
+  async listaPeliculas(
+    ruta: string,
+    params: Record<string, string> = {},
+    pagina = 1,
+    idioma = 'es-ES',
+  ) {
     const incluirAdulto = await preferences.cargarPreferenciaAdulto();
     const query = new URLSearchParams({
       language: idioma,

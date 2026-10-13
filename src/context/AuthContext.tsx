@@ -38,9 +38,9 @@ import { env } from '../config/env';
  * Interfaz que define los métodos y estados expuestos por el contexto de autenticación.
  */
 type AuthContextValue = {
-  user: User | null;              // Usuario actual de Firebase
-  loading: boolean;               // Indica si se está verificando la sesión inicial
-  firebaseReady: boolean;         // Indica si Firebase está correctamente configurado
+  user: User | null; // Usuario actual de Firebase
+  loading: boolean; // Indica si se está verificando la sesión inicial
+  firebaseReady: boolean; // Indica si Firebase está correctamente configurado
   login: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   linkGoogleAccount: () => Promise<void>;
@@ -194,7 +194,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await signInWithPopup(auth, provider);
         return;
       }
-      
+
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
       const idToken = userInfo.data?.idToken;
@@ -308,9 +308,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       reauthenticate,
     }),
     [
-      user, loading, firebaseReady, login, signInWithGoogle, linkGoogleAccount, 
-      unlinkGoogleAccount, register, logout, refreshUser, resetPassword, 
-      changePassword, reauthenticate
+      user,
+      loading,
+      firebaseReady,
+      login,
+      signInWithGoogle,
+      linkGoogleAccount,
+      unlinkGoogleAccount,
+      register,
+      logout,
+      refreshUser,
+      resetPassword,
+      changePassword,
+      reauthenticate,
     ],
   );
 

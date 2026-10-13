@@ -68,10 +68,14 @@ export async function actualizarUsername(nuevoUsername: string): Promise<void> {
   if (trimmed.length < 3) throw new Error('El nombre debe tener al menos 3 caracteres');
 
   // Guardamos tanto el username visual como una versión en minúsculas para facilitar búsquedas.
-  await setDoc(doc(db, 'usuarios', uid), { 
-    username: trimmed,
-    username_servido: trimmed.toLowerCase() 
-  }, { merge: true });
+  await setDoc(
+    doc(db, 'usuarios', uid),
+    {
+      username: trimmed,
+      username_servido: trimmed.toLowerCase(),
+    },
+    { merge: true },
+  );
 }
 
 /**
@@ -148,7 +152,10 @@ export async function guardarPushToken(token: string): Promise<void> {
 }
 
 /** Escucha el perfil de un usuario en tiempo real. Devuelve la función para dejar de escuchar. */
-export function observarUsuario(uid: string, onCambio: (perfil: UsuarioPerfil) => void): () => void {
+export function observarUsuario(
+  uid: string,
+  onCambio: (perfil: UsuarioPerfil) => void,
+): () => void {
   return onSnapshot(doc(dbOrThrow(), 'usuarios', uid), (snap) => {
     if (snap.exists()) onCambio(snap.data() as UsuarioPerfil);
   });

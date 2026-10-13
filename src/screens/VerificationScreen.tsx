@@ -18,7 +18,7 @@ import { sendEmailVerification } from 'firebase/auth';
 
 export function VerificationScreen() {
   const insets = useSafeAreaInsets();
-  
+
   // Acceso al usuario actual y métodos de sincronización
   const { user, refreshUser, logout } = useAuth();
   const { fontFamily, loaded } = useMontserrat();

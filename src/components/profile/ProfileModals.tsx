@@ -44,14 +44,21 @@ export const UsernameModal = ({
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.modalBackdrop}>
-        <BlurView intensity={60} tint="dark" experimentalBlurMethod="dimezisBlurView" style={styles.abs} />
+        <BlurView
+          intensity={60}
+          tint="dark"
+          experimentalBlurMethod="dimezisBlurView"
+          style={styles.abs}
+        />
         <View style={styles.modernModalCard}>
           <View style={[styles.iconCircle, { backgroundColor: 'rgba(56, 189, 248, 0.1)' }]}>
             <Ionicons name="person-outline" size={32} color={COLORS.primary} />
           </View>
           <Text style={[styles.modernModalTitle, { fontFamily }]}>Nombre de Usuario</Text>
-          <Text style={[styles.modernModalSub, { fontFamily }]}>Elige cómo te verán los demás en VeoVeo.</Text>
-          
+          <Text style={[styles.modernModalSub, { fontFamily }]}>
+            Elige cómo te verán los demás en VeoVeo.
+          </Text>
+
           <TextInput
             value={val}
             onChangeText={setVal}
@@ -62,7 +69,9 @@ export const UsernameModal = ({
 
           <View style={styles.modernActions}>
             <Pressable onPress={onClose} style={styles.btnCancel}>
-              <Text style={{ color: 'rgba(255,255,255,0.6)', fontFamily, fontWeight: '600' }}>Cancelar</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.6)', fontFamily, fontWeight: '600' }}>
+                Cancelar
+              </Text>
             </Pressable>
             {loading ? (
               <View style={styles.btnConfirm}>
@@ -115,14 +124,21 @@ export const AvatarModal = ({
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.modalBackdrop}>
-        <BlurView intensity={60} tint="dark" experimentalBlurMethod="dimezisBlurView" style={styles.abs} />
+        <BlurView
+          intensity={60}
+          tint="dark"
+          experimentalBlurMethod="dimezisBlurView"
+          style={styles.abs}
+        />
         <View style={styles.modernModalCard}>
           <View style={[styles.iconCircle, { backgroundColor: 'rgba(168, 85, 247, 0.1)' }]}>
             <Ionicons name="image-outline" size={32} color="#a855f7" />
           </View>
           <Text style={[styles.modernModalTitle, { fontFamily }]}>Foto de Perfil</Text>
-          <Text style={[styles.modernModalSub, { fontFamily }]}>Pega un enlace o usa tu cuenta de Google.</Text>
-          
+          <Text style={[styles.modernModalSub, { fontFamily }]}>
+            Pega un enlace o usa tu cuenta de Google.
+          </Text>
+
           <TextInput
             value={val}
             onChangeText={setVal}
@@ -132,8 +148,8 @@ export const AvatarModal = ({
           />
 
           {googlePhotoUrl && (
-            <Pressable 
-              style={styles.googleBtn} 
+            <Pressable
+              style={styles.googleBtn}
               onPress={() => {
                 setVal(googlePhotoUrl);
                 handleSave(googlePhotoUrl);
@@ -146,7 +162,9 @@ export const AvatarModal = ({
 
           <View style={styles.modernActions}>
             <Pressable onPress={onClose} style={styles.btnCancel}>
-              <Text style={{ color: 'rgba(255,255,255,0.6)', fontFamily, fontWeight: '600' }}>Cancelar</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.6)', fontFamily, fontWeight: '600' }}>
+                Cancelar
+              </Text>
             </Pressable>
             {loading ? (
               <View style={styles.btnConfirm}>
@@ -167,11 +185,11 @@ export const AvatarModal = ({
 const styles = StyleSheet.create({
   modalBackdrop: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   abs: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
-  modernModalCard: { 
-    width: '100%', 
-    backgroundColor: 'rgba(23, 23, 40, 0.95)', 
-    borderRadius: 32, 
-    padding: 32, 
+  modernModalCard: {
+    width: '100%',
+    backgroundColor: 'rgba(23, 23, 40, 0.95)',
+    borderRadius: 32,
+    padding: 32,
     alignItems: 'center',
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.12)',
@@ -181,9 +199,29 @@ const styles = StyleSheet.create({
     shadowRadius: 40,
     elevation: 30,
   },
-  iconCircle: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
-  modernModalTitle: { color: '#fff', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 8, letterSpacing: -0.5 },
-  modernModalSub: { color: 'rgba(255,255,255,0.4)', fontSize: 14, textAlign: 'center', marginBottom: 24, lineHeight: 20 },
+  iconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  modernModalTitle: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: '900',
+    textAlign: 'center',
+    marginBottom: 8,
+    letterSpacing: -0.5,
+  },
+  modernModalSub: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
   modernInput: {
     width: '100%',
     backgroundColor: 'rgba(255,255,255,0.05)',
@@ -211,5 +249,12 @@ const styles = StyleSheet.create({
   googleBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
   modernActions: { flexDirection: 'row', alignItems: 'center', gap: 12, width: '100%' },
   btnCancel: { flex: 1, height: 56, alignItems: 'center', justifyContent: 'center' },
-  btnConfirm: { flex: 1.5, height: 56, backgroundColor: COLORS.primary, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  btnConfirm: {
+    flex: 1.5,
+    height: 56,
+    backgroundColor: COLORS.primary,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

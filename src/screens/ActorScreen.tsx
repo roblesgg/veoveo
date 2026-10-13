@@ -37,10 +37,25 @@ const CARD_WIDTH = (width - 74) / 3; // Cálculo para mostrar 3 columnas exactas
 
 // Mapeo manual de IDs de TMDB a nombres en español (Fallback)
 const GENRE_MAP: Record<number, string> = {
-  28: 'Acción', 12: 'Aventura', 16: 'Animación', 35: 'Comedia', 80: 'Crimen',
-  99: 'Documental', 18: 'Drama', 10751: 'Familia', 14: 'Fantasía', 36: 'Historia',
-  27: 'Terror', 10402: 'Música', 9648: 'Misterio', 10749: 'Romance',
-  878: 'Ciencia ficción', 10770: 'Película de TV', 53: 'Suspense', 10752: 'Bélica', 37: 'Western',
+  28: 'Acción',
+  12: 'Aventura',
+  16: 'Animación',
+  35: 'Comedia',
+  80: 'Crimen',
+  99: 'Documental',
+  18: 'Drama',
+  10751: 'Familia',
+  14: 'Fantasía',
+  36: 'Historia',
+  27: 'Terror',
+  10402: 'Música',
+  9648: 'Misterio',
+  10749: 'Romance',
+  878: 'Ciencia ficción',
+  10770: 'Película de TV',
+  53: 'Suspense',
+  10752: 'Bélica',
+  37: 'Western',
 };
 
 export function ActorScreen() {
@@ -110,17 +125,25 @@ export function ActorScreen() {
             </BlurView>
           </Pressable>
 
-          <View style={{ flexDirection: 'row', position: 'absolute', right: 20, top: Math.max(insets.top, 12), gap: 10 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              position: 'absolute',
+              right: 20,
+              top: Math.max(insets.top, 12),
+              gap: 10,
+            }}
+          >
             <Pressable onPress={() => shareActor(actorId, detalles?.name || 'Actor')}>
-                <BlurView intensity={30} tint="dark" style={styles.btnInner}>
+              <BlurView intensity={30} tint="dark" style={styles.btnInner}>
                 <Ionicons name="share-social-outline" size={20} color="#fff" />
-                </BlurView>
+              </BlurView>
             </Pressable>
-            
+
             <Pressable onPress={() => navigation.popToTop()}>
-                <BlurView intensity={30} tint="dark" style={styles.btnInner}>
+              <BlurView intensity={30} tint="dark" style={styles.btnInner}>
                 <Ionicons name="home-outline" size={20} color="#fff" />
-                </BlurView>
+              </BlurView>
             </Pressable>
           </View>
 
@@ -192,11 +215,15 @@ export function ActorScreen() {
         title="Ordenar por"
         options={[
           {
-            label: 'Popularidad', value: 'popularity', icon: 'trending-up-outline',
+            label: 'Popularidad',
+            value: 'popularity',
+            icon: 'trending-up-outline',
             description: 'Películas más exitosas del actor.',
           },
           {
-            label: 'Fecha de estreno', value: 'date', icon: 'calendar-outline',
+            label: 'Fecha de estreno',
+            value: 'date',
+            icon: 'calendar-outline',
             description: 'Más recientes primero.',
           },
         ]}

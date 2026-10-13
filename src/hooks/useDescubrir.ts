@@ -26,7 +26,9 @@ export function useCarrusel(id: string, activo = true) {
     queryFn: ({ pageParam }) => fetchPaginaCarrusel(id, pageParam),
     initialPageParam: 1,
     getNextPageParam: (ultima) =>
-      ultima.page < Math.min(ultima.total_pages, MAX_PAGINAS_CARRUSEL) ? ultima.page + 1 : undefined,
+      ultima.page < Math.min(ultima.total_pages, MAX_PAGINAS_CARRUSEL)
+        ? ultima.page + 1
+        : undefined,
     staleTime: MEDIA_HORA,
     retry: 1,
     enabled: activo,
