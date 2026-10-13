@@ -4,6 +4,27 @@ require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const appJson = require('./app.json');
 
 const IS_TEST = process.env.APP_ENV === 'test';
+
+// El APK de pruebas usa SIEMPRE el Firebase de pruebas (veoveo-pruebas) y nunca producción.
+// Ver docs/entornos.md.
+const PROYECTO_PRUEBAS = 'veoveo-pruebas';
+if (IS_TEST) {
+  require('dotenv').config({
+    path: require('path').join(__dirname, '.env.pruebas.local'),
+    override: true,
+  });
+}
+const proyectoFirebase = process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID;
+if (IS_TEST && proyectoFirebase !== PROYECTO_PRUEBAS) {
+  throw new Error(
+    `El APK de pruebas tiene que usar ${PROYECTO_PRUEBAS} y apunta a «${proyectoFirebase}». Falta .env.pruebas.local.`,
+  );
+}
+if (!IS_TEST && proyectoFirebase === PROYECTO_PRUEBAS) {
+  throw new Error(
+    'La app de Play no puede usar el Firebase de pruebas. Quita APP_ENV o las variables de pruebas.',
+  );
+}
 const REQUIRED_ENV_KEYS = [
   'EXPO_PUBLIC_TMDB_READ_TOKEN',
   'EXPO_PUBLIC_FIREBASE_API_KEY',
