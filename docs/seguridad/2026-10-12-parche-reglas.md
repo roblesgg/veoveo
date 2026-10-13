@@ -1,6 +1,6 @@
 # Parche urgente de reglas de Firestore y Storage
 
-> 12 de octubre de 2026 · Rama `play/seguridad` · Estado: 🛑 **pendiente de la aprobación de Álvaro. Sin desplegar.**
+> 12 de octubre de 2026 · Rama `play/seguridad` · Estado: ✅ **Firestore desplegado el 13 de octubre de 2026 con el OK de Álvaro.** Storage no está activado en el proyecto (la consola pide pulsar "Get Started"), así que `storage.rules` queda en el repo sin desplegar. Al intentar desplegarlo, el CLI activó la API `firebasestorage.googleapis.com`, que no tiene coste por sí sola.
 
 ## Por qué
 
