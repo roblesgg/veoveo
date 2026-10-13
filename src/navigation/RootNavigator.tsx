@@ -20,7 +20,9 @@ import { RegisterScreen } from '../screens/RegisterScreen';
 import { BloqueadosScreen } from '../screens/BloqueadosScreen';
 import { PeliculaScreen } from '../screens/PeliculaScreen';
 import { VerificationScreen } from '../screens/VerificationScreen';
-import { ChatDetailScreen } from '../screens/ChatDetailScreen';
+import { ConversacionScreen } from '../screens/ConversacionScreen';
+import { NuevoChatScreen } from '../screens/NuevoChatScreen';
+import { InfoGrupoScreen } from '../screens/InfoGrupoScreen';
 import { MovieMatchScreen } from '../screens/MovieMatchScreen';
 import { MatchConfigScreen } from '../screens/MatchConfigScreen';
 import { SolicitudesScreen } from '../screens/SolicitudesScreen';
@@ -99,7 +101,9 @@ export function RootNavigator() {
               <Stack.Screen name="Ajustes" component={AjustesScreen} />
               <Stack.Screen name="Actor" component={ActorScreen} />
               <Stack.Screen name="Pelicula" component={PeliculaScreen} />
-              <Stack.Screen name="ChatDetail" component={ChatDetailScreen} />
+              <Stack.Screen name="Conversacion" component={ConversacionScreen} />
+              <Stack.Screen name="NuevoChat" component={NuevoChatScreen} />
+              <Stack.Screen name="InfoGrupo" component={InfoGrupoScreen} />
               <Stack.Screen name="MovieMatch" component={MovieMatchScreen} />
               <Stack.Screen name="MatchConfig" component={MatchConfigScreen} />
             </>

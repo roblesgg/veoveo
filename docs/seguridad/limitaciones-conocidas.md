@@ -16,9 +16,9 @@
 - **Riesgo:** un participante con conocimientos técnicos podría añadir una coincidencia falsa a una partida en la que juega. Impacto: una peli de más en el resultado del juego.
 - **Arreglo con presupuesto:** calcular las coincidencias en una Cloud Function al escribir cada voto.
 
-## 3. Bloquear no te oculta del buscador de quien te bloquea
+## 3. Bloquear no te oculta del buscador de quien bloqueaste
 
-- **Qué pasa:** la lista de bloqueados es privada (`privado/cuenta`). La app filtra los resultados en los dos sentidos (ni tú le ves ni él te ve), pero lo hace el móvil, no las reglas.
+- **Qué pasa:** la lista de bloqueados es privada (`privado/cuenta`). La app oculta en tu buscador a quien **tú** has bloqueado. Pero el bloqueado no puede saber que le bloqueaste (esa lista no se puede leer sin exponerla), así que él todavía puede encontrarte por tu nombre exacto o tu código.
 - **Lo que sí garantizan las reglas:** un bloqueado **no puede** enviarte solicitud, escribirte en un chat individual ni meterte en un Match. Además, al bloquear se rompe la amistad, así que tampoco ve tu biblioteca ni tu token.
 - **Arreglo con presupuesto:** buscador servido por una función que conozca los bloqueos.
 

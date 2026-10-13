@@ -22,7 +22,7 @@ import { listarPeliculasPorEstadoDeUsuario } from '../services/repositorioPelicu
 import { obtenerPerfilUsuarioPorUid } from '../services/repositorioUsuarios';
 import { posterUrl } from '../services/tmdbClient';
 import { eliminarAmigo, bloquearUsuario as bloquearSocial } from '../services/repositorioSocial';
-import { crearChat } from '../services/repositorioChats';
+import { abrirChatIndividual } from '../services/repositorioChats';
 import { useAuth } from '../context/AuthContext';
 import { PeliculaUsuario, UsuarioPerfil } from '../types';
 import {
@@ -145,12 +145,12 @@ export function BibliotecaAmigoScreen() {
       <Pressable
         onPress={async () => {
           if (!user) return;
-          const chatId = await crearChat([user.uid, amigoUid], 'individual');
-          navigation.navigate('ChatDetail', {
-            chatId,
-            participants: [user.uid, amigoUid],
-            chatName: usuario?.username,
-          });
+          try {
+            const chatId = await abrirChatIndividual(amigoUid);
+            navigation.navigate('Conversacion', { chatId });
+          } catch {
+            // Solo se puede escribir a amigos (lo exigen las reglas)
+          }
         }}
         style={[styles.chatBtn, { top: Math.max(insets.top, 12) + 8 }]}
         hitSlop={12}

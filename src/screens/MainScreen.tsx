@@ -20,6 +20,8 @@ import { marcarHito } from '../utils/medicionArranque';
 import { BibliotecaTab } from './BibliotecaTab';
 import { DiscoverTab } from './DiscoverTab';
 import { SocialTab } from './SocialTab';
+import { ChatsTab } from './ChatsTab';
+import { useChats } from '../context/ChatsContext';
 
 const PESTANA = { descubrir: 0, biblioteca: 1, chats: 2, social: 3 } as const;
 
@@ -27,6 +29,7 @@ export function MainScreen() {
   const { user } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { fontFamily, loaded } = useMontserrat();
+  const { noLeidos } = useChats();
 
   const [paginaActual, setPaginaActual] = useState<number>(PESTANA.descubrir);
   // La app se enseña en cuanto están las fuentes
@@ -119,25 +122,29 @@ export function MainScreen() {
           />
         ) : null}
 
-        {paginaActual === PESTANA.chats || paginaActual === PESTANA.social ? (
+        {paginaActual === PESTANA.chats ? (
+          <ChatsTab
+            onAbrirChat={(chatId) => navigation.navigate('Conversacion', { chatId })}
+            onNuevoChat={() => navigation.navigate('NuevoChat')}
+            onPerfilClick={() => navigation.navigate('Perfil')}
+            userFoto={userFoto}
+          />
+        ) : null}
+
+        {paginaActual === PESTANA.social ? (
           <SocialTab
-            key={paginaActual}
-            modo={paginaActual === PESTANA.chats ? 'chats' : 'social'}
             fontFamily={ff}
             onUsuarioClick={(uid) => {
               navigation.navigate('BibliotecaAmigo', { amigoUid: uid });
             }}
             onSolicitudesClick={() => navigation.navigate('Solicitudes')}
-            onChatClick={(chatId, participants, chatName) =>
-              navigation.navigate('ChatDetail', { chatId, participants, chatName })
-            }
             onPerfilClick={() => navigation.navigate('Perfil')}
             userFoto={userFoto}
           />
         ) : null}
       </View>
 
-      <LiquidBottomBar onTabChange={handleTabPress} paginaActual={paginaActual} />
+      <LiquidBottomBar onTabChange={handleTabPress} paginaActual={paginaActual} noLeidos={noLeidos} />
     </LinearGradient>
   );
 }

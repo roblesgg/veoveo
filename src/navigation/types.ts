@@ -12,12 +12,9 @@ export type RootStackParamList = {
   Actor: { actorId: number; actorName: string };
   Pelicula: { movieId: number };
   Verification: undefined;
-  ChatDetail: {
-    chatId: string;
-    chatName?: string;
-    participants: string[];
-    activeMatchId?: string | null;
-  };
+  Conversacion: { chatId: string };
+  NuevoChat: undefined;
+  InfoGrupo: { chatId: string };
   MovieMatch: { matchId: string };
   MatchConfig: { chatId: string; participants: string[] };
 };

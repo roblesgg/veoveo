@@ -17,6 +17,7 @@ import { BlurView } from 'expo-blur';
 
 import { AuthProvider } from './context/AuthContext';
 import { BibliotecaProvider } from './context/BibliotecaContext';
+import { ChatsProvider } from './context/ChatsContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { RootNavigator } from './navigation/RootNavigator';
 import { COLORS } from './theme/colors';
@@ -286,6 +287,7 @@ export default function App() {
         <LanguageProvider>
           <AuthProvider>
             <BibliotecaProvider>
+            <ChatsProvider>
               <View style={styles.appWrapper}>
                 <View style={styles.mainContainer}>
                   <RootNavigator />
@@ -302,6 +304,7 @@ export default function App() {
                   )}
                 </View>
               </View>
+            </ChatsProvider>
             </BibliotecaProvider>
           </AuthProvider>
         </LanguageProvider>

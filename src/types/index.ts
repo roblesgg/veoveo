@@ -67,37 +67,50 @@ export type ChatType = 'individual' | 'group';
 export type Chat = {
   id: string;
   type: ChatType;
-  participants: string[]; // UIDs de los participantes
-  participantDetails?: { [uid: string]: Partial<UsuarioPerfil> }; // Caché de perfiles
+  participants: string[];
+  admins?: string[]; // administradores del grupo (gestionan nombre, emoji y miembros)
+  createdBy?: string;
+  createdAt: number;
+  name?: string | null; // nombre del grupo
+  emoji?: string; // emoji del grupo
   lastMessage?: {
-    // Resumen del último mensaje para la lista de chats
     text: string;
     senderId: string;
     timestamp: number;
-  };
-  activeMatchId?: string | null; // ID del juego de Movie Match activo en este chat
-  createdAt: number;
-  name?: string; // Nombre del grupo (si aplica)
-  groupIcon?: string; // Icono del grupo (si aplica)
+    eliminado?: boolean;
+    tipo?: MessageType;
+  } | null;
+  activeMatchId?: string | null; // Movie Match en curso en este chat
 };
 
-export type MessageType = 'text' | 'movie' | 'match_invite' | 'match_result';
+export type MessageType = 'text' | 'movie' | 'match_invite' | 'match_result' | 'sistema';
 
 export type Message = {
   id: string;
-  chatId: string;
   senderId: string;
-  senderName: string;
   text: string;
   type: MessageType;
   timestamp: number;
-  matchId?: string; // ID del match asociado (si el mensaje es una invitación)
-  movieData?: {
-    // Datos de película embebida (si el mensaje es de tipo 'movie')
-    id: number;
-    title: string;
-    posterPath: string;
-  };
+  eliminado?: boolean; // borrado para todos: queda «Mensaje eliminado»
+  editadoEn?: number;
+  respuestaA?: { msgId: string; senderId: string; text: string };
+  ocultoPara?: string[]; // quienes lo han borrado solo para sí
+  matchId?: string; // invitación o resultado de un Movie Match
+  movieData?: { id: number; title: string; posterPath: string | null };
+};
+
+/** Mi estado de cada chat (en mi documento privado): no leídos y chats ocultos. */
+export type EstadoChatPropio = {
+  ultimaLectura?: number;
+  oculto?: boolean;
+  ocultoDesde?: number; // al «borrar el chat para mí», los mensajes anteriores dejan de verse
+  silenciado?: boolean;
+};
+
+/** Estado visible para los demás participantes: `chats/{id}/miembros/{uid}`. */
+export type MiembroChat = {
+  ultimaLectura?: number; // para el leído (✓✓)
+  silenciado?: boolean; // el que envía no le manda aviso
 };
 
 // --- MODELOS DE LÓGICA DE MATCH ---

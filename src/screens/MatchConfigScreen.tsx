@@ -7,7 +7,7 @@ import { BlurView } from 'expo-blur';
 
 import { useAuth } from '../context/AuthContext';
 import { iniciarMatch } from '../services/repositorioMatches';
-import { enviarMensaje } from '../services/repositorioChats';
+import { enviarMensaje, obtenerChat } from '../services/repositorioChats';
 import { COLORS, CardSurface } from '../theme/colors';
 
 export function MatchConfigScreen() {
@@ -32,14 +32,14 @@ export function MatchConfigScreen() {
       });
 
       // Enviamos un mensaje especial al chat informando del match
-      await enviarMensaje(chatId, {
-        chatId,
-        senderId: user.uid,
-        senderName: user.displayName || 'Usuario',
-        text: `¡He propuesto un Movie Match de ${target} películas! 🔥`,
-        type: 'match_invite',
-        matchId,
-      });
+      const chat = await obtenerChat(chatId);
+      if (chat) {
+        await enviarMensaje(
+          chat,
+          { type: 'match_invite', text: `He propuesto un Movie Match de ${target} películas`, matchId },
+          user.displayName || 'Usuario',
+        );
+      }
 
       navigation.replace('MovieMatch', { matchId });
     } catch (e) {
