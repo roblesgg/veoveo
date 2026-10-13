@@ -12,7 +12,6 @@ export type RootStackParamList = {
   Actor: { actorId: number; actorName: string };
   Pelicula: { movieId: number };
   Verification: undefined;
-  ChatList: undefined;
   ChatDetail: { chatId: string; chatName?: string; participants: string[]; activeMatchId?: string | null };
   MovieMatch: { matchId: string };
   MatchConfig: { chatId: string; participants: string[] };

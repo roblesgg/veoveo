@@ -20,9 +20,15 @@ export function LiquidBottomBar({ onTabChange, paginaActual }: Props) {
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
 
-  // 🚀 Cálculo dinámico con límite para escritorio
+  const items = [
+    { iconActive: 'compass', iconInactive: 'compass-outline', index: 0 },
+    { iconActive: 'library', iconInactive: 'library-outline', index: 1 },
+    { iconActive: 'people', iconInactive: 'people-outline', index: 2 },
+  ] as const;
+
+  // Ancho dinámico con límite para escritorio
   const BAR_WIDTH = Math.min(windowWidth - 48, 600);
-  const TAB_WIDTH = BAR_WIDTH / 4;
+  const TAB_WIDTH = BAR_WIDTH / items.length;
 
   const translateX = useSharedValue(paginaActual * TAB_WIDTH);
 
@@ -32,18 +38,11 @@ export function LiquidBottomBar({ onTabChange, paginaActual }: Props) {
       stiffness: 200,
       mass: 0.5,
     });
-  }, [paginaActual]);
+  }, [paginaActual, TAB_WIDTH]);
 
   const indicatorStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
   }));
-
-  const items = [
-    { iconActive: 'compass', iconInactive: 'compass-outline', index: 0 },
-    { iconActive: 'library', iconInactive: 'library-outline', index: 1 },
-    { iconActive: 'layers', iconInactive: 'layers-outline', index: 2 },
-    { iconActive: 'people', iconInactive: 'people-outline', index: 3 },
-  ] as const;
 
   return (
     <View style={[
@@ -68,7 +67,7 @@ export function LiquidBottomBar({ onTabChange, paginaActual }: Props) {
         {/* 💊 Premium Pill Indicator */}
         <Animated.View style={[
           styles.indicator, 
-          { width: (BAR_WIDTH / 4) * 0.8, left: (BAR_WIDTH / 4 - (BAR_WIDTH / 4) * 0.8) / 2 },
+          { width: TAB_WIDTH * 0.8, left: (TAB_WIDTH - TAB_WIDTH * 0.8) / 2 },
           indicatorStyle
         ]} />
 

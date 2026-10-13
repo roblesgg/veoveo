@@ -19,7 +19,6 @@ import { RegisterScreen } from '../screens/RegisterScreen';
 import { BloqueadosScreen } from '../screens/BloqueadosScreen';
 import { PeliculaScreen } from '../screens/PeliculaScreen';
 import { VerificationScreen } from '../screens/VerificationScreen';
-import ChatListScreen from '../screens/ChatListScreen';
 import { ChatDetailScreen } from '../screens/ChatDetailScreen';
 import { MovieMatchScreen } from '../screens/MovieMatchScreen';
 import { MatchConfigScreen } from '../screens/MatchConfigScreen';
@@ -36,7 +35,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
  * Define cómo la app responde a URLs externas (ej: veoveo://movie/123).
  */
 const linking = {
-  prefixes: ['veoveo://', 'https://veoveo.dripdev.dev', 'https://veoveo-app.netlify.app', 'https://dripdev.dev'],
+  prefixes: ['veoveo://', 'https://veoveo.dripdev.dev'],
   config: {
     screens: {
       Main: 'main',
@@ -99,7 +98,6 @@ export function RootNavigator() {
               <Stack.Screen name="Ajustes" component={AjustesScreen} />
               <Stack.Screen name="Actor" component={ActorScreen} />
               <Stack.Screen name="Pelicula" component={PeliculaScreen} />
-              <Stack.Screen name="ChatList" component={ChatListScreen} />
               <Stack.Screen name="ChatDetail" component={ChatDetailScreen} />
               <Stack.Screen name="MovieMatch" component={MovieMatchScreen} />
               <Stack.Screen name="MatchConfig" component={MatchConfigScreen} />

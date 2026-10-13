@@ -105,47 +105,6 @@ export type PeliculaUsuario = {
   };
 };
 
-// --- MODELOS DE TIER LISTS ---
-export type TierList = {
-  id: string;
-  nombre: string;
-  descripcion: string;
-  creadorUid: string;
-  fechaCreacion: number;
-  ultimaModificacion: number;
-  tierObraMaestra: number[];      // Arrays de IDs de películas por rango
-  tierMuyBuena: number[];
-  tierBuena: number[];
-  tierMala: number[];
-  tierNefasta: number[];
-  publica: boolean;
-  portadaUrl?: string | null;
-};
-
-/** Constructor helper para una Tier List vacía */
-export function nuevaTierListVacia(): TierList {
-  return {
-    id: '',
-    nombre: '',
-    descripcion: '',
-    creadorUid: '',
-    fechaCreacion: Date.now(),
-    ultimaModificacion: Date.now(),
-    tierObraMaestra: [],
-    tierMuyBuena: [],
-    tierBuena: [],
-    tierMala: [],
-    tierNefasta: [],
-    publica: false,
-    portadaUrl: null,
-  };
-}
-
-/** Obtiene todos los IDs de películas contenidos en una Tier List (sin importar el rango) */
-export function todasLasPeliculasTierList(t: TierList): number[] {
-  return [...t.tierObraMaestra, ...t.tierMuyBuena, ...t.tierBuena, ...t.tierMala, ...t.tierNefasta];
-}
-
 // --- MODELOS DE TMDB API ---
 export interface Movie {
   id: number;

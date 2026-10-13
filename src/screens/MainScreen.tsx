@@ -1,17 +1,14 @@
 /**
  * ARCHIVO: screens/MainScreen.tsx
- * DESCRIPCIÓN: Contenedor principal de la aplicación que gestiona las pestañas (Tabs).
- * Incluye la lógica de navegación entre Descubrir, Biblioteca, Tier Lists y Social.
- * Implementa una pantalla de Splash personalizada y gestiona el botón físico de retroceso.
+ * DESCRIPCIÓN: Contenedor principal con las pestañas Descubrir, Biblioteca y Social.
+ * Muestra el splash mientras cargan las fuentes y gestiona el botón físico de retroceso.
  */
 
-import { Ionicons } from '@expo/vector-icons';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { BackHandler, Platform, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LiquidBottomBar } from '../components/LiquidBottomBar';
 import type { RootStackParamList } from '../navigation/types';
 import { GradientBottom, GradientTop } from '../theme/colors';
@@ -23,27 +20,22 @@ import { marcarHito } from '../utils/medicionArranque';
 import { BibliotecaTab } from './BibliotecaTab';
 import { DiscoverTab } from './DiscoverTab';
 import { SocialTab } from './SocialTab';
-import { TierListsTab } from './TierListsTab';
+
+const PESTANA = { descubrir: 0, biblioteca: 1, social: 2 } as const;
 
 export function MainScreen() {
   const { user } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const insets = useSafeAreaInsets();
   const { fontFamily, loaded } = useMontserrat();
 
-  // ESTADO: Pestaña actualmente seleccionada (0: Discover, 1: Biblioteca, 2: TierLists, 3: Social)
-  const [paginaActual, setPaginaActual] = useState(0);
-  
-  // ESTADO: Gestión interna de sub-pantallas para Tier Lists
-  const [pantallaTierList, setPantallaTierList] = useState(0);
-  
-  // ESTADO: Indica si la app ha pasado la pantalla de carga (Splash)
+  const [paginaActual, setPaginaActual] = useState<number>(PESTANA.descubrir);
+  // La app se enseña en cuanto están las fuentes
   const [appReady, setAppReady] = useState(false);
 
   const isFocused = useIsFocused();
   const [userProfile, setUserProfile] = useState<{ fotoPerfil?: string | null }>({});
 
-  // EFECTO: Refrescar el perfil del usuario cada vez que la pantalla gana foco
+  // Refrescar la foto del perfil al volver a esta pantalla (por si se cambió en Perfil)
   useEffect(() => {
     if (isFocused && user) {
       void (async () => {
@@ -53,9 +45,7 @@ export function MainScreen() {
     }
   }, [isFocused, user]);
 
-  /** 🕒 GESTIÓN DE CARGA (Splash):
-   * En Web, forzamos la entrada después de un tiempo de seguridad por si fallan las fuentes.
-   */
+  // En la web, entrada de emergencia por si fallan las fuentes
   useEffect(() => {
     if (Platform.OS === 'web') {
       const emergencyTimer = setTimeout(() => setAppReady(true), 3500);
@@ -63,7 +53,6 @@ export function MainScreen() {
     }
   }, []);
 
-  /** EFECTO: En cuanto están las fuentes, fuera el splash (sin esperas artificiales). */
   useEffect(() => {
     if (loaded) setAppReady(true);
   }, [loaded]);
@@ -71,7 +60,7 @@ export function MainScreen() {
   const [resetToken, setResetToken] = useState(0);
   const ff = useMemo(() => fontFamily ?? 'System', [fontFamily]);
 
-  /** Maneja el cambio de pestaña. Si se pulsa la pestaña actual, dispara un reset (scroll al top). */
+  /** Cambia de pestaña. Si se pulsa la actual, vuelve arriba. */
   const handleTabPress = (index: number) => {
     if (paginaActual === index) {
       setResetToken((prev) => prev + 1);
@@ -80,49 +69,35 @@ export function MainScreen() {
     }
   };
 
-  /** 🛡️ GESTIÓN DE RETROCESO (Android):
-   * Controla que al pulsar 'atrás' se regrese a la Home antes de salir de la app.
-   */
+  /** Android: "atrás" vuelve a Descubrir antes de salir de la app. */
   useEffect(() => {
     if (!isFocused) return;
     const onBackPress = () => {
-      // Si estamos en TierLists y no en la principal, volvemos un paso atrás en TierLists
-      if (paginaActual === 2 && pantallaTierList !== 0) {
-        setPantallaTierList(pantallaTierList === 1 || pantallaTierList === 2 ? 0 : 1);
+      if (paginaActual !== PESTANA.descubrir) {
+        setPaginaActual(PESTANA.descubrir);
         return true;
       }
-      // Si estamos en otra pestaña, volvemos a la Home (Discover)
-      if (paginaActual !== 0) {
-        setPaginaActual(0);
-        return true;
-      }
-      return false; // Salir de la app
+      return false;
     };
     const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
     return () => sub.remove();
-  }, [isFocused, paginaActual, pantallaTierList]);
+  }, [isFocused, paginaActual]);
 
-  // Pantalla de carga mientras se inicializa la UI Premium
   if (!appReady) return <SplashView fontFamily={ff} />;
   marcarHito('fin del splash');
 
-  // Ocultar barra de navegación si estamos editando una Tier List
-  const showBottomBar = !(paginaActual === 2 && pantallaTierList !== 0);
-
-  // Navegación rápida centralizada
   const navigatePelicula = (id: number) => {
     navigation.navigate('Pelicula', { movieId: id });
   };
   const navigateActor = (id: number, name: string) => {
     navigation.navigate('Actor', { actorId: id, actorName: name });
   };
+  const userFoto = userProfile?.fotoPerfil || user?.photoURL;
 
   return (
     <LinearGradient colors={[GradientTop, GradientBottom]} style={styles.flex}>
       <View style={styles.flex}>
-        {/* RENDER CONDICIONAL DE PESTAÑAS (Para optimizar memoria) */}
-        
-        {paginaActual === 0 ? (
+        {paginaActual === PESTANA.descubrir ? (
           <DiscoverTab
             fontFamily={ff}
             estaActiva
@@ -130,32 +105,21 @@ export function MainScreen() {
             onPeliculaClick={navigatePelicula}
             onActorClick={navigateActor}
             onPerfilClick={() => navigation.navigate('Perfil')}
-            userFoto={userProfile?.fotoPerfil || user?.photoURL}
+            userFoto={userFoto}
           />
         ) : null}
 
-        {paginaActual === 1 ? (
+        {paginaActual === PESTANA.biblioteca ? (
           <BibliotecaTab
             fontFamily={ff}
             resetToken={resetToken}
             onPeliculaClick={navigatePelicula}
             onPerfilClick={() => navigation.navigate('Perfil')}
-            userFoto={userProfile?.fotoPerfil || user?.photoURL}
+            userFoto={userFoto}
           />
         ) : null}
 
-        {paginaActual === 2 ? (
-          <TierListsTab
-            fontFamily={ff}
-            pantalla={pantallaTierList}
-            onPantallaChange={setPantallaTierList}
-            onPeliculaClick={navigatePelicula}
-            onPerfilClick={() => navigation.navigate('Perfil')}
-            userFoto={userProfile?.fotoPerfil || user?.photoURL}
-          />
-        ) : null}
-
-        {paginaActual === 3 ? (
+        {paginaActual === PESTANA.social ? (
           <SocialTab
             fontFamily={ff}
             onUsuarioClick={(uid) => {
@@ -164,15 +128,12 @@ export function MainScreen() {
             onSolicitudesClick={() => navigation.navigate('Solicitudes')}
             onChatClick={(chatId, participants, chatName) => navigation.navigate('ChatDetail', { chatId, participants, chatName })}
             onPerfilClick={() => navigation.navigate('Perfil')}
-            userFoto={userProfile?.fotoPerfil || user?.photoURL}
+            userFoto={userFoto}
           />
         ) : null}
       </View>
 
-      {/* BARRA DE NAVEGACIÓN LÍQUIDA (PERSONALIZADA) */}
-      {showBottomBar ? (
-        <LiquidBottomBar onTabChange={handleTabPress} paginaActual={paginaActual} />
-      ) : null}
+      <LiquidBottomBar onTabChange={handleTabPress} paginaActual={paginaActual} />
     </LinearGradient>
   );
 }
