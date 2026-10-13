@@ -25,6 +25,11 @@ import { BlurView } from 'expo-blur';
 import { Image } from 'expo-image';
 import { useBiblioteca } from '../context/BibliotecaContext';
 import { fechaDeVista } from '../services/repositorioPeliculasUsuario';
+import { useQueries } from '@tanstack/react-query';
+import { obtenerPlataformasES } from '../hooks/useDescubrir';
+import type { PeliculaUsuario } from '../types';
+
+const UNA_SEMANA = 1000 * 60 * 60 * 24 * 7;
 import { tmdbApi, posterUrl } from '../services/tmdbClient';
 import * as preferences from '../storage/preferences';
 import { COLORS, CardSurface } from '../theme/colors';
@@ -112,6 +117,33 @@ export function BibliotecaTab({
     }, [seccion])
   );
 
+  // Hasta la 3.0 las pelis se guardaban sin plataformas: al filtrar se piden a TMDB (en caché una semana)
+  const sinPlataformas = useMemo(
+    () =>
+      platsSeleccionadas.length === 0
+        ? []
+        : [...porVer, ...vistas].filter(p => !p.providers?.flatrate?.length).map(p => p.idPelicula),
+    [platsSeleccionadas.length, porVer, vistas],
+  );
+  const consultasPlataformas = useQueries({
+    queries: sinPlataformas.map(id => ({
+      queryKey: ['plataformas', id],
+      queryFn: () => obtenerPlataformasES(id),
+      staleTime: UNA_SEMANA,
+      gcTime: UNA_SEMANA,
+      meta: { persistir: true },
+    })),
+  });
+  const plataformasPedidas = useMemo(() => {
+    const mapa: Record<number, number[]> = {};
+    sinPlataformas.forEach((id, i) => {
+      const datos = consultasPlataformas[i]?.data;
+      if (datos) mapa[id] = datos.flatrate;
+    });
+    return mapa;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sinPlataformas, consultasPlataformas.map(c => c.dataUpdatedAt).join(',')]);
+
   /** Maneja la selección múltiple de plataformas para el filtrado */
   const togglePlataforma = (name: string) => {
     setPlatsSeleccionadas(prev => 
@@ -126,13 +158,15 @@ export function BibliotecaTab({
   const renderContent = useMemo(() => {
     let raw = [...(seccion === 0 ? porVer : vistas)];
     
-    // FILTRO 1: Por Plataforma de Streaming
+    // FILTRO 1: Por Plataforma de Streaming (si la peli se guardó sin plataformas, se usan las pedidas a TMDB)
     if (platsSeleccionadas.length > 0) {
       const allSelectedIds = userPlats
         .filter(up => platsSeleccionadas.includes(up.name))
         .flatMap(up => up.ids);
-        
-      raw = raw.filter(p => (p.providers?.flatrate || []).some(id => allSelectedIds.includes(id)));
+      const plataformasDe = (p: PeliculaUsuario) =>
+        p.providers?.flatrate?.length ? p.providers.flatrate : plataformasPedidas[p.idPelicula] ?? [];
+
+      raw = raw.filter(p => plataformasDe(p).some(id => allSelectedIds.includes(id)));
     }
 
     // FILTRO 2: Búsqueda por Texto
@@ -166,7 +200,7 @@ export function BibliotecaTab({
       );
     }
     return <View style={styles.grid}>{raw.map(renderCard)}</View>;
-  }, [seccion, porVer, vistas, orden, textoBuscar, platsSeleccionadas, userPlats]);
+  }, [seccion, porVer, vistas, orden, textoBuscar, platsSeleccionadas, userPlats, plataformasPedidas]);
 
   /** Renderiza cada tarjeta de película en el grid */
   function renderCard(p: any) {
