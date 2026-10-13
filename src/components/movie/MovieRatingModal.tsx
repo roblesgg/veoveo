@@ -4,32 +4,37 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { COLORS } from '../../theme/colors';
 import { SHADOWS } from '../../theme/theme';
+import { SelectorFechaVista } from './SelectorFechaVista';
 
 type Props = {
   visible: boolean;
   onClose: () => void;
-  onGuardar: (valor: number) => void;
-  onNoValorar: () => void;
+  /** Guarda la peli como vista con su nota (0 = sin nota) y la fecha en que se vio. */
+  onGuardar: (valor: number, fechaVisto: number) => void;
   titulo?: string;
   valorInicial: number;
+  /** Fecha de vista actual (si ya está vista) o undefined para "hoy". */
+  fechaInicial?: number;
   fontFamily: string;
 };
 
 export const MovieRatingModal = React.memo(
-  ({ visible, onClose, onGuardar, onNoValorar, titulo, valorInicial, fontFamily }: Props) => {
+  ({ visible, onClose, onGuardar, titulo, valorInicial, fechaInicial, fontFamily }: Props) => {
     const [valorSel, setValorSel] = React.useState(valorInicial > 0 ? valorInicial : 0);
     const [valorNegativa, setValorNegativa] = React.useState(valorInicial === -1);
+    const [fecha, setFecha] = React.useState(fechaInicial ?? Date.now());
 
     React.useEffect(() => {
       if (visible) {
         setValorSel(valorInicial > 0 ? valorInicial : 0);
         setValorNegativa(valorInicial === -1);
+        setFecha(fechaInicial ?? Date.now());
       }
-    }, [visible, valorInicial]);
+    }, [visible, valorInicial, fechaInicial]);
 
     const handleGuardar = () => {
       const v = valorNegativa ? -1 : valorSel;
-      onGuardar(v);
+      onGuardar(v, fecha);
     };
 
     return (
@@ -55,7 +60,7 @@ export const MovieRatingModal = React.memo(
                   textAlign: 'center',
                 }}
               >
-                ¿Qué te ha parecido la película?
+                ¿Qué te ha parecido la peli?
               </Text>
 
               <View style={styles.starsRow}>
@@ -97,13 +102,16 @@ export const MovieRatingModal = React.memo(
                 </Pressable>
               </View>
 
+              <SelectorFechaVista fecha={fecha} onCambio={setFecha} fontFamily={fontFamily} />
+
               <View style={styles.modalActions}>
                 <Pressable style={styles.modalActionSec} onPress={onClose}>
                   <Text style={{ color: 'rgba(255,255,255,0.65)', fontFamily }}>Cancelar</Text>
                 </Pressable>
 
-                <Pressable style={styles.modalActionSec} onPress={onNoValorar}>
-                  <Text style={{ color: 'rgba(255,255,255,0.65)', fontFamily }}>No valorar</Text>
+                {/* Guarda como vista sin nota (o le quita la nota). Nunca la quita de la biblioteca. */}
+                <Pressable style={styles.modalActionSec} onPress={() => onGuardar(0, fecha)}>
+                  <Text style={{ color: 'rgba(255,255,255,0.65)', fontFamily }}>Sin nota</Text>
                 </Pressable>
 
                 <Pressable

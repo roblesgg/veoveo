@@ -24,6 +24,7 @@ import { BlurView } from 'expo-blur';
 
 import { Image } from 'expo-image';
 import { useBiblioteca } from '../context/BibliotecaContext';
+import { fechaDeVista } from '../services/repositorioPeliculasUsuario';
 import { tmdbApi, posterUrl } from '../services/tmdbClient';
 import * as preferences from '../storage/preferences';
 import { COLORS, CardSurface } from '../theme/colors';
@@ -144,16 +145,18 @@ export function BibliotecaTab({
     if (orden === 'alpha') raw.sort((a, b) => a.titulo.localeCompare(b.titulo));
     else if (orden === 'fecha_peli') raw.sort((a, b) => (b.fechaLanzamiento || '').localeCompare(a.fechaLanzamiento || ''));
     else if (orden === 'valoracion') raw.sort((a, b) => (b.valoracion || 0) - (a.valoracion || 0));
+    // Recientes: en Vistas, por cuándo se vio; en Por ver, por cuándo se añadió
+    else if (seccion === 1) raw.sort((a, b) => fechaDeVista(b) - fechaDeVista(a));
     else raw.sort((a, b) => b.fechaAnadido - a.fechaAnadido);
 
-    // AGRUPACIÓN TEMPORAL (Solo para vista cronológica de Películas Vistas)
+    // AGRUPACIÓN TEMPORAL (solo en Vistas, por la fecha en que se vio)
     if (seccion === 1 && orden === 'recientes' && !textoBuscar) {
       const ahora = Date.now();
       const unaSemanaAtras = ahora - (7 * 24 * 60 * 60 * 1000);
       const unMesAtras = ahora - (30 * 24 * 60 * 60 * 1000);
-      const semana = raw.filter(p => p.fechaAnadido > unaSemanaAtras);
-      const mes = raw.filter(p => p.fechaAnadido <= unaSemanaAtras && p.fechaAnadido > unMesAtras);
-      const anteriores = raw.filter(p => p.fechaAnadido <= unMesAtras);
+      const semana = raw.filter(p => fechaDeVista(p) > unaSemanaAtras);
+      const mes = raw.filter(p => fechaDeVista(p) <= unaSemanaAtras && fechaDeVista(p) > unMesAtras);
+      const anteriores = raw.filter(p => fechaDeVista(p) <= unMesAtras);
       return (
         <>
           {semana.length > 0 && (<><View style={styles.sectionHeader}><Text style={[styles.sectionHeaderText, { fontFamily }]}>Última semana</Text><View style={styles.sectionHeaderLine}/></View><View style={styles.grid}>{semana.map(renderCard)}</View></>)}

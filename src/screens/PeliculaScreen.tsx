@@ -33,6 +33,7 @@ import { GradientBottom } from '../theme/colors';
 // Custom Hooks
 import { useMovieData } from '../hooks/movie/useMovieData';
 import { useUserMovieStatus } from '../hooks/movie/useUserMovieStatus';
+import { fechaDeVista } from '../services/repositorioPeliculasUsuario';
 import { shareMovie } from '../utils/shareUtils';
 
 // Componentes Modulares
@@ -71,8 +72,9 @@ export function PeliculaScreen() {
     accionBib,
     userError,
     onPorVer,
-    onToggleVista,
-  } = useUserMovieStatus(movieId, detalles, providers);
+    onMarcarVista,
+    onQuitar,
+  } = useUserMovieStatus(movieId, detalles, providers?.results?.ES);
 
   const [descExp, setDescExp] = useState(false); // Control de expansión de sinopsis
   const [showRatingModal, setShowRatingModal] = useState(false);
@@ -203,7 +205,7 @@ export function PeliculaScreen() {
             accionBib={accionBib}
             bibCargando={bibCargando}
             onPorVer={onPorVer}
-            onVista={() => (estadoPelicula === 2 ? onToggleVista(0) : setShowRatingModal(true))}
+            onVista={() => (estadoPelicula === 2 ? onQuitar() : setShowRatingModal(true))}
             fontFamily={fontFamily}
           />
 
@@ -266,15 +268,12 @@ export function PeliculaScreen() {
         visible={showRatingModal}
         titulo={detalles.title}
         valorInicial={peliculaBib?.valoracion ?? 0}
+        fechaInicial={peliculaBib?.estado === 'vista' ? fechaDeVista(peliculaBib) : undefined}
         fontFamily={fontFamily}
         onClose={() => setShowRatingModal(false)}
-        onNoValorar={() => {
+        onGuardar={(v, fecha) => {
           setShowRatingModal(false);
-          onToggleVista(0);
-        }}
-        onGuardar={(v) => {
-          setShowRatingModal(false);
-          onToggleVista(v);
+          void onMarcarVista(v, fecha);
         }}
       />
     </View>

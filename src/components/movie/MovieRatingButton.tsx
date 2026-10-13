@@ -2,6 +2,8 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { PeliculaUsuario } from '../../types';
+import { fechaDeVista } from '../../services/repositorioPeliculasUsuario';
+import { formatearFechaVista } from '../../utils/fechas';
 
 type Props = {
   peliculaUsuario: PeliculaUsuario | null;
@@ -14,17 +16,15 @@ export const MovieRatingButton = React.memo(({ peliculaUsuario, onPress, fontFam
 
   const { valoracion } = peliculaUsuario;
   const isPoop = valoracion === -1;
+  const nota = isPoop ? '💩' : valoracion > 0 ? `${valoracion} ⭐` : 'sin nota';
 
   return (
     <Pressable style={styles.btnValorar} onPress={onPress}>
       <Ionicons name="star" size={18} color={isPoop ? '#8B4513' : '#FFD700'} />
       <Text style={[styles.btnValorarText, { fontFamily }]}>
-        {isPoop
-          ? 'Valoración: 💩'
-          : valoracion > 0
-            ? `Valoración: ${valoracion} ⭐`
-            : 'Añadir valoración'}
+        Vista {formatearFechaVista(fechaDeVista(peliculaUsuario))} · {nota}
       </Text>
+      <Ionicons name="create-outline" size={16} color="#FFD700" />
     </Pressable>
   );
 });

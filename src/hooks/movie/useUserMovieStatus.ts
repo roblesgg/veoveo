@@ -1,166 +1,112 @@
 /**
  * ARCHIVO: hooks/movie/useUserMovieStatus.ts
- * DESCRIPCIÓN: Hook para gestionar el "Estado de Usuario" de una película específica.
- * Maneja la sincronización con Firestore para:
- * - Comprobar si está en la biblioteca (Vistas/Por Ver).
- * - Añadir/Quitar de "Por Ver".
- * - Marcar como "Vista" con o sin valoración.
- * - Actualizar valoraciones existentes.
+ * DESCRIPCIÓN: Estado de una peli en la biblioteca del usuario y sus acciones:
+ * Por ver, marcar como vista, valorar, cambiar la fecha de vista y quitarla.
+ * Lee de la biblioteca compartida (BibliotecaContext), así que no hace lecturas extra:
+ * cada escritura se refleja sola por la escucha de Firestore.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useBiblioteca } from '../../context/BibliotecaContext';
 import {
-  actualizarEstadoPelicula,
+  actualizarFechaVisto,
   actualizarValoracion,
-  agregarPelicula,
   eliminarPelicula,
-  obtenerPeliculaUsuario,
+  guardarEnPorVer,
+  marcarComoVista,
+  type DatosPeliculaBiblioteca,
 } from '../../services/repositorioPeliculasUsuario';
-import type { PeliculaUsuario, MovieDetails } from '../../types';
+import type { MovieDetails, WatchProvider } from '../../types';
+
+type ProveedoresES = { flatrate?: WatchProvider[]; rent?: WatchProvider[]; buy?: WatchProvider[] };
 
 /**
- * Orquesta las acciones de biblioteca para una película.
  * @param movieId ID de TMDB.
  * @param detalles Datos de la película (necesarios para el alta en Firestore).
- * @param providers Datos de streaming (para filtros de biblioteca).
+ * @param providers Plataformas en España (para los filtros de la biblioteca).
  */
 export function useUserMovieStatus(
   movieId: number,
   detalles: MovieDetails | null,
-  providers?: any,
+  providers?: ProveedoresES | null,
 ) {
   const { user } = useAuth();
-  
-  // ESTADOS DE UI
-  const [peliculaBib, setPeliculaBib] = useState<PeliculaUsuario | null>(null);
-  const [bibCargando, setBibCargando] = useState(true);
-  const [accionBib, setAccionBib] = useState(false); // Bloqueo mientras se escribe en DB
+  const { obtener, cargando } = useBiblioteca();
+  const peliculaBib = obtener(movieId);
+
+  const [accionBib, setAccionBib] = useState(false); // Bloqueo mientras se escribe
   const [error, setError] = useState<string | null>(null);
 
-  /** 🔄 Consulta inicial: ¿Está esta peli ya en mi colección? */
-  const recargarBiblioteca = useCallback(async () => {
-    if (!user) {
-      setPeliculaBib(null);
-      setBibCargando(false);
-      return;
-    }
-    setBibCargando(true);
-    try {
-      const p = await obtenerPeliculaUsuario(movieId);
-      setPeliculaBib(p);
-    } catch {
-      setPeliculaBib(null);
-    } finally {
-      setBibCargando(false);
-    }
-  }, [movieId, user]);
-
-  useEffect(() => {
-    void recargarBiblioteca();
-  }, [recargarBiblioteca]);
-
-  /** 🚀 ACCIÓN: Alternar estado "Por Ver" */
-  const onPorVer = async () => {
-    if (!user || !detalles) return;
-    setAccionBib(true);
-    try {
-      if (peliculaBib?.estado === 'por_ver') {
-        // Si ya está por ver, la quitamos directamente
-        await eliminarPelicula(movieId);
-      } else {
-        // Si estaba en otro estado (ej: vista), la sobrescribimos
-        if (peliculaBib) await eliminarPelicula(movieId);
-        await agregarPelicula({
+  const datosPelicula = (): DatosPeliculaBiblioteca | null =>
+    detalles
+      ? {
           idPelicula: movieId,
           titulo: detalles.title,
           rutaPoster: detalles.poster_path,
-          estado: 'por_ver',
-          valoracion: 0,
-          fechaAnadido: Date.now(),
           fechaLanzamiento: detalles.release_date || undefined,
           providers: {
-            flatrate: providers?.flatrate?.map((p: any) => p.provider_id) || [],
-            rent: [...(providers?.rent || []), ...(providers?.buy || [])].map(
-              (p: any) => p.provider_id,
-            ),
+            flatrate: providers?.flatrate?.map((p) => p.provider_id) ?? [],
+            rent: [...(providers?.rent ?? []), ...(providers?.buy ?? [])].map((p) => p.provider_id),
           },
-        });
-      }
-      await recargarBiblioteca();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al guardar');
-    } finally {
-      setAccionBib(false);
-    }
-  };
-
-  /** ✅ ACCIÓN: Marcar como Vista */
-  const onToggleVista = async (valoracionFinal = 0) => {
-    if (!user || !detalles) return;
-    setAccionBib(true);
-    try {
-      if (peliculaBib?.estado === 'vista' && valoracionFinal === 0) {
-        // Desmarcar (quitar de biblioteca)
-        await eliminarPelicula(movieId);
-      } else {
-        if (peliculaBib?.estado === 'por_ver') {
-          // Transición simple: de 'por_ver' a 'vista'
-          await actualizarEstadoPelicula(movieId, 'vista');
-          if (valoracionFinal !== 0) {
-              await actualizarValoracion(movieId, valoracionFinal);
-          }
-        } else {
-          // Alta nueva como 'vista'
-          if (peliculaBib) await eliminarPelicula(movieId);
-          await agregarPelicula({
-            idPelicula: movieId,
-            titulo: detalles.title,
-            rutaPoster: detalles.poster_path,
-            estado: 'vista',
-            valoracion: valoracionFinal,
-            fechaAnadido: Date.now(),
-            fechaVisto: Date.now(),
-            fechaLanzamiento: detalles.release_date || undefined,
-            providers: {
-              flatrate: providers?.flatrate?.map((p: any) => p.provider_id) || [],
-              rent: [...(providers?.rent || []), ...(providers?.buy || [])].map(
-                (p: any) => p.provider_id,
-              ),
-            },
-          });
         }
-      }
-      await recargarBiblioteca();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al guardar');
+      : null;
+
+  const ejecutar = async (accion: () => Promise<void>, mensajeError: string) => {
+    if (!user) return;
+    setAccionBib(true);
+    setError(null);
+    try {
+      await accion();
+    } catch {
+      setError(mensajeError);
     } finally {
       setAccionBib(false);
     }
   };
 
-  /** ⭐ ACCIÓN: Cambiar solo la nota */
-  const onActualizarValoracion = async (valor: number) => {
-    if (!user || !peliculaBib) return;
-    setAccionBib(true);
-    try {
-      await actualizarValoracion(movieId, valor);
-      await recargarBiblioteca();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al valorar');
-    } finally {
-      setAccionBib(false);
-    }
-  };
+  /** Por ver: si ya está en Por ver la quita; si no, la pone (si estaba vista, deja de estarlo). */
+  const onPorVer = () =>
+    ejecutar(async () => {
+      if (peliculaBib?.estado === 'por_ver') {
+        await eliminarPelicula(movieId);
+        return;
+      }
+      const datos = datosPelicula();
+      if (datos) await guardarEnPorVer(datos);
+    }, 'No hemos podido guardar la peli. Revisa la conexión.');
+
+  /**
+   * Marca la peli como vista con su valoración (0 = sin valorar).
+   * Si ya estaba vista, solo cambia la valoración: nunca la borra ni le cambia la fecha.
+   */
+  const onMarcarVista = (valoracion: number, fechaVisto?: number) =>
+    ejecutar(async () => {
+      const datos = datosPelicula();
+      if (datos) await marcarComoVista(datos, peliculaBib, valoracion, fechaVisto);
+    }, 'No hemos podido guardar la peli. Revisa la conexión.');
+
+  /** Cambia solo la valoración de una peli ya vista. */
+  const onActualizarValoracion = (valoracion: number) =>
+    ejecutar(() => actualizarValoracion(movieId, valoracion), 'No hemos podido guardar la nota.');
+
+  /** Cambia la fecha en que se vio. */
+  const onCambiarFechaVisto = (fecha: number) =>
+    ejecutar(() => actualizarFechaVisto(movieId, fecha), 'No hemos podido cambiar la fecha.');
+
+  /** Quita la peli de la biblioteca (Por ver o Vistas). Solo con una acción explícita. */
+  const onQuitar = () =>
+    ejecutar(() => eliminarPelicula(movieId), 'No hemos podido quitar la peli.');
 
   return {
     peliculaBib,
-    bibCargando,
+    bibCargando: cargando,
     accionBib,
     userError: error,
     onPorVer,
-    onToggleVista,
+    onMarcarVista,
     onActualizarValoracion,
-    recargarBiblioteca,
+    onCambiarFechaVisto,
+    onQuitar,
   };
 }

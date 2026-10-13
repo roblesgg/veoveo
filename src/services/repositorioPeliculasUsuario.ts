@@ -40,22 +40,6 @@ export function escucharBiblioteca(
   );
 }
 
-/**
- * Recupera la información de una película específica dentro de la biblioteca del usuario actual.
- */
-export async function obtenerPeliculaUsuario(idPelicula: number): Promise<PeliculaUsuario | null> {
-  try {
-    const uid = getFirebaseAuth()?.currentUser?.uid;
-    const db = getFirestoreDb();
-    if (!uid || !db) return null;
-    const snap = await getDoc(doc(db, 'usuarios', uid, 'peliculas', String(idPelicula)));
-    if (!snap.exists()) return null;
-    return snap.data() as PeliculaUsuario;
-  } catch {
-    return null;
-  }
-}
-
 /** 
  * Recupera la información de una película específica de CUALQUIER usuario (ej: un amigo).
  */
@@ -96,23 +80,66 @@ export async function listarPeliculasPorEstadoDeUsuario(
   return snap.docs.map((d: any) => d.data() as PeliculaUsuario);
 }
 
-/** 
- * Añade una película a la biblioteca del usuario.
- */
-export async function agregarPelicula(p: PeliculaUsuario): Promise<void> {
-  const uid = uidOrThrow();
-  await setDoc(refPelicula(uid, p.idPelicula), p);
-}
+/** Datos de la peli que se guardan al añadirla a la biblioteca. */
+export type DatosPeliculaBiblioteca = Pick<
+  PeliculaUsuario,
+  'idPelicula' | 'titulo' | 'rutaPoster' | 'fechaLanzamiento' | 'providers'
+>;
 
-/** 
- * Cambia el estado de una película (ej: de 'por ver' a 'vista').
+/**
+ * Marca una peli como vista con UNA sola escritura y sin perder datos:
+ * - si no estaba en la biblioteca, la crea con la fecha de vista (hoy si no se indica);
+ * - si estaba en Por ver, cambia el estado y guarda la fecha de vista (hoy si no se indica);
+ * - si ya estaba vista, cambia la valoración y, SOLO si se indica, la fecha.
  */
-export async function actualizarEstadoPelicula(
-  idPelicula: number,
-  nuevoEstado: 'por_ver' | 'vista',
+export async function marcarComoVista(
+  datos: DatosPeliculaBiblioteca,
+  existente: PeliculaUsuario | null,
+  valoracion: number,
+  fechaVisto?: number,
 ): Promise<void> {
   const uid = uidOrThrow();
-  await updateDoc(refPelicula(uid, idPelicula), { estado: nuevoEstado });
+  const ref = refPelicula(uid, datos.idPelicula);
+  if (existente?.estado === 'vista') {
+    await updateDoc(ref, fechaVisto ? { valoracion, fechaVisto } : { valoracion });
+  } else if (existente?.estado === 'por_ver') {
+    await updateDoc(ref, { estado: 'vista', valoracion, fechaVisto: fechaVisto ?? Date.now() });
+  } else {
+    await setDoc(ref, sinIndefinidos({
+      ...datos,
+      estado: 'vista',
+      valoracion,
+      fechaAnadido: Date.now(),
+      fechaVisto: fechaVisto ?? Date.now(),
+    }));
+  }
+}
+
+/** Pone una peli en Por ver (si estaba vista, pierde la valoración y la fecha de vista). */
+export async function guardarEnPorVer(datos: DatosPeliculaBiblioteca): Promise<void> {
+  const uid = uidOrThrow();
+  await setDoc(refPelicula(uid, datos.idPelicula), sinIndefinidos({
+    ...datos,
+    estado: 'por_ver',
+    valoracion: 0,
+    fechaAnadido: Date.now(),
+  }));
+}
+
+/** Cambia la fecha en que el usuario vio la peli. */
+export async function actualizarFechaVisto(idPelicula: number, fechaVisto: number): Promise<void> {
+  const uid = uidOrThrow();
+  await updateDoc(refPelicula(uid, idPelicula), { fechaVisto });
+}
+
+/** Fecha de referencia de una peli vista: cuándo se vio o, si no consta, cuándo se añadió. */
+export function fechaDeVista(p: PeliculaUsuario): number {
+  return p.fechaVisto ?? p.fechaAnadido;
+}
+
+// Firestore no acepta `undefined` en los campos.
+function sinIndefinidos<T extends object>(obj: T): T {
+  return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as T;
 }
 
 /** 
@@ -145,24 +172,4 @@ export async function contarPeliculasPorEstado(estado: string): Promise<number> 
   } catch {
     return 0;
   }
-}
-
-/** 
- * Helper de flujo: Elimina la película y la vuelve a añadir como 'por ver'.
- * Útil para reiniciar el estado de una película rápidamente.
- */
-export async function reemplazarPorPorVer(
-  idPelicula: number,
-  titulo: string,
-  rutaPoster: string | null,
-): Promise<void> {
-  await eliminarPelicula(idPelicula);
-  await agregarPelicula({
-    idPelicula,
-    titulo,
-    rutaPoster,
-    estado: 'por_ver',
-    valoracion: 0,
-    fechaAnadido: Date.now(),
-  });
 }
