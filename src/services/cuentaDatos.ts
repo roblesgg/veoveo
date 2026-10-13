@@ -29,12 +29,16 @@ import { salirDelGrupo } from './repositorioChats';
 const MAX_MENSAJES_POR_CHAT = 500;
 
 async function chatsDondeEstoy(yo: string) {
-  const snap = await getDocs(query(collection(dbOrThrow(), 'chats'), where('participants', 'array-contains', yo)));
+  const snap = await getDocs(
+    query(collection(dbOrThrow(), 'chats'), where('participants', 'array-contains', yo)),
+  );
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Chat);
 }
 
 async function matchesDondeEstoy(yo: string) {
-  const snap = await getDocs(query(collection(dbOrThrow(), 'matches'), where('participants', 'array-contains', yo)));
+  const snap = await getDocs(
+    query(collection(dbOrThrow(), 'matches'), where('participants', 'array-contains', yo)),
+  );
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as MovieMatch);
 }
 
@@ -56,21 +60,26 @@ const datos = async (ref: DocumentReference) => {
 export async function exportarMisDatos(): Promise<string> {
   const db = dbOrThrow();
   const yo = uidOrThrow();
-  const [perfil, cuenta, avisos, preferencias, peliculas, solicitudes, chats, matches] = await Promise.all([
-    datos(doc(db, 'usuarios', yo)),
-    datos(doc(db, 'usuarios', yo, 'privado', 'cuenta')),
-    datos(doc(db, 'usuarios', yo, 'privado', 'avisos')),
-    datos(doc(db, 'usuarios', yo, 'perfil', 'preferencias')),
-    getDocs(collection(db, 'usuarios', yo, 'peliculas')),
-    solicitudesMias(yo),
-    chatsDondeEstoy(yo),
-    matchesDondeEstoy(yo),
-  ]);
+  const [perfil, cuenta, avisos, preferencias, peliculas, solicitudes, chats, matches] =
+    await Promise.all([
+      datos(doc(db, 'usuarios', yo)),
+      datos(doc(db, 'usuarios', yo, 'privado', 'cuenta')),
+      datos(doc(db, 'usuarios', yo, 'privado', 'avisos')),
+      datos(doc(db, 'usuarios', yo, 'perfil', 'preferencias')),
+      getDocs(collection(db, 'usuarios', yo, 'peliculas')),
+      solicitudesMias(yo),
+      chatsDondeEstoy(yo),
+      matchesDondeEstoy(yo),
+    ]);
 
   const misMensajes = await Promise.all(
     chats.map(async (c) => {
       const snap = await getDocs(
-        query(collection(db, 'chats', c.id, 'msj'), where('senderId', '==', yo), limit(MAX_MENSAJES_POR_CHAT)),
+        query(
+          collection(db, 'chats', c.id, 'msj'),
+          where('senderId', '==', yo),
+          limit(MAX_MENSAJES_POR_CHAT),
+        ),
       ).catch(() => null);
       return {
         chat: c.id,
@@ -79,13 +88,20 @@ export async function exportarMisDatos(): Promise<string> {
         participantes: c.participants,
         mensajes: (snap?.docs ?? []).map((d) => {
           const m = d.data();
-          return { fecha: new Date(m.timestamp).toISOString(), tipo: m.type, texto: m.eliminado ? null : m.text };
+          return {
+            fecha: new Date(m.timestamp).toISOString(),
+            tipo: m.type,
+            texto: m.eliminado ? null : m.text,
+          };
         }),
       };
     }),
   );
   const misVotos = await Promise.all(
-    matches.map(async (m) => ({ match: m.id, votos: await datos(doc(db, 'matches', m.id, 'votos', yo)).catch(() => null) })),
+    matches.map(async (m) => ({
+      match: m.id,
+      votos: await datos(doc(db, 'matches', m.id, 'votos', yo)).catch(() => null),
+    })),
   );
 
   // El token de avisos identifica el dispositivo, no a ti: se indica si existe, sin copiarlo
@@ -129,7 +145,9 @@ export async function borrarMisDatos(alAvanzar?: (paso: PasoBorrado) => void): P
 
   // 2. Solicitudes enviadas y recibidas
   alAvanzar?.('solicitudes');
-  await Promise.all((await solicitudesMias(yo)).map((d) => deleteDoc(d.ref).catch(() => undefined)));
+  await Promise.all(
+    (await solicitudesMias(yo)).map((d) => deleteDoc(d.ref).catch(() => undefined)),
+  );
 
   // 3. Chats: fuera de los grupos y sin mi estado (leído, silenciado). Los mensajes se quedan.
   alAvanzar?.('chats');
@@ -142,7 +160,8 @@ export async function borrarMisDatos(alAvanzar?: (paso: PasoBorrado) => void): P
   alAvanzar?.('match');
   for (const m of await matchesDondeEstoy(yo)) {
     await deleteDoc(doc(db, 'matches', m.id, 'votos', yo)).catch(() => undefined);
-    if (m.estado === 'active') await updateDoc(doc(db, 'matches', m.id), { estado: 'cancelled' }).catch(() => undefined);
+    if (m.estado === 'active')
+      await updateDoc(doc(db, 'matches', m.id), { estado: 'cancelled' }).catch(() => undefined);
   }
 
   // 5. Biblioteca (en lotes de 400)

@@ -112,8 +112,16 @@ export function AjustesScreen() {
             <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.5)" />
           </Pressable>
           {[
-            { ruta: 'Cuenta' as const, titulo: 'Cuenta', texto: 'Correo, contraseña, descargar tus datos y borrar la cuenta.' },
-            { ruta: 'Notificaciones' as const, titulo: 'Notificaciones', texto: 'Qué avisos quieres recibir.' },
+            {
+              ruta: 'Cuenta' as const,
+              titulo: 'Cuenta',
+              texto: 'Correo, contraseña, descargar tus datos y borrar la cuenta.',
+            },
+            {
+              ruta: 'Notificaciones' as const,
+              titulo: 'Notificaciones',
+              texto: 'Qué avisos quieres recibir.',
+            },
           ].map((f) => (
             <Pressable
               key={f.ruta}

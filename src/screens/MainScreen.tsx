@@ -22,6 +22,7 @@ import { DiscoverTab } from './DiscoverTab';
 import { SocialTab } from './SocialTab';
 import { ChatsTab } from './ChatsTab';
 import { useChats } from '../context/ChatsContext';
+import { Bienvenida, bienvenidaPendiente } from '../components/Bienvenida';
 
 const PESTANA = { descubrir: 0, biblioteca: 1, chats: 2, social: 3 } as const;
 
@@ -36,6 +37,11 @@ export function MainScreen() {
   const [appReady, setAppReady] = useState(false);
 
   const isFocused = useIsFocused();
+  // Bienvenida la primera vez en este dispositivo
+  const [bienvenida, setBienvenida] = useState(false);
+  useEffect(() => {
+    void bienvenidaPendiente().then(setBienvenida);
+  }, []);
   const [userProfile, setUserProfile] = useState<{ fotoPerfil?: string | null }>({});
 
   // Refrescar la foto del perfil al volver a esta pantalla (por si se cambió en Perfil)
@@ -147,7 +153,12 @@ export function MainScreen() {
         ) : null}
       </View>
 
-      <LiquidBottomBar onTabChange={handleTabPress} paginaActual={paginaActual} noLeidos={noLeidos} />
+      <LiquidBottomBar
+        onTabChange={handleTabPress}
+        paginaActual={paginaActual}
+        noLeidos={noLeidos}
+      />
+      {bienvenida && <Bienvenida onTerminar={() => setBienvenida(false)} />}
     </LinearGradient>
   );
 }

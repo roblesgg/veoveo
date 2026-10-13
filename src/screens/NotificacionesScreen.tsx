@@ -27,7 +27,9 @@ export function NotificacionesScreen() {
 
   useEffect(() => {
     if (!user) return;
-    void obtenerAvisos(user.uid).then((a) => a?.notificaciones && setPrefs({ ...POR_DEFECTO, ...a.notificaciones }));
+    void obtenerAvisos(user.uid).then(
+      (a) => a?.notificaciones && setPrefs({ ...POR_DEFECTO, ...a.notificaciones }),
+    );
   }, [user]);
 
   const cambiar = (clave: keyof Prefs, valor: boolean) => {
@@ -66,11 +68,22 @@ export function NotificacionesScreen() {
         <Text style={styles.titulo}>Notificaciones</Text>
       </View>
       {error && <Text style={styles.error}>{error}</Text>}
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 40, gap: 12 }}>
-        {fila('mensajes', 'Mensajes', 'Cuando te escriben en un chat. Un chat silenciado no avisa nunca.')}
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingBottom: insets.bottom + 40,
+          gap: 12,
+        }}
+      >
+        {fila(
+          'mensajes',
+          'Mensajes',
+          'Cuando te escriben en un chat. Un chat silenciado no avisa nunca.',
+        )}
         {fila('match', 'Movie Match', 'Cuando te invitan a un Match y cuando termina.')}
         <Text style={styles.ayuda}>
-          Si no te llega ningún aviso, revisa que VeoVeo tenga permiso de notificaciones en los ajustes del móvil.
+          Si no te llega ningún aviso, revisa que VeoVeo tenga permiso de notificaciones en los
+          ajustes del móvil.
         </Text>
         <Pressable onPress={() => void Linking.openSettings()}>
           <Text style={styles.enlace}>Abrir los ajustes del móvil</Text>
@@ -82,9 +95,21 @@ export function NotificacionesScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: COLORS.background },
-  cabecera: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingBottom: 12 },
+  cabecera: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingBottom: 12,
+  },
   titulo: { color: COLORS.text, fontSize: 20, fontFamily: FUENTES.titulo },
-  error: { color: COLORS.error, fontSize: 13, fontFamily: FUENTES.texto, textAlign: 'center', marginBottom: 8 },
+  error: {
+    color: COLORS.error,
+    fontSize: 13,
+    fontFamily: FUENTES.texto,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
   tarjeta: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -96,6 +121,12 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.08)',
   },
   etiqueta: { color: COLORS.text, fontSize: 16, fontFamily: FUENTES.titulo },
-  ayuda: { color: COLORS.textMuted, fontSize: 13, lineHeight: 19, fontFamily: FUENTES.texto, marginTop: 2 },
+  ayuda: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    lineHeight: 19,
+    fontFamily: FUENTES.texto,
+    marginTop: 2,
+  },
   enlace: { color: COLORS.primary, fontSize: 14, fontFamily: FUENTES.seminegrita },
 });

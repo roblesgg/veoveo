@@ -96,7 +96,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (u) {
         void (async () => {
           try {
-            const [, token] = await Promise.all([asegurarPerfilFirestore(u), obtenerTokenSiHayPermiso()]);
+            const [, token] = await Promise.all([
+              asegurarPerfilFirestore(u),
+              obtenerTokenSiHayPermiso(),
+            ]);
             await registrarSesion(u.uid, token);
           } catch {
             // Sin conexión: se reintenta en el próximo arranque
@@ -276,7 +279,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!actual) throw new Error('Sin sesión');
       // Con contraseña si entra con correo; si no, vuelve a pedir la cuenta de Google
       if (password && actual.email) {
-        await reauthenticateWithCredential(actual, EmailAuthProvider.credential(actual.email, password));
+        await reauthenticateWithCredential(
+          actual,
+          EmailAuthProvider.credential(actual.email, password),
+        );
         return;
       }
       if (Platform.OS === 'web') {

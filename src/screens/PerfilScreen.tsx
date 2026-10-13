@@ -153,8 +153,15 @@ export function PerfilScreen() {
           </Pressable>
 
           {/* Bio: una frase sobre ti (máx. 160, lo exigen las reglas) */}
-          <Pressable onPress={() => setBioEditando(bioGuardada ?? usuario.bio ?? '')} hitSlop={8} accessibilityLabel="Editar tu bio">
-            <Text style={[styles.bioText, !(bioGuardada ?? usuario.bio) && styles.bioVacia]} numberOfLines={3}>
+          <Pressable
+            onPress={() => setBioEditando(bioGuardada ?? usuario.bio ?? '')}
+            hitSlop={8}
+            accessibilityLabel="Editar tu bio"
+          >
+            <Text
+              style={[styles.bioText, !(bioGuardada ?? usuario.bio) && styles.bioVacia]}
+              numberOfLines={3}
+            >
               {(bioGuardada ?? usuario.bio) || 'Añade una frase sobre ti'}
             </Text>
           </Pressable>
@@ -224,7 +231,12 @@ export function PerfilScreen() {
       />
 
       {/* Editar la bio */}
-      <Modal visible={bioEditando !== null} transparent animationType="fade" onRequestClose={() => setBioEditando(null)}>
+      <Modal
+        visible={bioEditando !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setBioEditando(null)}
+      >
         <View style={styles.modalBackdrop}>
           <View style={styles.bioModal}>
             <Text style={styles.bioModalTitulo}>Tu bio</Text>
@@ -376,15 +388,51 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(105,223,217, 0.4)',
   },
   downloadText: { color: '#fff', fontSize: 16, fontWeight: '800' },
-  modalBackdrop: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, backgroundColor: 'rgba(2,6,23,0.75)' },
-  bioText: { color: 'rgba(255,255,255,0.75)', fontSize: 15, lineHeight: 21, textAlign: 'center', marginTop: 10, maxWidth: 300 },
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    backgroundColor: 'rgba(2,6,23,0.75)',
+  },
+  bioText: {
+    color: 'rgba(255,255,255,0.75)',
+    fontSize: 15,
+    lineHeight: 21,
+    textAlign: 'center',
+    marginTop: 10,
+    maxWidth: 300,
+  },
   bioVacia: { color: COLORS.primary },
-  bioModal: { width: '100%', maxWidth: 420, backgroundColor: COLORS.surface, borderRadius: 24, padding: 20, gap: 10 },
+  bioModal: {
+    width: '100%',
+    maxWidth: 420,
+    backgroundColor: COLORS.surface,
+    borderRadius: 24,
+    padding: 20,
+    gap: 10,
+  },
   bioModalTitulo: { color: '#fff', fontSize: 18, fontWeight: '800' },
-  bioInput: { minHeight: 90, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)', padding: 12, color: '#fff', fontSize: 15, textAlignVertical: 'top' },
+  bioInput: {
+    minHeight: 90,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    padding: 12,
+    color: '#fff',
+    fontSize: 15,
+    textAlignVertical: 'top',
+  },
   bioContador: { color: 'rgba(255,255,255,0.4)', fontSize: 12, textAlign: 'right' },
   bioBotones: { flexDirection: 'row', gap: 10, justifyContent: 'flex-end' },
-  bioBoton: { height: 44, paddingHorizontal: 18, borderRadius: 999, justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
+  bioBoton: {
+    height: 44,
+    paddingHorizontal: 18,
+    borderRadius: 999,
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+  },
   bioBotonOk: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   bioBotonTexto: { color: '#fff', fontSize: 15, fontWeight: '700' },
 });
