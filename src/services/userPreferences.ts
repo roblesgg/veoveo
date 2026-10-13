@@ -12,6 +12,7 @@ import {
   cargarPlataformas,
   guardarPlataformas,
 } from '../storage/preferences';
+import { migrarCarruseles } from '../constants/carruseles';
 
 /**
  * Sincroniza las preferencias del usuario al iniciar sesión.
@@ -30,7 +31,8 @@ export async function sincronizarPreferenciasConFirestore(userId: string) {
       const data = snap.data();
       // ESCENARIO: Descargar de Firestore a Local (el usuario ya tenía ajustes en la nube)
       if (data.carruseles) {
-        await guardarCarruselesActivos(data.carruseles);
+        // Los nombres anteriores a la 3.0 se convierten a los ids del catálogo nuevo
+        await guardarCarruselesActivos(migrarCarruseles(data.carruseles));
       }
       if (data.plataformas) {
         await guardarPlataformas(data.plataformas.map(String));

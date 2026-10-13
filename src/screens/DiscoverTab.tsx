@@ -150,11 +150,7 @@ export function DiscoverTab({
 
   // EFECTO: Cargar configuración personalizada de carruseles del usuario
   useEffect(() => {
-    void (async () => {
-      const saved = await cargarCarruselesActivos();
-      if (saved.length > 0) setCarruselesActivos(saved);
-      else setCarruselesActivos(['Tendencias', 'Próximamente', 'Populares']);
-    })();
+    void cargarCarruselesActivos().then(setCarruselesActivos);
   }, []);
 
   // EFECTO: Cargar plataformas de streaming preferidas para filtrar logos
@@ -280,7 +276,7 @@ export function DiscoverTab({
             renderItem={(params) => (
               <ScaleDecorator>
                 <CarruselPeliculas
-                  titulo={params.item}
+                  id={params.item}
                   drag={params.drag}
                   isActive={params.isActive}
                   modoEdicion
@@ -306,7 +302,7 @@ export function DiscoverTab({
             windowSize={3}
             renderItem={({ item }) => (
               <CarruselPeliculas
-                titulo={item}
+                id={item}
                 onPeliculaClick={onPeliculaClick}
                 misPlataformas={misPlataformas}
                 fontFamily={fontFamily}

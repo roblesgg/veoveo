@@ -2,12 +2,13 @@
  * ARCHIVO: components/discover/CarruselPeliculas.tsx
  * DESCRIPCIÓN: Carrusel horizontal de películas para la pantalla 'Descubrir'.
  * Cada carrusel representa una categoría (Tendencias, Popular, etc).
- * Soporta modo edición (reordenar por drag y eliminar), recarga manual 
+ * Soporta modo edición (reordenar por drag y eliminar), carga más pelis al llegar al final
  * y estados de biblioteca (visto/por ver) integrados en los carteles.
  */
 
-import React, { memo, useRef } from 'react';
+import React, { memo } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   Pressable,
   StyleSheet,
@@ -22,10 +23,12 @@ import { PosterItem } from './PosterItem';
 import type { Movie } from '../../types';
 import { COLORS, GLASS } from '../../theme/colors';
 import { marcarHito } from '../../utils/medicionArranque';
-import { useCarrusel, useRecargaCarruseles } from '../../hooks/useDescubrir';
+import { useCarrusel, useRecomendaciones } from '../../hooks/useDescubrir';
+import { obtenerCarrusel } from '../../constants/carruseles';
 
 type Props = {
-  titulo: string;
+  /** Id del carrusel en el catálogo (constants/carruseles.ts) */
+  id: string;
   modoEdicion: boolean;
   fontFamily: string;
   onEliminar: () => void;
@@ -41,7 +44,7 @@ type Props = {
 
 export const CarruselPeliculas = memo(
   ({
-    titulo,
+    id,
     modoEdicion,
     fontFamily,
     onEliminar,
@@ -51,25 +54,32 @@ export const CarruselPeliculas = memo(
     misPlataformas = [],
     libraryMap = {},
   }: Props) => {
-    const { data: peliculas = [], isFetching } = useCarrusel(titulo);
-    const { recargarCarrusel } = useRecargaCarruseles();
-    const listRef = useRef<FlatList<Movie>>(null);
+    const def = obtenerCarrusel(id);
+    const esParaTi = id === 'para-ti';
+    const catalogo = useCarrusel(id, Boolean(def?.ruta));
+    const recomendaciones = useRecomendaciones(esParaTi);
+    const peliculas: (Movie & { motivo?: string })[] = esParaTi
+      ? recomendaciones.data ?? []
+      : catalogo.peliculas;
+    const cargando = esParaTi ? recomendaciones.isLoading : catalogo.isLoading;
+    const error = esParaTi ? recomendaciones.isError : catalogo.isError;
     if (peliculas.length > 0) marcarHito('primera fila con datos');
 
-    /** Recarga manual con el botón del final del carrusel */
-    const handleManualRefresh = () => {
-      if (isFetching) return;
-      recargarCarrusel(titulo);
-      listRef.current?.scrollToOffset({ offset: 0, animated: true });
+    if (!def) return null;
+
+    const cargarMas = () => {
+      if (!esParaTi && catalogo.hasNextPage && !catalogo.isFetchingNextPage) {
+        void catalogo.fetchNextPage();
+      }
     };
-    const refreshing = isFetching;
+    const reintentar = () => void (esParaTi ? recomendaciones.refetch() : catalogo.refetch());
 
     return (
       <View style={{ marginBottom: 28, opacity: isActive ? 0.5 : 1 }}>
         <View style={styles.carruselHeader}>
           {/* TÍTULO CON GESTO DE DRAG */}
           <Pressable onLongPress={drag} delayLongPress={200} style={styles.carruselTitleContainer}>
-            <Text style={[styles.carruselTitulo, { fontFamily }]}>{titulo}</Text>
+            <Text style={[styles.carruselTitulo, { fontFamily }]}>{def.titulo}</Text>
             {modoEdicion && (
               <Animated.View entering={FadeInRight}>
                 <Ionicons
@@ -90,37 +100,42 @@ export const CarruselPeliculas = memo(
           )}
         </View>
 
-        {/* LISTADO HORIZONTAL */}
+        {/* ESTADOS: vacío de "Para ti" y error con reintento */}
+        {!cargando && peliculas.length === 0 ? (
+          <Pressable onPress={error ? reintentar : undefined} style={styles.avisoCard}>
+            <Ionicons
+              name={error ? 'cloud-offline-outline' : 'sparkles-outline'}
+              size={22}
+              color={COLORS.primary}
+            />
+            <Text style={[styles.avisoTexto, { fontFamily }]}>
+              {error
+                ? 'No hemos podido cargar las pelis. Toca para reintentar.'
+                : esParaTi
+                  ? 'Valora con 4 o 5 estrellas las pelis que hayas visto y aquí te recomendaremos otras.'
+                  : 'No hay pelis en esta lista ahora mismo.'}
+            </Text>
+          </Pressable>
+        ) : (
+        /* LISTADO HORIZONTAL: carga más pelis al llegar al final */
         <FlatList
-          ref={listRef}
           horizontal
           data={peliculas}
           keyExtractor={(item) => String(item.id)}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 25, gap: 14 }}
           nestedScrollEnabled
-          removeClippedSubviews // Optimización para listas largas
+          removeClippedSubviews
           initialNumToRender={5}
-          overScrollMode="always"
-          
-          // ELEMENTO FINAL: Botón 'Recargar' (Nuevas películas)
-          ListFooterComponent={() => (
-            <Pressable
-              onPress={handleManualRefresh}
-              style={({ pressed }) => [
-                styles.footerCard,
-                { transform: [{ scale: pressed ? 0.95 : 1 }] },
-              ]}
-            >
-              <View style={[styles.footerCircle, { backgroundColor: `${COLORS.primary}20`, borderColor: `${COLORS.primary}40` }]}>
-                <Ionicons name={refreshing ? 'sync' : 'refresh'} size={28} color={COLORS.primary} />
+          onEndReached={cargarMas}
+          onEndReachedThreshold={0.6}
+          ListFooterComponent={
+            catalogo.isFetchingNextPage ? (
+              <View style={styles.footerCargando}>
+                <ActivityIndicator color={COLORS.primary} />
               </View>
-              <Text style={[styles.footerText, { fontFamily }]}>
-                {refreshing ? 'Cargando...' : 'Recargar'}
-              </Text>
-            </Pressable>
-          )}
-          
+            ) : null
+          }
           renderItem={({ item }) => (
             <PosterItem
               item={item}
@@ -130,6 +145,7 @@ export const CarruselPeliculas = memo(
             />
           )}
         />
+        )}
       </View>
     );
   },
@@ -146,6 +162,19 @@ const styles = StyleSheet.create({
   carruselTitleContainer: { flexDirection: 'row', alignItems: 'center' },
   carruselTitulo: { color: '#fff', fontSize: 20, fontWeight: '700' },
   eliminarBtn: { padding: 4 },
+  footerCargando: { width: 60, height: 195, justifyContent: 'center', alignItems: 'center' },
+  avisoCard: {
+    marginHorizontal: 25,
+    padding: 18,
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: GLASS.white,
+    borderWidth: 1,
+    borderColor: GLASS.border,
+  },
+  avisoTexto: { flex: 1, color: COLORS.textMuted, fontSize: 14, lineHeight: 20 },
   footerCard: {
     width: 100,
     height: 150,

@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CARRUSELES_POR_DEFECTO, migrarCarruseles } from '../constants/carruseles';
 
 /** Misma clave lógica que PreferencesHelper (SharedPreferences "carruseles_activos"). */
 const KEY_CARRUSELES_ACTIVOS = 'carruseles_activos';
@@ -7,16 +8,6 @@ const KEY_ORDEN_POR_VER = 'orden_por_ver';
 const KEY_ORDEN_VISTAS = 'orden_vistas';
 const KEY_PLATAFORMAS = 'mis_plataformas';
 
-export const DEFAULT_CARRUSELES = [
-  'Tendencias Semanales',
-  'Estrenos en Cartelera',
-  'Interesante para ti',
-  'Populares Ahora',
-  'Joyas de los 80/90',
-  'Mejor Valoradas',
-  'Cine de los 70',
-  'Acción y Pura Adrenalina',
-];
 
 let cachedAdultPreference: boolean | null = null;
 let cachedAdultPreferencePromise: Promise<boolean> | null = null;
@@ -48,17 +39,15 @@ export async function guardarPreferenciaAdulto(incluir: boolean): Promise<void> 
   await AsyncStorage.setItem(KEY_INCLUIR_ADULTO, incluir ? 'true' : 'false');
 }
 
+/** Ids de los carruseles activos. Convierte los nombres que se guardaban antes de la 3.0. */
 export async function cargarCarruselesActivos(): Promise<string[]> {
   try {
     const raw = await AsyncStorage.getItem(KEY_CARRUSELES_ACTIVOS);
-    if (raw) {
-      const parsed = JSON.parse(raw) as string[];
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    }
+    if (raw) return migrarCarruseles(JSON.parse(raw));
   } catch {
-    /* ignore */
+    /* sin datos guardados o corruptos: los de por defecto */
   }
-  return [...DEFAULT_CARRUSELES];
+  return [...CARRUSELES_POR_DEFECTO];
 }
 
 export async function guardarCarruselesActivos(carruseles: string[]): Promise<void> {

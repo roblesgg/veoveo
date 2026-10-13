@@ -10,7 +10,8 @@ import { marcarHito } from '../../utils/medicionArranque';
 import { usePlataformasPelicula } from '../../hooks/useDescubrir';
 
 type Props = {
-  item: Movie;
+  /** `motivo` solo en "Recomendado para ti": se enseña debajo del póster. */
+  item: Movie & { motivo?: string };
   onPeliculaClick: (id: number) => void;
   misPlataformas?: number[];
   libraryMap?: { [id: number]: { estado: 'por_ver' | 'vista', valoracion: number } };
@@ -62,13 +63,19 @@ export const PosterItem = memo(({ item, onPeliculaClick, misPlataformas = [], li
           </View>
         ) : null}
       </Pressable>
+      {item.motivo ? (
+        <Text style={styles.motivo} numberOfLines={2}>
+          {item.motivo}
+        </Text>
+      ) : null}
     </View>
   );
 });
 
 const styles = StyleSheet.create({
-  posterWrapper: { width: 130, aspectRatio: 2 / 3 },
-  posterCard: { flex: 1, borderRadius: 16, overflow: 'hidden', backgroundColor: '#1e1e2d' },
+  posterWrapper: { width: 130 },
+  posterCard: { width: 130, aspectRatio: 2 / 3, borderRadius: 16, overflow: 'hidden', backgroundColor: '#1e1e2d' },
+  motivo: { color: '#94A3B8', fontSize: 12, lineHeight: 16, marginTop: 6 },
   posterImg: { width: '100%', height: '100%' },
   posterFallback: { justifyContent: 'center', alignItems: 'center' },
   fallbackText: { color: 'rgba(255,255,255,0.2)', fontSize: 10, textAlign: 'center', padding: 8 },

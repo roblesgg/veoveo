@@ -18,6 +18,7 @@ import {
   where,
   addDoc,
   documentId,
+  limit,
 } from 'firebase/firestore';
 import type { SolicitudAmistad, UsuarioPerfil } from '../types';
 import { dbOrThrow, uidOrThrow } from './firebase';
@@ -38,6 +39,54 @@ async function getPerfil(uid: string): Promise<UsuarioPerfil | null> {
   const snap = await getDoc(doc(db, 'usuarios', uid));
   if (!snap.exists()) return null;
   return { uid: snap.id, ...snap.data() } as UsuarioPerfil;
+}
+
+/** Peli que le ha gustado a uno o varios amigos (para las recomendaciones). */
+export type FavoritaDeAmigos = {
+  idPelicula: number;
+  titulo: string;
+  rutaPoster: string | null;
+  amigos: string[]; // nombres de usuario
+};
+
+/**
+ * Pelis bien valoradas (4 o 5 estrellas) por tus amigos.
+ * Acotado para el plan gratuito: hasta 10 amigos y 10 pelis de cada uno.
+ */
+export async function obtenerFavoritasDeAmigos(): Promise<FavoritaDeAmigos[]> {
+  const db = dbOrThrow();
+  const perfil = await getPerfil(uidOrThrow());
+  const amigosUids = (perfil?.amigos ?? []).slice(0, 10);
+  if (amigosUids.length === 0) return [];
+
+  const amigos = await Promise.all(amigosUids.map((uid) => getPerfil(uid).catch(() => null)));
+  const porPeli = new Map<number, FavoritaDeAmigos>();
+
+  await Promise.all(
+    amigosUids.map(async (uid, i) => {
+      try {
+        const snap = await getDocs(
+          query(collection(db, 'usuarios', uid, 'peliculas'), where('valoracion', '>=', 4), limit(10)),
+        );
+        const nombre = amigos[i]?.username ?? 'Un amigo';
+        snap.docs.forEach((d) => {
+          const p = d.data();
+          if (p.estado !== 'vista') return;
+          const actual: FavoritaDeAmigos = porPeli.get(p.idPelicula) ?? {
+            idPelicula: p.idPelicula,
+            titulo: p.titulo,
+            rutaPoster: p.rutaPoster ?? null,
+            amigos: [],
+          };
+          actual.amigos.push(nombre);
+          porPeli.set(p.idPelicula, actual);
+        });
+      } catch {
+        // Si un amigo ya no lo es (amistad de un solo lado), sus reglas lo impiden: se ignora.
+      }
+    }),
+  );
+  return [...porPeli.values()];
 }
 
 /**

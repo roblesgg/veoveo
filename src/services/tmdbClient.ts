@@ -123,6 +123,23 @@ export const tmdbApi = {
     return tmdbFetch<MovieResponse>(`trending/movie/${periodo}?language=${idioma}`);
   },
 
+  /** Lista de películas de cualquier ruta de TMDB (carruseles del catálogo). */
+  async listaPeliculas(ruta: string, params: Record<string, string> = {}, pagina = 1, idioma = 'es-ES') {
+    const incluirAdulto = await preferences.cargarPreferenciaAdulto();
+    const query = new URLSearchParams({
+      language: idioma,
+      page: String(pagina),
+      include_adult: String(incluirAdulto),
+      ...params,
+    });
+    return tmdbFetch<MovieResponse>(`${ruta}?${query.toString()}`);
+  },
+
+  /** Películas similares a una dada */
+  async obtenerSimilares(movieId: number, idioma = 'es-ES') {
+    return tmdbFetch<MovieResponse>(`movie/${movieId}/similar?language=${idioma}&page=1`);
+  },
+
   /** Acceso directo a discover para filtros personalizados complejos */
   async descubrirPeliculas(filtros: string, idioma = 'es-ES', pagina = 1) {
     const incluirAdulto = await preferences.cargarPreferenciaAdulto();

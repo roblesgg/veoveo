@@ -11,13 +11,13 @@ import { Modal, Pressable, StyleSheet, Text, View, FlatList, BackHandler } from 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
-import { CARRUSELES_DISPONIBLES } from '../../constants/carruseles';
+import { CATALOGO_CARRUSELES } from '../../constants/carruseles';
 
 type Props = {
   visible: boolean;
   onClose: () => void;
-  carruselesActivos: string[]; // Nombres de los carruseles ya visibles
-  onToggle: (nombre: string) => void; // Callback para añadir/quitar
+  carruselesActivos: string[]; // Ids de los carruseles ya visibles
+  onToggle: (id: string) => void; // Añadir o quitar
   fontFamily: string;
 };
 
@@ -60,8 +60,8 @@ export const CategoryModal = React.memo(
 
               {/* LISTADO: Grid de categorías disponibles (2 columnas) */}
               <FlatList
-                data={CARRUSELES_DISPONIBLES}
-                keyExtractor={(item) => item}
+                data={CATALOGO_CARRUSELES}
+                keyExtractor={(item) => item.id}
                 numColumns={2}
                 columnWrapperStyle={{ gap: 12 }}
                 showsVerticalScrollIndicator={false}
@@ -69,12 +69,12 @@ export const CategoryModal = React.memo(
                   paddingBottom: insets.bottom + 120, // Espacio para el botón flotante
                   paddingTop: 4,
                 }}
-                renderItem={({ item: nombre }) => {
-                  const selected = carruselesActivos.includes(nombre);
+                renderItem={({ item: def }) => {
+                  const selected = carruselesActivos.includes(def.id);
                   return (
                     <Pressable
                       style={[styles.categoryTile, selected && styles.categoryTileSelected]}
-                      onPress={() => onToggle(nombre)}
+                      onPress={() => onToggle(def.id)}
                     >
                       <Ionicons
                         name={selected ? 'checkmark-circle' : 'add-circle-outline'}
@@ -87,7 +87,7 @@ export const CategoryModal = React.memo(
                           { fontFamily, color: selected ? '#fff' : 'rgba(255,255,255,0.4)' },
                         ]}
                       >
-                        {nombre}
+                        {def.titulo}
                       </Text>
                     </Pressable>
                   );
