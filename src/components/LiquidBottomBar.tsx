@@ -19,7 +19,8 @@ export function LiquidBottomBar({ onTabChange, paginaActual }: Props) {
   const items = [
     { iconActive: 'compass', iconInactive: 'compass-outline', index: 0 },
     { iconActive: 'library', iconInactive: 'library-outline', index: 1 },
-    { iconActive: 'people', iconInactive: 'people-outline', index: 2 },
+    { iconActive: 'chatbubble', iconInactive: 'chatbubble-outline', index: 2 },
+    { iconActive: 'people', iconInactive: 'people-outline', index: 3 },
   ] as const;
 
   // Ancho dinámico con límite para escritorio

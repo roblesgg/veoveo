@@ -21,7 +21,7 @@ import { BibliotecaTab } from './BibliotecaTab';
 import { DiscoverTab } from './DiscoverTab';
 import { SocialTab } from './SocialTab';
 
-const PESTANA = { descubrir: 0, biblioteca: 1, social: 2 } as const;
+const PESTANA = { descubrir: 0, biblioteca: 1, chats: 2, social: 3 } as const;
 
 export function MainScreen() {
   const { user } = useAuth();
@@ -119,8 +119,10 @@ export function MainScreen() {
           />
         ) : null}
 
-        {paginaActual === PESTANA.social ? (
+        {paginaActual === PESTANA.chats || paginaActual === PESTANA.social ? (
           <SocialTab
+            key={paginaActual}
+            modo={paginaActual === PESTANA.chats ? 'chats' : 'social'}
             fontFamily={ff}
             onUsuarioClick={(uid) => {
               navigation.navigate('BibliotecaAmigo', { amigoUid: uid });

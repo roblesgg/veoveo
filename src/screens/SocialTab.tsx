@@ -43,6 +43,8 @@ import { COLORS, CardSurface } from '../theme/colors';
 import { SHADOWS } from '../theme/theme';
 
 type Props = {
+  /** Pestaña de la barra que la usa: Chats o Social */
+  modo: 'chats' | 'social';
   fontFamily: string;
   onUsuarioClick: (uid: string) => void;
   onSolicitudesClick: () => void;
@@ -130,6 +132,7 @@ SocialChatRow.displayName = 'SocialChatRow';
  * COMPONENTE: SocialTab
  */
 export function SocialTab({
+  modo,
   fontFamily,
   onUsuarioClick,
   onSolicitudesClick,
@@ -139,9 +142,13 @@ export function SocialTab({
 }: Props) {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
+  // Hasta que lleguen los Chats y el Social nuevos (D2 y D4), esta pantalla sirve a las dos
+  // pestañas: en "chats" solo la lista de conversaciones; en "social", Amigos y Buscar.
+  const esChats = modo === 'chats';
+  const tabInicial = esChats ? 0 : 1;
 
   // ESTADOS DE UI
-  const [tab, setTab] = useState<0 | 1 | 2>(0); // 0: Chats, 1: Amigos, 2: Buscar
+  const [tab, setTab] = useState<0 | 1 | 2>(tabInicial); // 0: Chats, 1: Amigos, 2: Buscar
   const [chats, setChats] = useState<Chat[]>([]);
   const [loadingChats, setLoadingChats] = useState(true);
   const [socialSearch, setSocialSearch] = useState('');
@@ -261,15 +268,15 @@ export function SocialTab({
           setSocialSearch('');
           return true;
         }
-        if (tab !== 0) {
-          setTab(0);
+        if (tab !== tabInicial) {
+          setTab(tabInicial);
           return true;
         }
         return false;
       };
       const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
       return () => sub.remove();
-    }, [tab, buscarAtivaSocial]),
+    }, [tab, tabInicial, buscarAtivaSocial]),
   );
 
   return (
@@ -292,7 +299,7 @@ export function SocialTab({
       >
         <View style={styles.headerBorder} />
         <View style={[styles.headerRow, { top: Math.max(insets.top, 12) + 12 }]}>
-          <Text style={[styles.titulo, { fontFamily, flex: 1 }]}>Social</Text>
+          <Text style={[styles.titulo, { fontFamily, flex: 1 }]}>{esChats ? 'Chats' : 'Social'}</Text>
           <View style={styles.actionsTopRow}>
             {tab !== 2 && (
               <Pressable onPress={toggleSearch} style={styles.iconBtn} hitSlop={8}>
@@ -340,27 +347,19 @@ export function SocialTab({
 
       <View style={[styles.content, { paddingTop: insets.top + (buscarAtivaSocial ? 170 : 90) }]}>
         {/* BADGE DE SOLICITUDES: Solo visible si hay peticiones de amistad pendientes */}
-        <SolicitudesBadge
-          count={solPendientesCount}
-          onPress={onSolicitudesClick}
-          fontFamily={fontFamily}
-        />
+        {!esChats && (
+          <SolicitudesBadge
+            count={solPendientesCount}
+            onPress={onSolicitudesClick}
+            fontFamily={fontFamily}
+          />
+        )}
 
-        {/* SELECTOR DE SUB-PESTAÑAS (CHATS / AMIGOS / BUSCAR) */}
+        {/* SELECTOR DE SUB-PESTAÑAS (solo en Social: AMIGOS / BUSCAR) */}
+        {!esChats && (
         <View style={styles.tabContainer}>
           <View style={styles.tabCenteringWrapper}>
             <View style={[styles.tabWrapper, SHADOWS.macLight]}>
-              <Pressable
-                onPress={() => handleSetTab(0)}
-                style={[styles.tabBtn, tab === 0 && styles.tabOnBtn]}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={[styles.tabText, tab === 0 && styles.tabOnText, { fontFamily }]}
-                >
-                  Chats
-                </Text>
-              </Pressable>
               <Pressable
                 onPress={() => handleSetTab(1)}
                 style={[styles.tabBtn, tab === 1 && styles.tabOnBtn]}
@@ -386,6 +385,7 @@ export function SocialTab({
             </View>
           </View>
         </View>
+        )}
 
         <View style={styles.webCenteringWrapper}>
           {tab === 0 && (
