@@ -65,10 +65,21 @@ import { esOtroDia, formatearHora, formatearSeparadorDia } from '../utils/fechas
 import type { Chat, Message, MiembroChat } from '../types';
 
 // Colores para distinguir remitentes en los grupos (contraste suficiente sobre la burbuja oscura)
-const COLORES_REMITENTE = ['#F59E0B', '#22C55E', '#F472B6', '#69DFD9', '#A3E635', '#FB923C', '#C084FC'];
-const colorDe = (uid: string) => COLORES_REMITENTE[[...uid].reduce((n, c) => n + c.charCodeAt(0), 0) % COLORES_REMITENTE.length];
+const COLORES_REMITENTE = [
+  '#F59E0B',
+  '#22C55E',
+  '#F472B6',
+  '#69DFD9',
+  '#A3E635',
+  '#FB923C',
+  '#C084FC',
+];
+const colorDe = (uid: string) =>
+  COLORES_REMITENTE[[...uid].reduce((n, c) => n + c.charCodeAt(0), 0) % COLORES_REMITENTE.length];
 
-type Elemento = { tipo: 'mensaje'; mensaje: Message } | { tipo: 'dia'; clave: string; momento: number };
+type Elemento =
+  | { tipo: 'mensaje'; mensaje: Message }
+  | { tipo: 'dia'; clave: string; momento: number };
 
 export function ConversacionScreen() {
   const route = useRoute<any>();
@@ -109,7 +120,10 @@ export function ConversacionScreen() {
   useEffect(() => observarBloqueados(setBloqueados), []);
 
   const participantes = chat?.participants ?? [];
-  const autores = useMemo(() => [...recientes, ...anteriores].map((m) => m.senderId), [recientes, anteriores]);
+  const autores = useMemo(
+    () => [...recientes, ...anteriores].map((m) => m.senderId),
+    [recientes, anteriores],
+  );
   const perfiles = usePerfiles([...participantes, ...autores, yo]);
   const yoNombre = nombreDe(perfiles[yo], true);
 
@@ -139,7 +153,8 @@ export function ConversacionScreen() {
   // Marcar como leído al ver mensajes nuevos de otros
   const ultimo = recientes[0];
   useEffect(() => {
-    if (ultimo && ultimo.senderId !== yo) void marcarLeido(chatId, ultimo.timestamp).catch(() => undefined);
+    if (ultimo && ultimo.senderId !== yo)
+      void marcarLeido(chatId, ultimo.timestamp).catch(() => undefined);
   }, [chatId, ultimo?.id, yo]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const cargarMas = useCallback(async () => {
@@ -167,13 +182,10 @@ export function ConversacionScreen() {
   const otroUid = chat?.type === 'individual' ? chat.participants.find((p) => p !== yo) : undefined;
   const leBloqueé = otroUid ? bloqueados.includes(otroUid) : false;
   const otro = otroUid ? perfiles[otroUid] : undefined;
-  const enLinea = otro?.estado === 'online' && Date.now() - (otro.ultimoAcceso ?? 0) < 1000 * 60 * 10;
+  const enLinea =
+    otro?.estado === 'online' && Date.now() - (otro.ultimoAcceso ?? 0) < 1000 * 60 * 10;
   const subtitulo =
-    chat?.type === 'group'
-      ? `${chat.participants.length} miembros`
-      : enLinea
-        ? 'en línea'
-        : '';
+    chat?.type === 'group' ? `${chat.participants.length} miembros` : enLinea ? 'en línea' : '';
 
   const leidoPorTodos = (m: Message) => {
     const otros = (chat?.participants ?? []).filter((p) => p !== yo);
@@ -196,7 +208,11 @@ export function ConversacionScreen() {
             type: 'text',
             text: limpio,
             respuestaA: respondiendo
-              ? { msgId: respondiendo.id, senderId: respondiendo.senderId, text: respondiendo.text.slice(0, 120) }
+              ? {
+                  msgId: respondiendo.id,
+                  senderId: respondiendo.senderId,
+                  text: respondiendo.text.slice(0, 120),
+                }
               : undefined,
           },
           yoNombre,
@@ -244,7 +260,11 @@ export function ConversacionScreen() {
       },
     ];
     if (m.text) {
-      lista.push({ texto: 'Copiar', icono: (c) => <IconCopy size={22} color={c} />, onPress: () => void Clipboard.setStringAsync(m.text) });
+      lista.push({
+        texto: 'Copiar',
+        icono: (c) => <IconCopy size={22} color={c} />,
+        onPress: () => void Clipboard.setStringAsync(m.text),
+      });
     }
     if (mio && m.type === 'text') {
       lista.push({
@@ -266,7 +286,11 @@ export function ConversacionScreen() {
         peligro: true,
       });
     }
-    lista.push({ texto: 'Borrar solo para mí', icono: (c) => <IconEyeOff size={22} color={c} />, onPress: () => void borrarMensajeParaMi(chat.id, m.id) });
+    lista.push({
+      texto: 'Borrar solo para mí',
+      icono: (c) => <IconEyeOff size={22} color={c} />,
+      onPress: () => void borrarMensajeParaMi(chat.id, m.id),
+    });
     return lista;
   };
 
@@ -293,9 +317,12 @@ export function ConversacionScreen() {
       );
     }
 
-    const remitente = chat?.type === 'group' && !mio ? (
-      <Text style={[styles.remitente, { color: colorDe(m.senderId) }]}>{nombreDe(perfiles[m.senderId], true)}</Text>
-    ) : null;
+    const remitente =
+      chat?.type === 'group' && !mio ? (
+        <Text style={[styles.remitente, { color: colorDe(m.senderId) }]}>
+          {nombreDe(perfiles[m.senderId], true)}
+        </Text>
+      ) : null;
     const pie = (
       <View style={styles.pie}>
         <Text style={[styles.hora, mio && { color: 'rgba(2,6,23,0.65)' }]}>
@@ -318,10 +345,15 @@ export function ConversacionScreen() {
           {m.type === 'match_invite' ? remitente : null}
           <View style={styles.matchFila}>
             <IconCards size={18} color={COLORS.accent} strokeWidth={2} />
-            <Text style={styles.matchTitulo}>{m.type === 'match_result' ? 'Resultado del Movie Match' : 'Movie Match'}</Text>
+            <Text style={styles.matchTitulo}>
+              {m.type === 'match_result' ? 'Resultado del Movie Match' : 'Movie Match'}
+            </Text>
           </View>
           <Text style={styles.matchTexto}>{m.text}</Text>
-          <Pressable style={styles.matchBoton} onPress={() => navigation.navigate('MovieMatch', { matchId: m.matchId! })}>
+          <Pressable
+            style={styles.matchBoton}
+            onPress={() => navigation.navigate('MovieMatch', { matchId: m.matchId! })}
+          >
             <Text style={styles.matchBotonTexto}>{enCurso ? 'Jugar' : 'Ver coincidencias'}</Text>
           </Pressable>
         </View>
@@ -334,15 +366,28 @@ export function ConversacionScreen() {
         <Pressable
           onLongPress={() => setSeleccionado(m)}
           delayLongPress={250}
-          onPress={m.type === 'movie' && m.movieData ? () => navigation.navigate('Pelicula', { movieId: m.movieData!.id }) : undefined}
-          style={[styles.burbuja, mio ? styles.burbujaMia : styles.burbujaOtro, m.type === 'movie' && styles.burbujaPeli]}
+          onPress={
+            m.type === 'movie' && m.movieData
+              ? () => navigation.navigate('Pelicula', { movieId: m.movieData!.id })
+              : undefined
+          }
+          style={[
+            styles.burbuja,
+            mio ? styles.burbujaMia : styles.burbujaOtro,
+            m.type === 'movie' && styles.burbujaPeli,
+          ]}
         >
           {m.respuestaA ? (
             <View style={[styles.cita, mio && styles.citaMia]}>
               <Text style={[styles.citaAutor, mio && { color: COLORS.onAccent }]}>
-                {m.respuestaA.senderId === yo ? 'Tú' : nombreDe(perfiles[m.respuestaA.senderId], true)}
+                {m.respuestaA.senderId === yo
+                  ? 'Tú'
+                  : nombreDe(perfiles[m.respuestaA.senderId], true)}
               </Text>
-              <Text style={[styles.citaTexto, mio && { color: 'rgba(2,6,23,0.8)' }]} numberOfLines={2}>
+              <Text
+                style={[styles.citaTexto, mio && { color: 'rgba(2,6,23,0.8)' }]}
+                numberOfLines={2}
+              >
                 {m.respuestaA.text || 'Mensaje eliminado'}
               </Text>
             </View>
@@ -350,10 +395,25 @@ export function ConversacionScreen() {
           {m.type === 'movie' && m.movieData ? (
             <View>
               {m.movieData.posterPath ? (
-                <Image source={{ uri: posterUrl(m.movieData.posterPath, 'w342')! }} style={styles.poster} contentFit="cover" cachePolicy="memory-disk" />
+                <Image
+                  source={{ uri: posterUrl(m.movieData.posterPath, 'w342')! }}
+                  style={styles.poster}
+                  contentFit="cover"
+                  cachePolicy="memory-disk"
+                />
               ) : null}
-              <Text style={[styles.textoMensaje, mio && styles.textoMio, { fontFamily: FUENTES.titulo, marginTop: 8 }]}>{m.movieData.title}</Text>
-              <Text style={[styles.hora, mio && { color: 'rgba(2,6,23,0.65)' }]}>Toca para ver la ficha</Text>
+              <Text
+                style={[
+                  styles.textoMensaje,
+                  mio && styles.textoMio,
+                  { fontFamily: FUENTES.titulo, marginTop: 8 },
+                ]}
+              >
+                {m.movieData.title}
+              </Text>
+              <Text style={[styles.hora, mio && { color: 'rgba(2,6,23,0.65)' }]}>
+                Toca para ver la ficha
+              </Text>
             </View>
           ) : (
             <Text style={[styles.textoMensaje, mio && styles.textoMio]}>{m.text}</Text>
@@ -365,7 +425,10 @@ export function ConversacionScreen() {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <View style={[styles.cabecera, { paddingTop: insets.top + 8 }]}>
         <Pressable onPress={() => navigation.goBack()} hitSlop={12} accessibilityLabel="Volver">
           <IconChevronLeft size={28} color={COLORS.text} strokeWidth={2} />
@@ -398,7 +461,11 @@ export function ConversacionScreen() {
             style={[styles.botonMatch, chat?.activeMatchId && styles.botonMatchActivo]}
             accessibilityLabel={chat?.activeMatchId ? 'Seguir el Movie Match' : 'Nuevo Movie Match'}
           >
-            <IconCards size={20} color={chat?.activeMatchId ? COLORS.onAccent : COLORS.accent} strokeWidth={2} />
+            <IconCards
+              size={20}
+              color={chat?.activeMatchId ? COLORS.onAccent : COLORS.accent}
+              strokeWidth={2}
+            />
           </Pressable>
         )}
       </View>
@@ -411,7 +478,11 @@ export function ConversacionScreen() {
         contentContainerStyle={styles.lista}
         onEndReached={() => void cargarMas()}
         onEndReachedThreshold={0.3}
-        ListFooterComponent={cargandoMas ? <ActivityIndicator color={COLORS.textMuted} style={{ marginVertical: 16 }} /> : null}
+        ListFooterComponent={
+          cargandoMas ? (
+            <ActivityIndicator color={COLORS.textMuted} style={{ marginVertical: 16 }} />
+          ) : null
+        }
         ListEmptyComponent={
           <View style={[styles.centro, { transform: [{ scaleY: -1 }], paddingVertical: 40 }]}>
             <Text style={styles.vacioTexto}>Escribe el primer mensaje.</Text>
@@ -461,7 +532,11 @@ export function ConversacionScreen() {
             </View>
           )}
           <View style={styles.entrada}>
-            <Pressable onPress={() => setMenuMas((v) => !v)} style={styles.botonMas} accessibilityLabel="Compartir una peli">
+            <Pressable
+              onPress={() => setMenuMas((v) => !v)}
+              style={styles.botonMas}
+              accessibilityLabel="Compartir una peli"
+            >
               <IconPlus size={22} color={COLORS.text} strokeWidth={2} />
             </Pressable>
             <TextInput
@@ -480,7 +555,11 @@ export function ConversacionScreen() {
               style={[styles.botonEnviar, !texto.trim() && { opacity: 0.4 }]}
               accessibilityLabel={editando ? 'Guardar cambios' : 'Enviar'}
             >
-              {editando ? <IconCheck size={22} color={COLORS.onAccent} strokeWidth={2.4} /> : <IconSend size={20} color={COLORS.onAccent} strokeWidth={2} />}
+              {editando ? (
+                <IconCheck size={22} color={COLORS.onAccent} strokeWidth={2.4} />
+              ) : (
+                <IconSend size={20} color={COLORS.onAccent} strokeWidth={2} />
+              )}
             </Pressable>
           </View>
         </View>
@@ -507,9 +586,20 @@ export function ConversacionScreen() {
         acciones={seleccionado ? accionesMensaje(seleccionado) : []}
         cabecera={
           seleccionado ? (
-            <View style={[styles.burbuja, seleccionado.senderId === yo ? styles.burbujaMia : styles.burbujaOtro, { alignSelf: seleccionado.senderId === yo ? 'flex-end' : 'flex-start' }]}>
-              <Text style={[styles.textoMensaje, seleccionado.senderId === yo && styles.textoMio]} numberOfLines={4}>
-                {seleccionado.type === 'movie' ? `🎬 ${seleccionado.movieData?.title ?? ''}` : seleccionado.text}
+            <View
+              style={[
+                styles.burbuja,
+                seleccionado.senderId === yo ? styles.burbujaMia : styles.burbujaOtro,
+                { alignSelf: seleccionado.senderId === yo ? 'flex-end' : 'flex-start' },
+              ]}
+            >
+              <Text
+                style={[styles.textoMensaje, seleccionado.senderId === yo && styles.textoMio]}
+                numberOfLines={4}
+              >
+                {seleccionado.type === 'movie'
+                  ? `🎬 ${seleccionado.movieData?.title ?? ''}`
+                  : seleccionado.text}
               </Text>
             </View>
           ) : null
@@ -556,9 +646,23 @@ const styles = StyleSheet.create({
   },
   botonMatchActivo: { backgroundColor: COLORS.accent, borderColor: COLORS.accent },
   lista: { paddingHorizontal: 14, paddingVertical: 12, gap: 6 },
-  separador: { alignSelf: 'center', marginVertical: 8, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.06)' },
+  separador: {
+    alignSelf: 'center',
+    marginVertical: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
   separadorTexto: { color: COLORS.textMuted, fontSize: 12, fontFamily: FUENTES.texto },
-  sistema: { alignSelf: 'center', color: COLORS.textMuted, fontSize: 13, fontFamily: FUENTES.texto, marginVertical: 6, textAlign: 'center' },
+  sistema: {
+    alignSelf: 'center',
+    color: COLORS.textMuted,
+    fontSize: 13,
+    fontFamily: FUENTES.texto,
+    marginVertical: 6,
+    textAlign: 'center',
+  },
   filaMensaje: { maxWidth: '80%' },
   derecha: { alignSelf: 'flex-end' },
   izquierda: { alignSelf: 'flex-start' },
@@ -570,9 +674,23 @@ const styles = StyleSheet.create({
   textoMensaje: { color: COLORS.text, fontSize: 16, lineHeight: 22, fontFamily: FUENTES.texto },
   textoMio: { color: COLORS.onAccent },
   poster: { width: '100%', aspectRatio: 2 / 3, borderRadius: 14 },
-  pie: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 4, marginTop: 2 },
+  pie: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 4,
+    marginTop: 2,
+  },
   hora: { color: COLORS.textMuted, fontSize: 11, fontFamily: FUENTES.texto },
-  cita: { borderLeftWidth: 3, borderLeftColor: COLORS.accent, paddingLeft: 8, paddingVertical: 4, marginBottom: 6, borderRadius: 6, backgroundColor: 'rgba(255,255,255,0.05)' },
+  cita: {
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.accent,
+    paddingLeft: 8,
+    paddingVertical: 4,
+    marginBottom: 6,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
   citaMia: { borderLeftColor: COLORS.onAccent, backgroundColor: 'rgba(2,6,23,0.12)' },
   citaAutor: { color: COLORS.accent, fontSize: 12, fontFamily: FUENTES.titulo },
   citaTexto: { color: COLORS.textMuted, fontSize: 13, fontFamily: FUENTES.texto },
@@ -587,7 +705,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
-  eliminadoTexto: { color: COLORS.textMuted, fontSize: 14, fontFamily: FUENTES.texto, fontStyle: 'italic' },
+  eliminadoTexto: {
+    color: COLORS.textMuted,
+    fontSize: 14,
+    fontFamily: FUENTES.texto,
+    fontStyle: 'italic',
+  },
   tarjetaMatch: {
     alignSelf: 'center',
     width: 280,
@@ -600,12 +723,35 @@ const styles = StyleSheet.create({
   },
   matchFila: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   matchTitulo: { color: COLORS.accent, fontSize: 16, fontFamily: FUENTES.titulo },
-  matchTexto: { color: COLORS.textMuted, fontSize: 14, fontFamily: FUENTES.texto, marginVertical: 8 },
-  matchBoton: { height: 40, borderRadius: 999, backgroundColor: COLORS.accent, alignItems: 'center', justifyContent: 'center' },
+  matchTexto: {
+    color: COLORS.textMuted,
+    fontSize: 14,
+    fontFamily: FUENTES.texto,
+    marginVertical: 8,
+  },
+  matchBoton: {
+    height: 40,
+    borderRadius: 999,
+    backgroundColor: COLORS.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   matchBotonTexto: { color: COLORS.onAccent, fontSize: 14, fontFamily: FUENTES.titulo },
   vacioTexto: { color: COLORS.textMuted, fontSize: 15, fontFamily: FUENTES.texto },
-  aviso: { color: COLORS.error, fontSize: 13, fontFamily: FUENTES.texto, paddingHorizontal: 20, paddingBottom: 6 },
-  franja: { alignItems: 'center', gap: 6, paddingTop: 14, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.14)' },
+  aviso: {
+    color: COLORS.error,
+    fontSize: 13,
+    fontFamily: FUENTES.texto,
+    paddingHorizontal: 20,
+    paddingBottom: 6,
+  },
+  franja: {
+    alignItems: 'center',
+    gap: 6,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.14)',
+  },
   franjaTexto: { color: COLORS.textMuted, fontSize: 14, fontFamily: FUENTES.texto },
   franjaEnlace: { color: COLORS.primary, fontSize: 14, fontFamily: FUENTES.titulo },
   barraContexto: {
@@ -649,5 +795,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: FUENTES.texto,
   },
-  botonEnviar: { width: 46, height: 46, borderRadius: 23, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center' },
+  botonEnviar: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
