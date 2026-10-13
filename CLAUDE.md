@@ -37,6 +37,7 @@ Expo SDK 54 · React Native 0.81 · React 19 · TypeScript · React Navigation 7
 6. **Coste cero:** Firebase en plan gratuito (Spark). Sin Cloud Functions de pago ni servicios de pago por uso sin preguntar.
 7. **No toques otros proyectos** ni carpetas fuera de `veoveo/`. Hay otros agentes trabajando en paralelo.
 8. **Cambios sin commit que no son tuyos** (por ejemplo, en `public/`): pregunta a Álvaro antes de tocarlos o subirlos.
+9. **Nada al canal `production` sin el OK expreso de Álvaro:** ni `eas update`, ni builds, ni subidas. Una actualización por el aire con el runtime de la versión publicada llega directamente a los usuarios reales.
 
 ## Cómo se trabaja
 

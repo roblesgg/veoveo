@@ -168,6 +168,19 @@ Además:
 - **i18n:** `LanguageContext` existe, pero los textos están escritos a mano en español. "ES · EN" del README no es cierto hoy.
 - **Colores:** el índigo y el morado (`#6366F1`, `#6C63FF`) aparecen sueltos en componentes (`FilterSortMenu.tsx`), y hay naranjas heredados (`rgba(255,107,0,…)` en `BibliotecaTab.tsx:321-322`). **Decisión de Álvaro (13-10-2026): pasan al turquesa `#69DFD9`**, con el celeste `#38BDF8` como principal.
 
+### 2.8 Encontrado durante la Fase B
+
+- 🔴 **El APK publicado está firmado con la clave de depuración pública.**
+  - `apksigner verify --print-certs` sobre `veoveo-latest.apk` (v2.0.4) devuelve `CN=Android Debug`, SHA-1 `5e8f1606…cabf625`.
+  - Es el `debug.keystore` que trae la plantilla de React Native y Expo, igual en todos los proyectos, así que su clave privada es pública.
+  - `android/app/build.gradle` firma la release con `signingConfigs.debug`.
+  - Riesgo: cualquiera puede firmar un APK que Android acepte como actualización de VeoVeo.
+  - Arreglo propuesto, pendiente de Álvaro: keystore de release propio (o credenciales de EAS) desde la 3.0. Los usuarios del APK tendrán que reinstalar una vez.
+- 🟠 **La biblioteca siempre guardó las plataformas vacías.**
+  - `PeliculaScreen` pasaba a `useUserMovieStatus` la respuesta entera de `watch/providers`, y el hook leía `.flatrate` en el nivel equivocado.
+  - Por eso el filtro por plataformas de la Biblioteca nunca ha funcionado.
+  - Corregido en B2 para lo nuevo. Para lo ya guardado, el filtro pedirá en caché las plataformas que falten, sin migrar datos.
+
 ## 3. Código muerto, duplicado o incoherente
 
 **Archivos que nadie importa:**
