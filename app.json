@@ -3,7 +3,7 @@
     "name": "VeoVeo",
     "slug": "veoveo",
     "scheme": "veoveo",
-    "version": "2.0.4",
+    "version": "3.0.0",
     "newArchEnabled": false,
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -24,7 +24,26 @@
         "backgroundImage": "./assets/adaptive-icon-fondo.png"
       },
       "predictiveBackGestureEnabled": false,
-      "versionCode": 40
+      "versionCode": 42,
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            { "scheme": "https", "host": "veoveo.dripdev.dev", "pathPrefix": "/movie" },
+            { "scheme": "https", "host": "veoveo.dripdev.dev", "pathPrefix": "/actor" },
+            { "scheme": "https", "host": "veoveo.dripdev.dev", "pathPrefix": "/chat" },
+            { "scheme": "https", "host": "veoveo.dripdev.dev", "pathPrefix": "/match" },
+            { "scheme": "https", "host": "veoveo.dripdev.dev", "pathPrefix": "/solicitudes" }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",

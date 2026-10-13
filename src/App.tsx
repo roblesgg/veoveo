@@ -91,7 +91,9 @@ function compareVersions(v1: string, v2: string) {
  */
 function VersionShield() {
   const [needsUpdate, setNeedsUpdate] = React.useState(false);
-  const [downloadUrl, setDownloadUrl] = React.useState('https://veoveo.dripdev.dev/descargar');
+  // La versión de Google Play solo se actualiza desde Play (política de Play): el enlace de
+  // descarga de Firestore queda para el APK de pruebas.
+  const [downloadUrl, setDownloadUrl] = React.useState('https://play.google.com/store/apps/details?id=com.roblesgg.veoveo');
   const [releaseTitle, setReleaseTitle] = React.useState('Nueva versión disponible');
   const [releaseBody, setReleaseBody] = React.useState(
     'Hemos lanzado mejoras críticas. Actualiza ahora para seguir disfrutando de VeoVeo en la versión más reciente.',
@@ -124,7 +126,7 @@ function VersionShield() {
         minVersionName && compareVersions(currentVersion, String(minVersionName).trim()) === -1;
       setNeedsUpdate(Boolean(updateNeeded));
 
-      if (nextDownloadUrl) setDownloadUrl(String(nextDownloadUrl).trim());
+      if (nextDownloadUrl && isTest) setDownloadUrl(String(nextDownloadUrl).trim());
 
       if (updateNeeded && lastNotifiedVersion.current !== String(minVersionName).trim()) {
         lastNotifiedVersion.current = String(minVersionName).trim();
@@ -133,7 +135,7 @@ function VersionShield() {
             title: 'Nueva actualización disponible',
             body: `VeoVeo ${String(minVersionName).trim()} ya está lista para descargar.`,
             sound: 'default',
-            data: { url: nextDownloadUrl || downloadUrl },
+            data: { url: (isTest && nextDownloadUrl) || downloadUrl },
           },
           trigger: null,
         });

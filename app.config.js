@@ -27,6 +27,8 @@ module.exports = {
   android: {
     ...appJson.expo.android,
     package: IS_TEST ? 'com.roblesgg.veoveo.test' : appJson.expo.android.package,
+    // Los enlaces https de veoveo.dripdev.dev solo los abre la app de Play (assetlinks.json)
+    intentFilters: IS_TEST ? [] : appJson.expo.android.intentFilters,
   },
   scheme: IS_TEST ? 'veoveotest' : 'veoveo',
   plugins: [...(appJson.expo.plugins || [])],
