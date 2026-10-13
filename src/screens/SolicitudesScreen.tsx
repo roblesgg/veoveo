@@ -1,261 +1,216 @@
-import { Ionicons } from '@expo/vector-icons';
+/**
+ * ARCHIVO: screens/SolicitudesScreen.tsx
+ * DESCRIPCIÓN: Solicitudes de amistad: las que te han enviado (aceptar o rechazar) y las que
+ * has enviado tú y siguen pendientes (cancelar).
+ */
+import { useCallback, useEffect, useState } from 'react';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { BlurView } from 'expo-blur';
-import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { IconChevronLeft, IconUsers } from '@tabler/icons-react-native';
 import {
   aceptarSolicitud,
+  cancelarSolicitud,
+  obtenerSolicitudesEnviadasPendientesUids,
   obtenerSolicitudesPendientes,
   rechazarSolicitud,
 } from '../services/repositorioSocial';
-import { GlassBorder, GlassSurface, COLORS } from '../theme/colors';
-import { SHADOWS } from '../theme/theme';
-import { GradientBackground } from '../components/GradientBackground';
+import { nombreDe, usePerfiles } from '../hooks/usePerfiles';
+import { Avatar } from '../components/common/Avatar';
 import type { SolicitudAmistad } from '../types';
+import { COLORS } from '../theme/colors';
+import { FUENTES } from '../theme/useMontserrat';
 
 export function SolicitudesScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
+  const [recibidas, setRecibidas] = useState<SolicitudAmistad[]>([]);
+  const [enviadas, setEnviadas] = useState<string[]>([]);
   const [cargando, setCargando] = useState(true);
-  const [items, setItems] = useState<SolicitudAmistad[]>([]);
+  const [ocupado, setOcupado] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [accionEnCurso, setAccionEnCurso] = useState<string | null>(null);
+  const perfiles = usePerfiles([...recibidas.map((s) => s.deUid), ...enviadas]);
 
-  const cargar = async () => {
+  const cargar = useCallback(async () => {
     setCargando(true);
     try {
-      const data = await obtenerSolicitudesPendientes();
-      setItems(data);
+      const [r, e] = await Promise.all([
+        obtenerSolicitudesPendientes(),
+        obtenerSolicitudesEnviadasPendientesUids(),
+      ]);
+      setRecibidas(r);
+      setEnviadas([...e]);
       setError(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudieron cargar solicitudes');
+    } catch {
+      setError('No hemos podido cargar las solicitudes. Revisa la conexión.');
     } finally {
       setCargando(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     void cargar();
-  }, []);
+  }, [cargar]);
 
-  const handleAceptar = async (id: string) => {
-    setAccionEnCurso(id);
+  const accion = async (clave: string, fn: () => Promise<void>, fallo: string) => {
+    setOcupado(clave);
     try {
-      await aceptarSolicitud(id);
+      await fn();
       await cargar();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al aceptar solicitud');
+    } catch {
+      setError(fallo);
     } finally {
-      setAccionEnCurso(null);
+      setOcupado(null);
     }
   };
 
-  const handleRechazar = async (id: string) => {
-    setAccionEnCurso(id);
-    try {
-      await rechazarSolicitud(id);
-      await cargar();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al rechazar solicitud');
-    } finally {
-      setAccionEnCurso(null);
-    }
-  };
+  const vacio = !cargando && recibidas.length === 0 && enviadas.length === 0;
 
   return (
-    <GradientBackground style={styles.flex}>
-      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
-        <Pressable onPress={() => navigation.goBack()} style={styles.backBtn} hitSlop={12}>
-          <BlurView intensity={80} tint="dark" style={styles.backInner}>
-            <Ionicons name="chevron-back" size={26} color="#fff" />
-          </BlurView>
+    <View style={[styles.flex, { paddingTop: insets.top + 8 }]}>
+      <View style={styles.cabecera}>
+        <Pressable onPress={() => navigation.goBack()} hitSlop={12} accessibilityLabel="Volver">
+          <IconChevronLeft size={28} color={COLORS.text} strokeWidth={2} />
         </Pressable>
         <Text style={styles.titulo}>Solicitudes</Text>
       </View>
 
-      {error ? (
-        <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle-outline" size={20} color="#ff8a80" />
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      ) : null}
+      {error && <Text style={styles.error}>{error}</Text>}
 
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 60 }}
-        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 40 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={cargando}
+            onRefresh={cargar}
+            tintColor={COLORS.primary}
+            colors={[COLORS.primary]}
+          />
+        }
       >
-        {cargando && items.length === 0 ? (
-          <ActivityIndicator color="#fff" size="large" style={{ marginTop: 40 }} />
-        ) : items.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Ionicons name="people-outline" size={64} color="rgba(255,255,255,0.2)" />
-            <Text style={styles.sub}>No tienes solicitudes pendientes.</Text>
+        {vacio && (
+          <View style={styles.vacio}>
+            <IconUsers size={56} color={COLORS.textMuted} strokeWidth={1.5} />
+            <Text style={styles.vacioTitulo}>Nada pendiente</Text>
+            <Text style={styles.vacioTexto}>
+              Aquí verás quién quiere ser tu amigo y las solicitudes que has enviado.
+            </Text>
           </View>
-        ) : (
-          items.map((s) => (
-            <BlurView
-              key={s.id}
-              intensity={40}
-              tint="dark"
-              experimentalBlurMethod="dimezisBlurView"
-              style={[styles.row, SHADOWS.macLight]}
-            >
-              <View style={styles.rowContent}>
-                <View style={styles.userInfo}>
-                  <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>{s.deUsername.charAt(0).toUpperCase()}</Text>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.name} numberOfLines={1}>
-                      {s.deUsername}
-                    </Text>
-                    <Text style={styles.uid}>ID: {s.deUid.substring(0, 12)}</Text>
-                  </View>
-                </View>
-
-                <View style={styles.actions}>
-                  <Pressable
-                    style={[styles.btn, styles.btnOk, accionEnCurso === s.id && styles.disabled]}
-                    onPress={() => handleAceptar(s.id)}
-                    disabled={!!accionEnCurso}
-                  >
-                    <Text style={styles.btnText}>Aceptar</Text>
-                  </Pressable>
-
-                  <Pressable
-                    style={[styles.btn, styles.btnNo, accionEnCurso === s.id && styles.disabled]}
-                    onPress={() => handleRechazar(s.id)}
-                    disabled={!!accionEnCurso}
-                  >
-                    <Ionicons name="close" size={22} color="rgba(255,255,255,0.5)" />
-                  </Pressable>
-                </View>
-              </View>
-            </BlurView>
-          ))
         )}
+
+        {recibidas.length > 0 && <Text style={styles.seccion}>Te han enviado</Text>}
+        {recibidas.map((s) => (
+          <View key={s.id} style={styles.fila}>
+            <Avatar uri={perfiles[s.deUid]?.fotoPerfil} nombre={s.deUsername} tamano={44} />
+            <Text style={styles.nombre} numberOfLines={1}>
+              {perfiles[s.deUid]?.username ?? s.deUsername}
+            </Text>
+            <Pressable
+              style={[styles.boton, styles.botonSi, ocupado === s.id && styles.apagado]}
+              disabled={!!ocupado}
+              onPress={() =>
+                void accion(
+                  s.id,
+                  () => aceptarSolicitud(s.id),
+                  'No hemos podido aceptar la solicitud.',
+                )
+              }
+            >
+              <Text style={styles.botonSiTexto}>Aceptar</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.boton, ocupado === s.id && styles.apagado]}
+              disabled={!!ocupado}
+              onPress={() =>
+                void accion(
+                  s.id,
+                  () => rechazarSolicitud(s.id),
+                  'No hemos podido rechazar la solicitud.',
+                )
+              }
+            >
+              <Text style={styles.botonTexto}>Rechazar</Text>
+            </Pressable>
+          </View>
+        ))}
+
+        {enviadas.length > 0 && <Text style={styles.seccion}>Has enviado</Text>}
+        {enviadas.map((uid) => (
+          <View key={uid} style={styles.fila}>
+            <Avatar uri={perfiles[uid]?.fotoPerfil} nombre={perfiles[uid]?.username} tamano={44} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.nombre} numberOfLines={1}>
+                {nombreDe(perfiles[uid], !perfiles[uid])}
+              </Text>
+              <Text style={styles.pendiente}>Pendiente</Text>
+            </View>
+            <Pressable
+              style={[styles.boton, ocupado === uid && styles.apagado]}
+              disabled={!!ocupado}
+              onPress={() =>
+                void accion(
+                  uid,
+                  () => cancelarSolicitud(uid),
+                  'No hemos podido cancelar la solicitud.',
+                )
+              }
+            >
+              <Text style={styles.botonTexto}>Cancelar</Text>
+            </Pressable>
+          </View>
+        ))}
       </ScrollView>
-    </GradientBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  header: {
+  flex: { flex: 1, backgroundColor: COLORS.background },
+  cabecera: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 10,
-    gap: 16,
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingBottom: 12,
   },
-  backBtn: { width: 44, height: 44 },
-  backInner: {
-    flex: 1,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255,255,255,0.05)',
-  },
-  titulo: {
-    fontSize: 28,
-    color: '#fff',
-    fontWeight: '900',
-    letterSpacing: -0.5,
-  },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyState: {
-    marginTop: 80,
-    alignItems: 'center',
-  },
-  sub: {
-    marginTop: 16,
-    color: 'rgba(255,255,255,0.4)',
-    fontSize: 16,
+  titulo: { color: COLORS.text, fontSize: 20, fontFamily: FUENTES.titulo },
+  error: {
+    color: COLORS.error,
+    fontSize: 13,
+    fontFamily: FUENTES.texto,
     textAlign: 'center',
-    fontWeight: '600',
-  },
-  errorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 138, 128, 0.1)',
-    marginHorizontal: 20,
-    padding: 12,
-    borderRadius: 16,
-    marginBottom: 16,
-    gap: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 138, 128, 0.2)',
-  },
-  errorText: { color: '#ff8a80', fontSize: 13, fontWeight: '500' },
-  row: {
-    marginBottom: 12,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
-    overflow: 'hidden',
-  },
-  rowContent: {
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
-  avatarText: {
-    color: '#38bdf8',
-    fontSize: 20,
-    fontWeight: '800',
-  },
-  name: { color: '#fff', fontSize: 17, fontWeight: '700' },
-  uid: { color: 'rgba(255,255,255,0.3)', fontSize: 11, marginTop: 2, textTransform: 'uppercase' },
-  actions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  btn: {
-    borderRadius: 16,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  btnOk: {
-    backgroundColor: '#38bdf8',
+    marginBottom: 8,
     paddingHorizontal: 20,
   },
-  btnNo: {
-    width: 44,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+  seccion: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    fontFamily: FUENTES.seminegrita,
+    marginTop: 16,
+    marginBottom: 4,
   },
-  btnText: { color: '#fff', fontSize: 14, fontWeight: '800' },
-  disabled: { opacity: 0.5 },
+  fila: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
+  nombre: { flex: 1, color: COLORS.text, fontSize: 16, fontFamily: FUENTES.texto },
+  pendiente: { color: COLORS.textMuted, fontSize: 12, fontFamily: FUENTES.texto },
+  boton: {
+    height: 36,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    justifyContent: 'center',
+  },
+  botonTexto: { color: COLORS.text, fontSize: 13, fontFamily: FUENTES.seminegrita },
+  botonSi: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  botonSiTexto: { color: COLORS.onAccent, fontSize: 13, fontFamily: FUENTES.titulo },
+  apagado: { opacity: 0.4 },
+  vacio: { alignItems: 'center', gap: 12, paddingTop: 60, paddingHorizontal: 16 },
+  vacioTitulo: { color: COLORS.text, fontSize: 20, fontFamily: FUENTES.titulo },
+  vacioTexto: {
+    color: COLORS.textMuted,
+    fontSize: 15,
+    lineHeight: 21,
+    fontFamily: FUENTES.texto,
+    textAlign: 'center',
+  },
 });

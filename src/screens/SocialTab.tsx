@@ -4,7 +4,18 @@
  * de amigo) y las solicitudes pendientes. El muro de actividad de los amigos llega en D4.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  FlatList,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { useMuro } from '../hooks/social/useMuro';
+import { MuroAmigos } from '../components/social/MuroAmigos';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
@@ -13,7 +24,7 @@ import { useSocialData } from '../hooks/social/useSocialData';
 import { useAuth } from '../context/AuthContext';
 import { observarUsuario } from '../services/repositorioUsuarios';
 import { observarMisMatchesActivos } from '../services/repositorioMatches';
-import type { MovieMatch } from '../types';
+import type { MovieMatch, UsuarioPerfil } from '../types';
 import { Avatar } from '../components/common/Avatar';
 import { FriendRow } from '../components/social/FriendRow';
 import { UserSearchRow } from '../components/social/UserSearchRow';
@@ -29,6 +40,7 @@ type Props = {
   onPerfilClick?: () => void;
   onNuevoMatch: () => void;
   onAbrirMatch: (matchId: string) => void;
+  onPeliClick: (movieId: number) => void;
   userFoto?: string | null;
 };
 
@@ -39,11 +51,12 @@ export function SocialTab({
   onPerfilClick,
   onNuevoMatch,
   onAbrirMatch,
+  onPeliClick,
   userFoto,
 }: Props) {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
-  const [seccion, setSeccion] = useState<'amigos' | 'buscar'>('amigos');
+  const [seccion, setSeccion] = useState<'muro' | 'amigos' | 'buscar'>('muro');
   const [filtro, setFiltro] = useState('');
   const [miCodigo, setMiCodigo] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
@@ -82,6 +95,19 @@ export function SocialTab({
     [user],
   );
 
+  const {
+    muro,
+    categorias,
+    cargando: cargandoMuro,
+    recargar: recargarMuro,
+    refrescando,
+  } = useMuro(amigos);
+  const perfilesAmigos = useMemo(() => {
+    const mapa: Record<string, UsuarioPerfil | undefined> = {};
+    amigos.forEach((a) => (mapa[a.uid] = a));
+    return mapa;
+  }, [amigos]);
+
   const amigosFiltrados = useMemo(() => {
     const q = filtro.trim().toLowerCase();
     return q ? amigos.filter((a) => a.username.toLowerCase().includes(q)) : amigos;
@@ -102,34 +128,8 @@ export function SocialTab({
         fontFamily={fontFamily}
       />
 
-      <View style={styles.match}>
-        <Pressable style={styles.matchNuevo} onPress={onNuevoMatch} accessibilityRole="button">
-          <IconCards size={24} color={COLORS.accent} strokeWidth={2} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.matchTitulo}>Movie Match con amigos</Text>
-            <Text style={styles.matchTexto}>Deslizad y encontrad qué ver juntos.</Text>
-          </View>
-          <IconChevronRight size={20} color={COLORS.textMuted} strokeWidth={2} />
-        </Pressable>
-        {matches.map((m) => (
-          <Pressable
-            key={m.id}
-            style={styles.matchEnCurso}
-            onPress={() => onAbrirMatch(m.id)}
-            accessibilityLabel="Seguir el Movie Match en curso"
-          >
-            <View style={styles.punto} />
-            <Text style={styles.matchEnCursoTexto} numberOfLines={1}>
-              Match en curso · {m.participants.length} personas · {m.coincidencias.length}/
-              {m.objetivo}
-            </Text>
-            <Text style={styles.matchSeguir}>Seguir</Text>
-          </Pressable>
-        ))}
-      </View>
-
       <View style={styles.segmento}>
-        {(['amigos', 'buscar'] as const).map((s) => (
+        {(['muro', 'amigos', 'buscar'] as const).map((s) => (
           <Pressable
             key={s}
             onPress={() => setSeccion(s)}
@@ -138,15 +138,62 @@ export function SocialTab({
             accessibilityState={{ selected: seccion === s }}
           >
             <Text style={[styles.segTexto, seccion === s && styles.segTextoOn]}>
-              {s === 'amigos'
-                ? `Amigos${amigos.length ? ` (${amigos.length})` : ''}`
-                : 'Añadir amigos'}
+              {s === 'muro'
+                ? 'Muro'
+                : s === 'amigos'
+                  ? `Amigos${amigos.length ? ` (${amigos.length})` : ''}`
+                  : 'Añadir amigos'}
             </Text>
           </Pressable>
         ))}
       </View>
 
-      {seccion === 'amigos' ? (
+      {seccion === 'muro' ? (
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 140 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refrescando}
+              onRefresh={() => void recargarMuro()}
+              tintColor={COLORS.primary}
+              colors={[COLORS.primary]}
+            />
+          }
+        >
+          <View style={styles.match}>
+            <Pressable style={styles.matchNuevo} onPress={onNuevoMatch} accessibilityRole="button">
+              <IconCards size={24} color={COLORS.accent} strokeWidth={2} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.matchTitulo}>Movie Match con amigos</Text>
+                <Text style={styles.matchTexto}>Deslizad y encontrad qué ver juntos.</Text>
+              </View>
+              <IconChevronRight size={20} color={COLORS.textMuted} strokeWidth={2} />
+            </Pressable>
+            {matches.map((m) => (
+              <Pressable
+                key={m.id}
+                style={styles.matchEnCurso}
+                onPress={() => onAbrirMatch(m.id)}
+                accessibilityLabel="Seguir el Movie Match en curso"
+              >
+                <View style={styles.punto} />
+                <Text style={styles.matchEnCursoTexto} numberOfLines={1}>
+                  Match en curso · {m.participants.length} personas · {m.coincidencias.length}/
+                  {m.objetivo}
+                </Text>
+                <Text style={styles.matchSeguir}>Seguir</Text>
+              </Pressable>
+            ))}
+          </View>
+          <MuroAmigos
+            muro={muro}
+            categorias={categorias}
+            cargando={cargandoMuro}
+            perfiles={perfilesAmigos}
+            onPeli={onPeliClick}
+          />
+        </ScrollView>
+      ) : seccion === 'amigos' ? (
         <FlatList
           data={amigosFiltrados}
           keyExtractor={(a) => a.uid}

@@ -14,13 +14,25 @@ type Props = {
   item: Movie & { motivo?: string };
   onPeliculaClick: (id: number) => void;
   misPlataformas?: number[];
+  /** El póster se ha quedado quieto en pantalla: ya se pueden pedir sus plataformas. */
+  pedirPlataformas?: boolean;
   libraryMap?: { [id: number]: { estado: 'por_ver' | 'vista'; valoracion: number } };
 };
 
 export const PosterItem = memo(
-  ({ item, onPeliculaClick, misPlataformas = [], libraryMap = {} }: Props) => {
-    // Solo se piden las plataformas de la peli si el usuario ha elegido las suyas en Ajustes.
-    const { data: providers } = usePlataformasPelicula(item.id, misPlataformas.length > 0);
+  ({
+    item,
+    onPeliculaClick,
+    misPlataformas = [],
+    pedirPlataformas = false,
+    libraryMap = {},
+  }: Props) => {
+    // Las plataformas se piden si el usuario ha elegido las suyas en Ajustes y el póster se ha
+    // quedado quieto en pantalla (no al pintarlo ni mientras se desliza). Si ya estaban en caché, salen igual.
+    const { data: providers } = usePlataformasPelicula(
+      item.id,
+      misPlataformas.length > 0 && pedirPlataformas,
+    );
     const isFlatrate = providers?.flatrate.some((p) => misPlataformas.includes(p));
     const isRent = !isFlatrate && providers?.rent.some((p) => misPlataformas.includes(p));
     const uri = posterUrl(item.poster_path, 'w342');

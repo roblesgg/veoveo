@@ -98,6 +98,18 @@ export function AjustesScreen() {
       >
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { fontFamily }]}>Privacidad y Contenido</Text>
+          <Pressable
+            style={[styles.card, SHADOWS.macLight, { marginBottom: 12 }]}
+            onPress={() => navigation.navigate('Privacidad')}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.cardTitle, { fontFamily }]}>Privacidad</Text>
+              <Text style={[styles.cardDesc, { fontFamily }]}>
+                Quién ve tu biblioteca, tus Vistas en Social y Match, solicitudes y bloqueados.
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.5)" />
+          </Pressable>
           <View style={[styles.card, SHADOWS.macLight]}>
             <View style={{ flex: 1 }}>
               <Text style={[styles.cardTitle, { fontFamily }]}>Mostrar contenido para adultos</Text>

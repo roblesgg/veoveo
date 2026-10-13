@@ -7,6 +7,7 @@ export type RootStackParamList = {
   Perfil: undefined;
   Ajustes: undefined;
   Bloqueados: undefined;
+  Privacidad: undefined;
   Solicitudes: undefined;
   BibliotecaAmigo: { amigoUid: string };
   Actor: { actorId: number; actorName: string };

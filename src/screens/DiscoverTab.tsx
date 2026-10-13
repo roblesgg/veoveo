@@ -22,6 +22,7 @@ import {
   View,
   Keyboard,
   BackHandler,
+  type ViewToken,
 } from 'react-native';
 import { Image as ExpoImage } from 'expo-image';
 import DraggableFlatList, { ScaleDecorator } from 'react-native-draggable-flatlist';
@@ -107,6 +108,9 @@ ActorResultItem.displayName = 'ActorResultItem';
 /**
  * COMPONENTE: DiscoverTab
  */
+/** Un carrusel cuenta como visto si lleva medio segundo con la mitad en pantalla. */
+const VISIBILIDAD_CARRUSEL = { itemVisiblePercentThreshold: 50, minimumViewTime: 500 };
+
 export function DiscoverTab({
   fontFamily,
   estaActiva,
@@ -130,6 +134,10 @@ export function DiscoverTab({
   const { user } = useAuthLocal();
 
   const mainListRef = useRef<any>(null);
+  const [carruselesEnPantalla, setCarruselesEnPantalla] = useState<Set<string>>(new Set());
+  const alCambiarVisibles = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) =>
+    setCarruselesEnPantalla(new Set(viewableItems.map((v) => String(v.item)))),
+  );
   const searchInputRef = useRef<TextInput>(null);
 
   // Mapa [id_pelicula]: {estado, valoracion} para pintar los iconos de los pósters
@@ -252,7 +260,13 @@ export function DiscoverTab({
             <Pressable onPress={() => onPerfilClick?.()} style={styles.perfilBtnMini}>
               <View style={styles.perfilInnerMini}>
                 {userFoto ? (
-                  <ExpoImage source={{ uri: avatarUrl(userFoto, 44)! }} style={styles.perfilFotoMini} contentFit="cover" cachePolicy="memory-disk" transition={150} />
+                  <ExpoImage
+                    source={{ uri: avatarUrl(userFoto, 44)! }}
+                    style={styles.perfilFotoMini}
+                    contentFit="cover"
+                    cachePolicy="memory-disk"
+                    transition={150}
+                  />
                 ) : (
                   <Ionicons name="person" size={22} color="#fff" />
                 )}
@@ -345,9 +359,13 @@ export function DiscoverTab({
               initialNumToRender={3}
               maxToRenderPerBatch={2}
               windowSize={3}
+              // Qué carruseles llevan medio segundo en pantalla (para pedir plataformas solo de esos)
+              onViewableItemsChanged={alCambiarVisibles.current}
+              viewabilityConfig={VISIBILIDAD_CARRUSEL}
               renderItem={({ item }) => (
                 <CarruselPeliculas
                   id={item}
+                  enPantalla={carruselesEnPantalla.has(item)}
                   onPeliculaClick={onPeliculaClick}
                   misPlataformas={misPlataformas}
                   fontFamily={fontFamily}

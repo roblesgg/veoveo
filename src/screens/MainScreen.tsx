@@ -140,6 +140,7 @@ export function MainScreen() {
             onSolicitudesClick={() => navigation.navigate('Solicitudes')}
             onNuevoMatch={() => navigation.navigate('MatchConfig')}
             onAbrirMatch={(matchId) => navigation.navigate('MovieMatch', { matchId })}
+            onPeliClick={navigatePelicula}
             onPerfilClick={() => navigation.navigate('Perfil')}
             userFoto={userFoto}
           />

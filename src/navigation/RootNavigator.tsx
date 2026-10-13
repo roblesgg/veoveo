@@ -18,6 +18,7 @@ import { MainScreen } from '../screens/MainScreen';
 import { PerfilScreen } from '../screens/PerfilScreen';
 import { RegisterScreen } from '../screens/RegisterScreen';
 import { BloqueadosScreen } from '../screens/BloqueadosScreen';
+import { PrivacidadScreen } from '../screens/PrivacidadScreen';
 import { PeliculaScreen } from '../screens/PeliculaScreen';
 import { VerificationScreen } from '../screens/VerificationScreen';
 import { ConversacionScreen } from '../screens/ConversacionScreen';
@@ -101,6 +102,7 @@ export function RootNavigator() {
               <Stack.Screen name="Main" component={MainScreen} />
               <Stack.Screen name="Perfil" component={PerfilScreen} />
               <Stack.Screen name="Bloqueados" component={BloqueadosScreen} />
+              <Stack.Screen name="Privacidad" component={PrivacidadScreen} />
               <Stack.Screen name="Solicitudes" component={SolicitudesScreen} />
               <Stack.Screen name="BibliotecaAmigo" component={BibliotecaAmigoScreen} />
               <Stack.Screen name="Ajustes" component={AjustesScreen} />

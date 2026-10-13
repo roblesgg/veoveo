@@ -6,8 +6,16 @@
  * y estados de biblioteca (visto/por ver) integrados en los carteles.
  */
 
-import React, { memo } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { memo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type ViewToken,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInRight } from 'react-native-reanimated';
 import { PosterItem } from './PosterItem';
@@ -17,6 +25,9 @@ import { marcarHito } from '../../utils/medicionArranque';
 import { useCarrusel, useRecomendaciones } from '../../hooks/useDescubrir';
 import { obtenerCarrusel } from '../../constants/carruseles';
 import { EsqueletoFilaPosters } from '../common/Esqueleto';
+
+/** Un póster está "quieto" si lleva medio segundo con el 60 % a la vista. */
+const VISIBILIDAD_POSTER = { itemVisiblePercentThreshold: 60, minimumViewTime: 500 };
 
 type Props = {
   /** Id del carrusel en el catálogo (constants/carruseles.ts) */
@@ -30,6 +41,8 @@ type Props = {
   /** Estado de arrastre activo */
   isActive: boolean;
   misPlataformas?: number[];
+  /** El carrusel lleva un rato en pantalla (DiscoverTab). En edición, siempre. */
+  enPantalla?: boolean;
   /** Mapa de cache de la biblioteca del usuario para pintar badges */
   libraryMap?: { [id: number]: { estado: 'por_ver' | 'vista'; valoracion: number } };
 };
@@ -44,9 +57,18 @@ export const CarruselPeliculas = memo(
     drag,
     isActive,
     misPlataformas = [],
+    enPantalla = true,
     libraryMap = {},
   }: Props) => {
     const def = obtenerCarrusel(id);
+    // Pósters que se han quedado quietos en pantalla: solo de esos se piden las plataformas
+    const [quietos, setQuietos] = useState<Set<number>>(new Set());
+    const alCambiarVisibles = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) =>
+      setQuietos((prev) => {
+        const nuevos = viewableItems.map((v) => (v.item as Movie).id).filter((i) => !prev.has(i));
+        return nuevos.length ? new Set([...prev, ...nuevos]) : prev;
+      }),
+    );
     const esParaTi = id === 'para-ti';
     const catalogo = useCarrusel(id, Boolean(def?.ruta));
     const recomendaciones = useRecomendaciones(esParaTi);
@@ -123,6 +145,8 @@ export const CarruselPeliculas = memo(
             initialNumToRender={5}
             onEndReached={cargarMas}
             onEndReachedThreshold={0.6}
+            onViewableItemsChanged={alCambiarVisibles.current}
+            viewabilityConfig={VISIBILIDAD_POSTER}
             ListFooterComponent={
               catalogo.isFetchingNextPage ? (
                 <View style={styles.footerCargando}>
@@ -135,6 +159,7 @@ export const CarruselPeliculas = memo(
                 item={item}
                 onPeliculaClick={onPeliculaClick}
                 misPlataformas={misPlataformas}
+                pedirPlataformas={enPantalla && quietos.has(item.id)}
                 libraryMap={libraryMap}
               />
             )}

@@ -56,6 +56,7 @@ export function BibliotecaAmigoScreen() {
   const [seccion, setSeccion] = useState<0 | 1>(0);
   const [buscar, setBuscar] = useState('');
   const [cargando, setCargando] = useState(true);
+  const [bibliotecaOculta, setBibliotecaOculta] = useState(false);
   const [porVer, setPorVer] = useState<PeliculaUsuario[]>([]);
   const [vistas, setVistas] = useState<PeliculaUsuario[]>([]);
   const [orden, setOrden] = useState<'recientes' | 'alpha' | 'fecha_peli' | 'valoracion'>(
@@ -68,16 +69,19 @@ export function BibliotecaAmigoScreen() {
     void (async () => {
       setCargando(true);
       try {
-        const [u, pv, vi] = await Promise.all([
+        // El perfil es público; la biblioteca solo si sois amigos y la comparte (reglas)
+        const [u, pv, vi] = await Promise.allSettled([
           obtenerPerfilUsuarioPorUid(amigoUid),
           listarPeliculasPorEstadoDeUsuario(amigoUid, 'por_ver'),
           listarPeliculasPorEstadoDeUsuario(amigoUid, 'vista'),
         ]);
-        setUsuario(u);
-        setPorVer(pv);
-        setVistas(vi);
-      } catch (e) {
-        console.error(e);
+        if (u.status === 'fulfilled') setUsuario(u.value);
+        if (pv.status === 'fulfilled' && vi.status === 'fulfilled') {
+          setPorVer(pv.value);
+          setVistas(vi.value);
+        } else {
+          setBibliotecaOculta(true);
+        }
       } finally {
         setCargando(false);
       }
@@ -271,7 +275,13 @@ export function BibliotecaAmigoScreen() {
         {/* Header Perfil */}
         <View style={[styles.avatarWrap, SHADOWS.mac]}>
           {usuario?.fotoPerfil ? (
-            <ExpoImage source={{ uri: avatarUrl(usuario.fotoPerfil, 100)! }} style={styles.avatarImg} contentFit="cover" cachePolicy="memory-disk" transition={150} />
+            <ExpoImage
+              source={{ uri: avatarUrl(usuario.fotoPerfil, 100)! }}
+              style={styles.avatarImg}
+              contentFit="cover"
+              cachePolicy="memory-disk"
+              transition={150}
+            />
           ) : (
             <View style={[styles.avatarImg, styles.avatarPlaceholder]}>
               <Ionicons name="person" size={48} color="rgba(255,255,255,0.85)" />
@@ -348,7 +358,11 @@ export function BibliotecaAmigoScreen() {
         {filtrada.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Ionicons name="film-outline" size={64} color="rgba(255,255,255,0.1)" />
-            <Text style={[styles.empty, { fontFamily: ff }]}>Sin películas en esta sección.</Text>
+            <Text style={[styles.empty, { fontFamily: ff }]}>
+              {bibliotecaOculta
+                ? `${usuario?.username ?? 'Esta persona'} no comparte su biblioteca, o aún no sois amigos.`
+                : 'Sin películas en esta sección.'}
+            </Text>
           </View>
         ) : (
           <View style={styles.grid}>

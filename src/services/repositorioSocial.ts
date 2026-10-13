@@ -47,7 +47,9 @@ async function perfilesDe(uids: string[]): Promise<UsuarioPerfil[]> {
       getDocs(query(collection(db, 'usuarios'), where(documentId(), 'in', grupo), limit(MAX_IN))),
     ),
   );
-  return trozos.flatMap((snap) => snap.docs.map((d) => ({ uid: d.id, ...d.data() }) as UsuarioPerfil));
+  return trozos.flatMap((snap) =>
+    snap.docs.map((d) => ({ uid: d.id, ...d.data() }) as UsuarioPerfil),
+  );
 }
 
 const idSolicitud = (de: string, para: string) => `${de}_${para}`;
@@ -68,9 +70,21 @@ export async function buscarUsuarios(texto: string): Promise<UsuarioPerfil[]> {
 
   const esCodigo = CODIGO_AMIGO.test(limpio.toUpperCase());
   const [porNombre, porCodigo, bloqueados] = await Promise.all([
-    getDocs(query(collection(db, 'usuarios'), where('username_servido', '==', limpio.toLowerCase()), limit(10))),
+    getDocs(
+      query(
+        collection(db, 'usuarios'),
+        where('username_servido', '==', limpio.toLowerCase()),
+        limit(10),
+      ),
+    ),
     esCodigo
-      ? getDocs(query(collection(db, 'usuarios'), where('codigoAmigo', '==', limpio.toUpperCase()), limit(1)))
+      ? getDocs(
+          query(
+            collection(db, 'usuarios'),
+            where('codigoAmigo', '==', limpio.toUpperCase()),
+            limit(1),
+          ),
+        )
       : Promise.resolve(null),
     obtenerBloqueadosUids().catch(() => [] as string[]),
   ]);
@@ -253,7 +267,11 @@ export async function obtenerFavoritasDeAmigos(): Promise<FavoritaDeAmigos[]> {
     amigosUids.map(async (uid) => {
       try {
         const snap = await getDocs(
-          query(collection(db, 'usuarios', uid, 'peliculas'), where('valoracion', '>=', 4), limit(10)),
+          query(
+            collection(db, 'usuarios', uid, 'peliculas'),
+            where('valoracion', '>=', 4),
+            limit(10),
+          ),
         );
         snap.docs.forEach((d) => {
           const p = d.data();
@@ -285,6 +303,8 @@ export async function obtenerActividadAmigosPelicula(idPelicula: number) {
         const snap = await getDoc(doc(db, 'usuarios', amigo.uid, 'peliculas', String(idPelicula)));
         if (!snap.exists()) return null;
         const p = snap.data();
+        // Quien no enseña sus Vistas en Social tampoco sale como "la ha visto"
+        if (p.estado === 'vista' && amigo.privacidad?.vistasEnSocial === false) return null;
         return {
           uid: amigo.uid,
           username: amigo.username,
