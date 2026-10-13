@@ -1,3 +1,5 @@
+import { avatarUrl } from '../utils/imagenes';
+import { Image as ExpoImage } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
@@ -269,7 +271,7 @@ export function BibliotecaAmigoScreen() {
         {/* Header Perfil */}
         <View style={[styles.avatarWrap, SHADOWS.mac]}>
           {usuario?.fotoPerfil ? (
-            <Image source={{ uri: usuario.fotoPerfil }} style={styles.avatarImg} />
+            <ExpoImage source={{ uri: avatarUrl(usuario.fotoPerfil, 100)! }} style={styles.avatarImg} contentFit="cover" cachePolicy="memory-disk" transition={150} />
           ) : (
             <View style={[styles.avatarImg, styles.avatarPlaceholder]}>
               <Ionicons name="person" size={48} color="rgba(255,255,255,0.85)" />

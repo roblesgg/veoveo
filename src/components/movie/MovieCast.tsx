@@ -25,7 +25,7 @@ export const MovieCast = React.memo(({ reparto, fontFamily, onActorClick }: Prop
         renderItem={({ item: a }) => (
           <Pressable style={styles.actor} onPress={() => onActorClick(a.id, a.name)}>
             {profileUrl(a.profile_path) ? (
-              <Image source={{ uri: profileUrl(a.profile_path)! }} style={styles.actorImg} />
+              <Image source={{ uri: profileUrl(a.profile_path, 'h632')! }} style={styles.actorImg} />
             ) : (
               <View
                 style={[

@@ -1,3 +1,5 @@
+import { Image as ExpoImage } from 'expo-image';
+import { avatarUrl } from '../../utils/imagenes';
 import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
@@ -67,7 +69,7 @@ export function MovieSocialProof({ movieId, fontFamily }: Props) {
               >
                 <BlurView intensity={30} tint="dark" style={styles.chipInner}>
                   {a.foto ? (
-                    <Image source={{ uri: a.foto }} style={styles.foto} />
+                    <ExpoImage source={{ uri: avatarUrl(a.foto, 24)! }} style={styles.foto} contentFit="cover" cachePolicy="memory-disk" />
                   ) : (
                     <View style={styles.fotoPlaceholder}>
                       <Ionicons name="person" size={14} color="#fff" />
@@ -103,7 +105,7 @@ export function MovieSocialProof({ movieId, fontFamily }: Props) {
               >
                 <BlurView intensity={20} tint="dark" style={styles.chipInner}>
                   {a.foto ? (
-                    <Image source={{ uri: a.foto }} style={styles.foto} />
+                    <ExpoImage source={{ uri: avatarUrl(a.foto, 24)! }} style={styles.foto} contentFit="cover" cachePolicy="memory-disk" />
                   ) : (
                     <View style={styles.fotoPlaceholder}>
                       <Ionicons name="person" size={14} color="#fff" />

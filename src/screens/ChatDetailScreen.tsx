@@ -1,3 +1,4 @@
+import { avatarUrl } from '../utils/imagenes';
 /**
  * ARCHIVO: screens/ChatDetailScreen.tsx
  * DESCRIPCIÓN: Pantalla de chat individual o grupal.
@@ -371,7 +372,7 @@ export function ChatDetailScreen() {
             <View style={styles.avatarMini}>
               {displayAvatar ? (
                 <ExpoImage
-                  source={{ uri: displayAvatar }}
+                  source={{ uri: avatarUrl(displayAvatar, 34)! }}
                   style={styles.avatarImgMini}
                   contentFit="cover"
                   transition={200}

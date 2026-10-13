@@ -27,7 +27,7 @@ export const CollectionSaga = React.memo(({ coleccion, fontFamily, onMovieClick 
         renderItem={({ item: m }) => (
           <Pressable style={styles.sagaItem} onPress={() => onMovieClick(m.id)}>
             {m.poster_path ? (
-              <Image source={{ uri: posterUrl(m.poster_path)! }} style={styles.sagaImg} />
+              <Image source={{ uri: posterUrl(m.poster_path, 'w342')! }} style={styles.sagaImg} />
             ) : (
               <View
                 style={[

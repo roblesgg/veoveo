@@ -1,3 +1,4 @@
+import { avatarUrl } from '../utils/imagenes';
 /**
  * ARCHIVO: screens/SocialTab.tsx
  * DESCRIPCIÓN: Pestaña 'Social'. Gestiona la lista de conversaciones (Chats),
@@ -89,7 +90,7 @@ const SocialChatRow = memo(
         <View style={styles.chatAvatar}>
           {avatarUri && avatarUri.trim() !== '' ? (
             <ExpoImage
-              source={{ uri: avatarUri }}
+              source={{ uri: avatarUrl(avatarUri, 50)! }}
               style={styles.fullImg}
               contentFit="cover"
               transition={150}
@@ -302,7 +303,7 @@ export function SocialTab({
               <View style={styles.perfilInnerMini}>
                 {userFoto && userFoto.trim() !== '' ? (
                   <ExpoImage
-                    source={{ uri: userFoto }}
+                    source={{ uri: avatarUrl(userFoto, 44)! }}
                     style={styles.perfilFotoMini}
                     contentFit="cover"
                     transition={200}
@@ -518,7 +519,7 @@ export function SocialTab({
                     >
                       <View style={styles.selectorAvatar}>
                         {a.fotoPerfil ? (
-                          <Image source={{ uri: a.fotoPerfil }} style={styles.fullImg} />
+                          <ExpoImage source={{ uri: avatarUrl(a.fotoPerfil, 50)! }} style={styles.fullImg} contentFit="cover" cachePolicy="memory-disk" transition={150} />
                         ) : (
                           <Ionicons name="person" size={20} color="#fff" />
                         )}

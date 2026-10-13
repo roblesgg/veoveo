@@ -15,7 +15,7 @@ export const ActorHeader = React.memo(({ foto, nombre, lugarNacimiento, fontFami
     <View style={styles.container}>
       <View style={[styles.photoContainer, SHADOWS.macLight]}>
         <Image
-          source={{ uri: profileUrl(foto) || 'https://via.placeholder.com/200x300?text=No+Photo' }}
+          source={{ uri: profileUrl(foto, 'h632') || 'https://via.placeholder.com/200x300?text=No+Photo' }}
           style={styles.photo}
         />
       </View>

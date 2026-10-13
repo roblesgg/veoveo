@@ -1,3 +1,5 @@
+import { avatarUrl } from '../../utils/imagenes';
+import { Image as ExpoImage } from 'expo-image';
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,7 +17,7 @@ export const UserSearchRow = React.memo(({ usuario, enviada, onAdd, fontFamily }
       <View style={styles.main}>
         <View style={styles.avatar}>
           {usuario.fotoPerfil && usuario.fotoPerfil.trim() !== '' ? (
-            <Image source={{ uri: usuario.fotoPerfil }} style={styles.avatarImg} />
+            <ExpoImage source={{ uri: avatarUrl(usuario.fotoPerfil, 48)! }} style={styles.avatarImg} contentFit="cover" cachePolicy="memory-disk" transition={150} />
           ) : (
             <Text style={styles.avatarText}>
               {(usuario.username || 'U').charAt(0).toUpperCase()}

@@ -264,7 +264,10 @@ export function logoUrl(path: string | null | undefined): string | null {
 /**
  * HELPER: Construye la URL completa de una imagen de perfil de actor.
  */
-export function profileUrl(path: string | null | undefined): string | null {
+export function profileUrl(
+  path: string | null | undefined,
+  tamano: 'w185' | 'h632' = 'w185',
+): string | null {
   if (!path) return null;
-  return `https://image.tmdb.org/t/p/w185${path}`;
+  return `https://image.tmdb.org/t/p/${tamano}${path}`;
 }

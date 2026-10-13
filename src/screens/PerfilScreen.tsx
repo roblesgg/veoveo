@@ -1,3 +1,4 @@
+import { avatarUrl } from '../utils/imagenes';
 /**
  * ARCHIVO: screens/PerfilScreen.tsx
  * DESCRIPCIÓN: Pantalla de perfil de usuario.
@@ -125,7 +126,7 @@ export function PerfilScreen() {
           >
             {fotoUri ? (
               <ExpoImage
-                source={{ uri: fotoUri }}
+                source={{ uri: avatarUrl(fotoUri, 120)! }}
                 style={styles.avatarImg}
                 contentFit="cover"
                 transition={200}

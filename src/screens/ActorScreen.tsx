@@ -195,7 +195,7 @@ export function ActorScreen() {
                 onPress={() => navigation.push('Pelicula', { movieId: p.id })}
               >
                 {p.poster_path ? (
-                  <Image source={{ uri: posterUrl(p.poster_path)! }} style={styles.poster} />
+                  <Image source={{ uri: posterUrl(p.poster_path, 'w342')! }} style={styles.poster} />
                 ) : (
                   <View style={styles.noPoster}>
                     <Text style={[styles.noPosterText, { fontFamily }]}>{p.title}</Text>

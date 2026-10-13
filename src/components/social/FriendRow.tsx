@@ -1,3 +1,4 @@
+import { avatarUrl } from '../../utils/imagenes';
 /**
  * ARCHIVO: components/social/FriendRow.tsx
  * DESCRIPCIÓN: Fila individual para la lista de amigos.
@@ -29,7 +30,7 @@ export const FriendRow = React.memo(({ amigo, onPress, fontFamily }: Props) => {
         <View style={styles.avatar}>
           {amigo.fotoPerfil && amigo.fotoPerfil.trim() !== '' ? (
             <ExpoImage
-              source={{ uri: amigo.fotoPerfil }}
+              source={{ uri: avatarUrl(amigo.fotoPerfil, 52)! }}
               style={styles.avatarImg}
               contentFit="cover"
               transition={200}

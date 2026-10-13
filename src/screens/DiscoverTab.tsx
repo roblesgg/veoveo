@@ -1,3 +1,4 @@
+import { avatarUrl } from '../utils/imagenes';
 /**
  * ARCHIVO: screens/DiscoverTab.tsx
  * DESCRIPCIÓN: Pestaña 'Descubrir'. Es el motor central de contenido de la app.
@@ -88,7 +89,7 @@ const ActorResultItem = memo(({ item, onActorClick }: { item: any; onActorClick:
       style={[styles.resultCard, SHADOWS.macLight]}
     >
       <ExpoImage
-        source={{ uri: profileUrl(item.profile_path)! }}
+        source={{ uri: profileUrl(item.profile_path, 'h632')! }}
         style={styles.fullImg}
         contentFit="cover"
         cachePolicy="memory-disk"
@@ -251,7 +252,7 @@ export function DiscoverTab({
             <Pressable onPress={() => onPerfilClick?.()} style={styles.perfilBtnMini}>
               <View style={styles.perfilInnerMini}>
                 {userFoto ? (
-                  <Image source={{ uri: userFoto }} style={styles.perfilFotoMini} />
+                  <ExpoImage source={{ uri: avatarUrl(userFoto, 44)! }} style={styles.perfilFotoMini} contentFit="cover" cachePolicy="memory-disk" transition={150} />
                 ) : (
                   <Ionicons name="person" size={22} color="#fff" />
                 )}
