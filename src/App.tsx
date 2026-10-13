@@ -28,6 +28,7 @@ import { guardarPushToken } from './services/repositorioUsuarios';
 import { ensureNotificationChannelConfigured } from './services/notificationService';
 import { IOSInstallPrompt } from './components/IOSInstallPrompt';
 import { InAppNotificationBanner } from './components/InAppNotificationBanner';
+import { AvisoSinConexion } from './components/common/AvisoSinConexion';
 import { NotificationPermissionPrompt } from './components/NotificationPermissionPrompt';
 
 import * as Notifications from 'expo-notifications';
@@ -292,6 +293,7 @@ export default function App() {
               <View style={styles.appWrapper}>
                 <View style={styles.mainContainer}>
                   <RootNavigator />
+                  <AvisoSinConexion />
                   <VersionShield />
                   <IOSInstallPrompt />
                   <NotificationPermissionPrompt onTokenRegistered={handleTokenRegistered} />
