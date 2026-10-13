@@ -19,8 +19,9 @@
     "android": {
       "package": "com.roblesgg.veoveo",
       "adaptiveIcon": {
-        "backgroundColor": "#020617",
-        "foregroundImage": "./assets/adaptive-icon.png"
+        "backgroundColor": "#013A85",
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundImage": "./assets/adaptive-icon-fondo.png"
       },
       "predictiveBackGestureEnabled": false,
       "versionCode": 40
@@ -32,6 +33,15 @@
     "updates": {
       "url": "https://u.expo.dev/db438c91-21eb-4020-a3ad-efec69cef405"
     },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notificacion.png",
+          "color": "#69DFD9"
+        }
+      ]
+    ],
     "runtimeVersion": {
       "policy": "appVersion"
     },

@@ -1,12 +1,32 @@
 import { Platform } from 'react-native';
-import { useFonts, Montserrat_600SemiBold } from '@expo-google-fonts/montserrat';
+import {
+  useFonts,
+  Montserrat_500Medium,
+  Montserrat_600SemiBold,
+  Montserrat_700Bold,
+  Montserrat_800ExtraBold,
+} from '@expo-google-fonts/montserrat';
 
-/** Equivalente a montserrat_alternates_semibold en Compose (Montserrat Semibold). */
+/**
+ * Montserrat, la única familia de VeoVeo (manual): 700 en títulos y botones, 500 en texto,
+ * 800 solo en portadas («¡Es un match!»). La 600 se mantiene para las pantallas antiguas.
+ */
+export const FUENTES = {
+  texto: 'Montserrat_500Medium',
+  seminegrita: 'Montserrat_600SemiBold',
+  titulo: 'Montserrat_700Bold',
+  portada: 'Montserrat_800ExtraBold',
+} as const;
+
 export function useMontserrat() {
-  const [loaded] = useFonts({ Montserrat_600SemiBold });
-  // On web, include fallback fonts so iOS Safari shows Montserrat (from Google CDN)
-  // instead of the UA serif default when the custom font hasn't loaded yet.
-  // Comma-separated stacks are only valid in CSS (web), not on native.
+  const [loaded] = useFonts({
+    Montserrat_500Medium,
+    Montserrat_600SemiBold,
+    Montserrat_700Bold,
+    Montserrat_800ExtraBold,
+  });
+  // En la web, con familias de reserva para que Safari no use la serif por defecto mientras carga.
+  // Las listas separadas por comas solo valen en CSS (web), no en nativo.
   const fontFamily =
     Platform.OS === 'web'
       ? "Montserrat_600SemiBold, 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif"

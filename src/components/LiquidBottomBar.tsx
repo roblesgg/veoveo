@@ -1,31 +1,42 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, View, Pressable, Platform, useWindowDimensions } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, View, Pressable, Platform, Text, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import Animated, { useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated';
+import { IconCompass, IconMessageCircle, IconUsers } from '@tabler/icons-react-native';
+import { IconoClaqueta } from './iconos/IconosPropios';
+import { COLORS } from '../theme/colors';
+import { FUENTES } from '../theme/useMontserrat';
 
-const BAR_HEIGHT = 64;
+const BAR_HEIGHT = 66;
 
 type Props = {
   onTabChange: (index: number) => void;
   paginaActual: number;
+  /** Mensajes sin leer, para el contador de Chats */
+  noLeidos?: number;
 };
 
-export function LiquidBottomBar({ onTabChange, paginaActual }: Props) {
+type Pestana = {
+  index: number;
+  etiqueta: string;
+  Icono: (p: { size: number; color: string; strokeWidth: number }) => React.ReactNode;
+};
+
+const PESTANAS: Pestana[] = [
+  { index: 0, etiqueta: 'Descubrir', Icono: (p) => <IconCompass {...p} /> },
+  { index: 1, etiqueta: 'Biblioteca', Icono: (p) => <IconoClaqueta {...p} /> },
+  { index: 2, etiqueta: 'Chats', Icono: (p) => <IconMessageCircle {...p} /> },
+  { index: 3, etiqueta: 'Social', Icono: (p) => <IconUsers {...p} /> },
+];
+
+export function LiquidBottomBar({ onTabChange, paginaActual, noLeidos = 0 }: Props) {
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
 
-  const items = [
-    { iconActive: 'compass', iconInactive: 'compass-outline', index: 0 },
-    { iconActive: 'library', iconInactive: 'library-outline', index: 1 },
-    { iconActive: 'chatbubble', iconInactive: 'chatbubble-outline', index: 2 },
-    { iconActive: 'people', iconInactive: 'people-outline', index: 3 },
-  ] as const;
-
   // Ancho dinámico con límite para escritorio
-  const BAR_WIDTH = Math.min(windowWidth - 48, 600);
-  const TAB_WIDTH = BAR_WIDTH / items.length;
+  const BAR_WIDTH = Math.min(windowWidth - 40, 600);
+  const TAB_WIDTH = BAR_WIDTH / PESTANAS.length;
 
   const translateX = useSharedValue(paginaActual * TAB_WIDTH);
 
@@ -35,7 +46,7 @@ export function LiquidBottomBar({ onTabChange, paginaActual }: Props) {
       stiffness: 200,
       mass: 0.5,
     });
-  }, [paginaActual, TAB_WIDTH]);
+  }, [paginaActual, TAB_WIDTH, translateX]);
 
   const indicatorStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
@@ -48,11 +59,11 @@ export function LiquidBottomBar({ onTabChange, paginaActual }: Props) {
         {
           bottom: Platform.OS === 'web' ? Math.max(insets.bottom, 40) : Math.max(insets.bottom, 20),
           width: BAR_WIDTH,
-          left: (windowWidth - BAR_WIDTH) / 2, // Centrado perfecto
+          left: (windowWidth - BAR_WIDTH) / 2,
         },
       ]}
+      accessibilityRole="tablist"
     >
-      {/* 🔮 Real Android Blur Strategy: experimentalBlurMethod="dimezisBlurView" */}
       <BlurView
         intensity={80}
         tint="dark"
@@ -63,29 +74,36 @@ export function LiquidBottomBar({ onTabChange, paginaActual }: Props) {
       </BlurView>
 
       <View style={styles.content}>
-        {/* 💊 Premium Pill Indicator */}
         <Animated.View
           style={[
             styles.indicator,
-            { width: TAB_WIDTH * 0.8, left: (TAB_WIDTH - TAB_WIDTH * 0.8) / 2 },
+            { width: TAB_WIDTH * 0.84, left: (TAB_WIDTH - TAB_WIDTH * 0.84) / 2 },
             indicatorStyle,
           ]}
         />
 
-        {items.map((item) => {
-          const isActive = paginaActual === item.index;
+        {PESTANAS.map(({ index, etiqueta, Icono }) => {
+          const activa = paginaActual === index;
+          const color = activa ? COLORS.primary : COLORS.textMuted;
           return (
             <Pressable
-              key={item.index}
-              onPress={() => onTabChange(item.index)}
+              key={index}
+              onPress={() => onTabChange(index)}
               style={styles.tabBtn}
               hitSlop={8}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: activa }}
+              accessibilityLabel={index === 2 && noLeidos > 0 ? `${etiqueta}, ${noLeidos} sin leer` : etiqueta}
             >
-              <Ionicons
-                name={isActive ? item.iconActive : item.iconInactive}
-                size={26}
-                color={isActive ? '#ffffff' : 'rgba(255,255,255,0.4)'}
-              />
+              <View>
+                {Icono({ size: 24, color, strokeWidth: 2 })}
+                {index === 2 && noLeidos > 0 && (
+                  <View style={styles.contador}>
+                    <Text style={styles.contadorTexto}>{noLeidos > 99 ? '99+' : noLeidos}</Text>
+                  </View>
+                )}
+              </View>
+              <Text style={[styles.etiqueta, { color }]}>{etiqueta}</Text>
             </Pressable>
           );
         })}
@@ -97,14 +115,12 @@ export function LiquidBottomBar({ onTabChange, paginaActual }: Props) {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    left: 24,
-    right: 24,
     height: BAR_HEIGHT,
-    borderRadius: 32,
+    borderRadius: 999,
     overflow: 'hidden',
-    borderWidth: 1.2,
-    borderColor: 'rgba(255, 255, 255, 0.18)',
-    backgroundColor: 'rgba(0, 0, 0, 0.05)', // Casi invisible, solo blur
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.14)',
+    backgroundColor: 'rgba(15, 23, 42, 0.55)',
     zIndex: 1000,
   },
   glassOverlay: {
@@ -119,15 +135,30 @@ const styles = StyleSheet.create({
   },
   indicator: {
     position: 'absolute',
-    height: 44,
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    borderRadius: 22,
+    height: 52,
+    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    borderRadius: 999,
   },
   tabBtn: {
     flex: 1,
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 3,
     zIndex: 10,
   },
+  etiqueta: { fontSize: 11, fontFamily: FUENTES.texto },
+  contador: {
+    position: 'absolute',
+    top: -6,
+    right: -12,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
+    borderRadius: 999,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  contadorTexto: { color: COLORS.onAccent, fontSize: 10, fontFamily: FUENTES.titulo },
 });

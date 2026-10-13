@@ -16,6 +16,7 @@ import { COLORS, GLASS } from '../../theme/colors';
 import { marcarHito } from '../../utils/medicionArranque';
 import { useCarrusel, useRecomendaciones } from '../../hooks/useDescubrir';
 import { obtenerCarrusel } from '../../constants/carruseles';
+import { EsqueletoFilaPosters } from '../common/Esqueleto';
 
 type Props = {
   /** Id del carrusel en el catálogo (constants/carruseles.ts) */
@@ -91,8 +92,10 @@ export const CarruselPeliculas = memo(
           )}
         </View>
 
-        {/* ESTADOS: vacío de "Para ti" y error con reintento */}
-        {!cargando && peliculas.length === 0 ? (
+        {/* ESTADOS: cargando (esqueleto), vacío de "Para ti" y error con reintento */}
+        {cargando && peliculas.length === 0 ? (
+          <EsqueletoFilaPosters />
+        ) : !cargando && peliculas.length === 0 ? (
           <Pressable onPress={error ? reintentar : undefined} style={styles.avisoCard}>
             <Ionicons
               name={error ? 'cloud-offline-outline' : 'sparkles-outline'}

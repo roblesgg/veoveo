@@ -7,7 +7,8 @@
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
+import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
 
 import { useAuth } from '../context/AuthContext';
 import { ActorScreen } from '../screens/ActorScreen';
@@ -68,7 +69,7 @@ export function RootNavigator() {
             backgroundColor: COLORS.background,
           }}
         >
-          <ActivityIndicator size="large" color={COLORS.primary} />
+          <LoaderClaqueta />
         </View>
       ) : (
         /* NAVEGACIÓN DINÁMICA CONDICIONAL */

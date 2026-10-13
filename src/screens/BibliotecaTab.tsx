@@ -24,6 +24,8 @@ import { BlurView } from 'expo-blur';
 
 import { Image } from 'expo-image';
 import { useBiblioteca } from '../context/BibliotecaContext';
+import { EsqueletoRejillaPosters } from '../components/common/Esqueleto';
+import { IconoPalomitas } from '../components/iconos/IconosPropios';
 import { fechaDeVista } from '../services/repositorioPeliculasUsuario';
 import { useQueries } from '@tanstack/react-query';
 import { obtenerPlataformasES } from '../hooks/useDescubrir';
@@ -83,7 +85,7 @@ export function BibliotecaTab({
   const scrollerRef = useRef<ScrollView>(null);
 
   // Biblioteca compartida de la sesión (una sola escucha de Firestore, siempre al día)
-  const { porVer, vistas } = useBiblioteca();
+  const { porVer, vistas, cargando: cargandoBiblioteca } = useBiblioteca();
 
   // Efecto para scroll al inicio cuando se pulsa el icono de la tab dos veces
   useEffect(() => {
@@ -352,7 +354,23 @@ export function BibliotecaTab({
               </Pressable>
             </View>
           )}
-          {renderContent}
+          {cargandoBiblioteca ? (
+            <EsqueletoRejillaPosters />
+          ) : (seccion === 0 ? porVer : vistas).length === 0 ? (
+            <View style={styles.vacio}>
+              <IconoPalomitas size={56} />
+              <Text style={[styles.vacioTitulo, { fontFamily }]}>
+                {seccion === 0 ? 'Tu lista está vacía' : 'Aún no has marcado ninguna vista'}
+              </Text>
+              <Text style={[styles.vacioTexto, { fontFamily }]}>
+                {seccion === 0
+                  ? 'Desliza en Descubrir y guarda lo que te llame.'
+                  : 'Cuando veas una peli, márcala como vista y valórala.'}
+              </Text>
+            </View>
+          ) : (
+            renderContent
+          )}
         </ScrollView>
       </View>
 
@@ -457,6 +475,9 @@ export function BibliotecaTab({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#020617' },
+  vacio: { alignItems: 'center', paddingHorizontal: 36, paddingTop: 48, gap: 12 },
+  vacioTitulo: { color: '#F8FAFC', fontSize: 20, fontWeight: '700', textAlign: 'center' },
+  vacioTexto: { color: '#94A3B8', fontSize: 15, lineHeight: 21, textAlign: 'center' },
   webCenteringWrapper: {
     width: '100%',
     maxWidth: 1000,

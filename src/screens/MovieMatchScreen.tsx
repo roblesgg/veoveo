@@ -39,6 +39,7 @@ import { observarMatch, votarPelicula } from '../services/repositorioMatches';
 import { tmdbApi, posterUrl } from '../services/tmdbClient';
 import { MovieMatch, MovieDetails } from '../types';
 import { COLORS } from '../theme/colors';
+import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
 import { SHADOWS } from '../theme/theme';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -317,7 +318,7 @@ export function MovieMatchScreen() {
   if (loading || !match) {
     return (
       <View style={[styles.container, { justifyContent: 'center' }]}>
-        <ActivityIndicator color="#fff" size="large" />
+        <LoaderClaqueta texto="Preparando las pelis…" />
       </View>
     );
   }
