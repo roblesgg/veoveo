@@ -5,6 +5,7 @@
  * Gestiona errores de configuración de Firebase y recuperación de contraseña.
  */
 
+import Constants from 'expo-constants';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState } from 'react';
@@ -205,7 +206,7 @@ export function LoginScreen() {
           </Text>
         </Pressable>
 
-        <Text style={[styles.version, { fontFamily: ff }]}>v1.9.1 - Master Release</Text>
+        <Text style={[styles.version, { fontFamily: ff }]}>v{Constants.expoConfig?.version}</Text>
 
         <Pressable onPress={() => Linking.openURL('https://dripdev.dev')} style={{ marginTop: 8 }}>
           <Text style={[styles.dripLink, { fontFamily: ff }]}>by DripDev</Text>

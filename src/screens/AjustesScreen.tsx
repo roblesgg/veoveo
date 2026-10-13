@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -110,6 +111,22 @@ export function AjustesScreen() {
             </View>
             <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.5)" />
           </Pressable>
+          {[
+            { ruta: 'Cuenta' as const, titulo: 'Cuenta', texto: 'Correo, contraseña, descargar tus datos y borrar la cuenta.' },
+            { ruta: 'Notificaciones' as const, titulo: 'Notificaciones', texto: 'Qué avisos quieres recibir.' },
+          ].map((f) => (
+            <Pressable
+              key={f.ruta}
+              style={[styles.card, SHADOWS.macLight, { marginBottom: 12 }]}
+              onPress={() => navigation.navigate(f.ruta)}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.cardTitle, { fontFamily }]}>{f.titulo}</Text>
+                <Text style={[styles.cardDesc, { fontFamily }]}>{f.texto}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.5)" />
+            </Pressable>
+          ))}
           <View style={[styles.card, SHADOWS.macLight]}>
             <View style={{ flex: 1 }}>
               <Text style={[styles.cardTitle, { fontFamily }]}>Mostrar contenido para adultos</Text>
@@ -196,6 +213,21 @@ export function AjustesScreen() {
               Datos de plataformas: JustWatch.
             </Text>
           </View>
+
+          <Pressable
+            style={[styles.card, SHADOWS.macLight, { marginTop: 12 }]}
+            onPress={() =>
+              void Linking.openURL(
+                `mailto:Alvaro@dripdev.dev?subject=${encodeURIComponent(`VeoVeo ${Constants.expoConfig?.version ?? ''}`)}`,
+              )
+            }
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.cardTitle, { fontFamily }]}>Contacto y soporte</Text>
+              <Text style={[styles.cardDesc, { fontFamily }]}>Escríbenos a Alvaro@dripdev.dev</Text>
+            </View>
+            <Ionicons name="mail-outline" size={20} color="rgba(255,255,255,0.5)" />
+          </Pressable>
 
           <Text style={[styles.versionText, { fontFamily }]}>
             VeoVeo {Constants.expoConfig?.version} · Un producto de DripDev · hecho por Álvaro

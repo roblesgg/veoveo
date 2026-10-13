@@ -20,6 +20,9 @@ import {
   unlink,
   updatePassword,
   reauthenticateWithCredential,
+  reauthenticateWithPopup,
+  verifyBeforeUpdateEmail,
+  deleteUser,
   EmailAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
@@ -49,7 +52,9 @@ type AuthContextValue = {
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   changePassword: (password: string) => Promise<void>;
-  reauthenticate: (password: string) => Promise<void>;
+  reauthenticate: (password?: string) => Promise<void>;
+  changeEmail: (nuevo: string) => Promise<void>;
+  deleteAuthUser: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
 };
 
@@ -266,13 +271,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    * Solicita credenciales de nuevo para operaciones críticas.
    */
   const reauthenticate = useCallback(
-    async (password: string) => {
-      if (!auth?.currentUser || !auth.currentUser.email) return;
-      const credential = EmailAuthProvider.credential(auth.currentUser.email, password);
-      await reauthenticateWithCredential(auth.currentUser, credential);
+    async (password?: string) => {
+      const actual = auth?.currentUser;
+      if (!actual) throw new Error('Sin sesión');
+      // Con contraseña si entra con correo; si no, vuelve a pedir la cuenta de Google
+      if (password && actual.email) {
+        await reauthenticateWithCredential(actual, EmailAuthProvider.credential(actual.email, password));
+        return;
+      }
+      if (Platform.OS === 'web') {
+        await reauthenticateWithPopup(actual, new GoogleAuthProvider());
+        return;
+      }
+      await GoogleSignin.hasPlayServices();
+      const idToken = (await GoogleSignin.signIn()).data?.idToken;
+      if (!idToken) throw new Error('Cancelado');
+      await reauthenticateWithCredential(actual, GoogleAuthProvider.credential(idToken));
     },
     [auth],
   );
+
+  /** Cambia el correo: Firebase envía un enlace al nuevo y solo lo cambia al confirmarlo. */
+  const changeEmail = useCallback(
+    async (nuevo: string) => {
+      if (!auth?.currentUser) return;
+      await verifyBeforeUpdateEmail(auth.currentUser, nuevo.trim());
+    },
+    [auth],
+  );
+
+  /** Último paso de borrar la cuenta: el usuario de Auth (requiere sesión reciente). */
+  const deleteAuthUser = useCallback(async () => {
+    if (!auth?.currentUser) return;
+    await deleteUser(auth.currentUser);
+    if (Platform.OS !== 'web') await GoogleSignin.signOut().catch(() => undefined);
+  }, [auth]);
 
   /**
    * MÉTODO: logout
@@ -303,6 +336,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       resetPassword,
       changePassword,
       reauthenticate,
+      changeEmail,
+      deleteAuthUser,
     }),
     [
       user,
@@ -318,6 +353,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       resetPassword,
       changePassword,
       reauthenticate,
+      changeEmail,
+      deleteAuthUser,
     ],
   );
 

@@ -20,6 +20,7 @@ import {
   Linking,
   Platform,
   Modal,
+  TextInput,
 } from 'react-native';
 import { Image as ExpoImage } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,6 +30,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { getFirestoreDb } from '../services/firebase';
 import { obtenerConfiguracionApp } from '../services/repositorioConfiguracion';
+import { actualizarBio } from '../services/repositorioUsuarios';
 import { useAuth } from '../context/AuthContext';
 import { useMontserrat } from '../theme/useMontserrat';
 import { useLanguage } from '../context/LanguageContext';
@@ -69,6 +71,8 @@ export function PerfilScreen() {
   const [showUserModal, setShowUserModal] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [bioEditando, setBioEditando] = useState<string | null>(null);
+  const [bioGuardada, setBioGuardada] = useState<string | null>(null);
   const [latestVersion, setLatestVersion] = useState('');
 
   // En web: leer la versión publicada desde Firestore para mostrarla en el botón de descarga
@@ -147,6 +151,13 @@ export function PerfilScreen() {
               <Ionicons name="pencil" size={12} color="#fff" />
             </View>
           </Pressable>
+
+          {/* Bio: una frase sobre ti (máx. 160, lo exigen las reglas) */}
+          <Pressable onPress={() => setBioEditando(bioGuardada ?? usuario.bio ?? '')} hitSlop={8} accessibilityLabel="Editar tu bio">
+            <Text style={[styles.bioText, !(bioGuardada ?? usuario.bio) && styles.bioVacia]} numberOfLines={3}>
+              {(bioGuardada ?? usuario.bio) || 'Añade una frase sobre ti'}
+            </Text>
+          </Pressable>
         </View>
 
         {/* COMPONENTE: Estadísticas numéricas de la biblioteca */}
@@ -211,6 +222,44 @@ export function PerfilScreen() {
         onSave={handleUpdateAvatar}
         fontFamily={fontFamily}
       />
+
+      {/* Editar la bio */}
+      <Modal visible={bioEditando !== null} transparent animationType="fade" onRequestClose={() => setBioEditando(null)}>
+        <View style={styles.modalBackdrop}>
+          <View style={styles.bioModal}>
+            <Text style={styles.bioModalTitulo}>Tu bio</Text>
+            <TextInput
+              value={bioEditando ?? ''}
+              onChangeText={setBioEditando}
+              maxLength={160}
+              multiline
+              placeholder="Terror los viernes, comedias los domingos…"
+              placeholderTextColor="rgba(255,255,255,0.4)"
+              style={styles.bioInput}
+              autoFocus
+            />
+            <Text style={styles.bioContador}>{(bioEditando ?? '').length}/160</Text>
+            <View style={styles.bioBotones}>
+              <Pressable onPress={() => setBioEditando(null)} style={styles.bioBoton}>
+                <Text style={styles.bioBotonTexto}>Cancelar</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  const texto = (bioEditando ?? '').trim();
+                  setBioEditando(null);
+                  void actualizarBio(texto).then(
+                    () => setBioGuardada(texto),
+                    () => setBioGuardada(null),
+                  );
+                }}
+                style={[styles.bioBoton, styles.bioBotonOk]}
+              >
+                <Text style={[styles.bioBotonTexto, { color: COLORS.onAccent }]}>Guardar</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* Confirmar Salida */}
       <ConfirmModal
@@ -327,5 +376,15 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(105,223,217, 0.4)',
   },
   downloadText: { color: '#fff', fontSize: 16, fontWeight: '800' },
-  modalBackdrop: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
+  modalBackdrop: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, backgroundColor: 'rgba(2,6,23,0.75)' },
+  bioText: { color: 'rgba(255,255,255,0.75)', fontSize: 15, lineHeight: 21, textAlign: 'center', marginTop: 10, maxWidth: 300 },
+  bioVacia: { color: COLORS.primary },
+  bioModal: { width: '100%', maxWidth: 420, backgroundColor: COLORS.surface, borderRadius: 24, padding: 20, gap: 10 },
+  bioModalTitulo: { color: '#fff', fontSize: 18, fontWeight: '800' },
+  bioInput: { minHeight: 90, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)', padding: 12, color: '#fff', fontSize: 15, textAlignVertical: 'top' },
+  bioContador: { color: 'rgba(255,255,255,0.4)', fontSize: 12, textAlign: 'right' },
+  bioBotones: { flexDirection: 'row', gap: 10, justifyContent: 'flex-end' },
+  bioBoton: { height: 44, paddingHorizontal: 18, borderRadius: 999, justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
+  bioBotonOk: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  bioBotonTexto: { color: '#fff', fontSize: 15, fontWeight: '700' },
 });

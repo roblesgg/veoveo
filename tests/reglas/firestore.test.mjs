@@ -280,6 +280,13 @@ describe('chats', () => {
     );
     await assertFails(como(BETO).doc('chats/g1').update({ participants: [ALICIA] }));
   });
+  test('❌ al salir, cambiar los administradores', async () => {
+    await env.withSecurityRulesDisabled((ctx) =>
+      ctx.firestore().doc('chats/g1').set({ participants: [ALICIA, BETO, CARLA] }, { merge: true }),
+    );
+    // Beto no es administrador: no puede quitar a Alicia ni nombrar a Carla al irse
+    await assertFails(como(BETO).doc('chats/g1').update({ participants: [ALICIA, CARLA], admins: [CARLA] }));
+  });
   test('❌ quien no participa no lee', async () => {
     await assertFails(como(CARLA).doc('chats/c1').get());
     await assertFails(como(CARLA).collection('chats/c1/msj').get());
@@ -339,6 +346,38 @@ describe('movie match', () => {
     await env.withSecurityRulesDisabled((ctx) => ctx.firestore().doc('matches/x1').update({ estado: 'finished' }));
     await assertFails(como(BETO).doc('matches/x1').update({ coincidencias: arrayUnion(604) }));
     await assertFails(como(BETO).doc('matches/x1').update({ estado: 'active' }));
+  });
+});
+
+describe('bio del perfil', () => {
+  test('✅ una frase; ❌ más de 160 caracteres', async () => {
+    await assertSucceeds(como(ALICIA).doc(`usuarios/${ALICIA}`).update({ bio: 'Terror y ciencia ficción' }));
+    await assertFails(como(ALICIA).doc(`usuarios/${ALICIA}`).update({ bio: 'x'.repeat(161) }));
+  });
+});
+
+describe('borrar la cuenta (anonimizar)', () => {
+  test('✅ Beto borra todo lo suyo, en el orden de la app', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore();
+      await db.doc(`matches/x1/votos/${BETO}`).set({ si: [603], no: [] });
+      await db.doc(`chats/c1/miembros/${BETO}`).set({ ultimaLectura: 1 });
+      await db.doc(`usuarios/${BETO}/peliculas/550`).set({ idPelicula: 550, estado: 'por_ver' });
+    });
+    const db = como(BETO);
+    await assertSucceeds(db.doc(`usuarios/${ALICIA}`).update({ amigos: arrayRemove(BETO) }));
+    await assertSucceeds(db.doc(`chats/c1/miembros/${BETO}`).delete());
+    await assertSucceeds(db.doc('chats/g1').update({ participants: arrayRemove(BETO) }));
+    await assertSucceeds(db.doc(`matches/x1/votos/${BETO}`).delete());
+    await assertSucceeds(db.doc('matches/x1').update({ estado: 'cancelled' }));
+    await assertSucceeds(db.doc(`usuarios/${BETO}/peliculas/550`).delete());
+    await assertSucceeds(db.doc(`usuarios/${BETO}/privado/cuenta`).delete());
+    await assertSucceeds(db.doc(`usuarios/${BETO}`).delete());
+  });
+  test('❌ borrar los datos de otra persona', async () => {
+    await assertFails(como(BETO).doc(`usuarios/${ALICIA}`).delete());
+    await assertFails(como(BETO).doc(`usuarios/${ALICIA}/peliculas/603`).delete());
+    await assertFails(como(BETO).doc('chats/c1/msj/m1').delete());
   });
 });
 

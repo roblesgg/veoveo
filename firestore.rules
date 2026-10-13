@@ -60,7 +60,9 @@ service cloud.firestore {
       allow delete: if esDueno(userId);
 
       // El dueño: solo campos públicos (correo, token y bloqueados van en privado/)
-      allow update: if esDueno(userId) && request.resource.data.keys().hasOnly(camposPublicos());
+      allow update: if esDueno(userId) && request.resource.data.keys().hasOnly(camposPublicos())
+        && request.resource.data.get('bio', '') is string
+        && request.resource.data.get('bio', '').size() <= 160;
 
       // Otra persona solo puede tocar `amigos` del perfil ajeno:
       // - para quitarse a sí misma (dejar de ser amigos);
@@ -175,7 +177,13 @@ service cloud.firestore {
         && quitados(resource.data.participants, nuevo().participants).hasOnly([yo()])
         && anadidos(resource.data.participants, nuevo().participants).size() == 0
         && !(yo() in nuevo().admins)
-        && nuevo().admins.toSet().hasOnly(nuevo().participants);
+        && nuevo().admins.toSet().hasOnly(nuevo().participants)
+        // Los administradores no cambian (salvo quitarme); solo si no queda ninguno, se nombra uno
+        && (
+          nuevo().admins.toSet() == resource.data.get('admins', []).toSet().difference([yo()].toSet())
+          || (resource.data.get('admins', []).toSet().difference([yo()].toSet()).size() == 0
+              && nuevo().admins.size() == 1)
+        );
 
       // Nadie borra un chat para todos: «borrar» es ocultarlo para uno mismo (miembros/{uid}).
 
@@ -276,8 +284,10 @@ service cloud.firestore {
             yo() in get(/databases/$(database)/documents/matches/$(matchId)).data.participants;
         }
         allow read: if participaEnElMatch();
-        allow write: if esDueno(uid) && participaEnElMatch()
+        allow create, update: if esDueno(uid) && participaEnElMatch()
           && request.resource.data.keys().hasOnly(['si', 'no', 'actualizadoEn']);
+        // Borrar mis votos (al borrar la cuenta)
+        allow delete: if esDueno(uid);
       }
     }
 

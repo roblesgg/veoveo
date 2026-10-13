@@ -8,6 +8,8 @@ export type RootStackParamList = {
   Ajustes: undefined;
   Bloqueados: undefined;
   Privacidad: undefined;
+  Cuenta: undefined;
+  Notificaciones: undefined;
   Solicitudes: undefined;
   BibliotecaAmigo: { amigoUid: string };
   Actor: { actorId: number; actorName: string };
