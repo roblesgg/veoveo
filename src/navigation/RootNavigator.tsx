@@ -38,7 +38,8 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
  * Define cómo la app responde a URLs externas (ej: veoveo://movie/123).
  */
 const linking = {
-  prefixes: ['veoveo://', 'https://veoveo.dripdev.dev'],
+  // veoveotest:// es el esquema del APK de pruebas (app.config.js)
+  prefixes: ['veoveo://', 'veoveotest://', 'https://veoveo.dripdev.dev'],
   config: {
     screens: {
       Main: 'main',

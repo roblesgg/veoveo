@@ -20,6 +20,7 @@ import { BibliotecaProvider } from './context/BibliotecaContext';
 import { ChatsProvider } from './context/ChatsContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { RootNavigator } from './navigation/RootNavigator';
+import { abrirEnlaceAviso } from './utils/enlaces';
 import { COLORS } from './theme/colors';
 import { getFirestoreDb } from './services/firebase';
 import { observarConfiguracionApp } from './services/repositorioConfiguracion';
@@ -265,13 +266,13 @@ export default function App() {
     // Usuario toca la notificación desde bandeja (app en fondo o cerrada)
     const responseSub = Notifications.addNotificationResponseReceivedListener((response) => {
       const url = response.notification.request.content.data?.url;
-      if (typeof url === 'string' && url.length > 0) void Linking.openURL(url);
+      if (typeof url === 'string' && url.length > 0) abrirEnlaceAviso(url);
     });
 
     // App abierta pulsando una notificación desde estado completamente cerrado
     void Notifications.getLastNotificationResponseAsync().then((response) => {
       const url = response?.notification.request.content.data?.url;
-      if (typeof url === 'string' && url.length > 0) void Linking.openURL(url);
+      if (typeof url === 'string' && url.length > 0) abrirEnlaceAviso(url);
     });
 
     return () => {

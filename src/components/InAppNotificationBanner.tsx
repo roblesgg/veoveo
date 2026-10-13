@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View, Linking } from 'react-native';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { abrirEnlaceAviso } from '../utils/enlaces';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -40,7 +41,7 @@ export function InAppNotificationBanner({ title, body, url, onDismiss }: Props) 
   };
 
   const handlePress = () => {
-    if (url) void Linking.openURL(url);
+    if (url) abrirEnlaceAviso(url);
     dismiss();
   };
 
