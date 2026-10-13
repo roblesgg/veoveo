@@ -24,7 +24,7 @@ export const UserSearchRow = React.memo(({ usuario, enviada, onAdd, fontFamily }
             </Text>
           )}
         </View>
-        <Text style={[styles.name, { fontFamily }]}>{usuario.username || usuario.email}</Text>
+        <Text style={[styles.name, { fontFamily }]}>{usuario.username}</Text>
       </View>
       <Pressable
         style={[styles.addBtn, enviada && styles.disabled]}

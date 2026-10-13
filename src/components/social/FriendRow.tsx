@@ -43,7 +43,7 @@ export const FriendRow = React.memo(({ amigo, onPress, fontFamily }: Props) => {
         {/* INFORMACIÓN DE USUARIO */}
         <View style={{ flex: 1 }}>
           <Text style={[styles.name, { fontFamily }]} numberOfLines={1}>
-            {amigo.username || amigo.email}
+            {amigo.username}
           </Text>
           <View style={styles.statusRow}>
             <View style={[styles.statusDot, { backgroundColor: statusColor }]} />

@@ -91,11 +91,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (u) {
         void (async () => {
           try {
-            const [perfil, token] = await Promise.all([
-              asegurarPerfilFirestore(u),
-              obtenerTokenSiHayPermiso(),
-            ]);
-            await registrarSesion(u.uid, perfil, token);
+            const [, token] = await Promise.all([asegurarPerfilFirestore(u), obtenerTokenSiHayPermiso()]);
+            await registrarSesion(u.uid, token);
           } catch {
             // Sin conexión: se reintenta en el próximo arranque
           }

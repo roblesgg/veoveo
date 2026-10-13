@@ -1,49 +1,39 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   obtenerPerfilUsuario,
-  crearPerfilPorDefecto,
   actualizarUsername,
   actualizarFotoPerfil,
 } from '../../services/repositorioUsuarios';
-import {
-  contarPeliculasPorEstado,
-  listarPeliculasPorEstado,
-} from '../../services/repositorioPeliculasUsuario';
+import { useBiblioteca } from '../../context/BibliotecaContext';
 import type { UsuarioPerfil } from '../../types';
 
 export function useUserProfile() {
   const [usuario, setUsuario] = useState<UsuarioPerfil | null>(null);
   const [cargando, setCargando] = useState(true);
-  const [stats, setStats] = useState({ vistas: 0, porVer: 0, resenas: 0 });
   const [error, setError] = useState<string | null>(null);
   const [mensaje, setMensaje] = useState<string | null>(null);
+  const { porVer, vistas } = useBiblioteca();
+
+  // Contadores sacados de la biblioteca compartida (sin lecturas extra)
+  const stats = useMemo(
+    () => ({
+      vistas: vistas.length,
+      porVer: porVer.length,
+      resenas: vistas.filter((p) => p.valoracion && p.valoracion !== 0).length,
+    }),
+    [porVer, vistas],
+  );
 
   const cargarPerfil = useCallback(async () => {
     setCargando(true);
     setError(null);
     try {
-      let u = await obtenerPerfilUsuario();
-      if (!u) {
-        await crearPerfilPorDefecto();
-        u = await obtenerPerfilUsuario();
-      }
-      if (!u) throw new Error('No se pudo cargar el perfil');
-
+      // El perfil lo crea AuthContext al iniciar sesión; si aún no está, se reintenta al recargar
+      const u = await obtenerPerfilUsuario();
+      if (!u) throw new Error('Estamos preparando tu perfil. Vuelve a intentarlo en un momento.');
       setUsuario(u);
-
-      const [nVistas, nPorVer, vistasList] = await Promise.all([
-        contarPeliculasPorEstado('vista'),
-        contarPeliculasPorEstado('por_ver'),
-        listarPeliculasPorEstado('vista'),
-      ]);
-
-      setStats({
-        vistas: nVistas,
-        porVer: nPorVer,
-        resenas: vistasList.filter((p) => p.valoracion && p.valoracion !== 0).length,
-      });
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error desconocido');
+      setError(e instanceof Error ? e.message : 'No hemos podido cargar tu perfil');
     } finally {
       setCargando(false);
     }
@@ -56,11 +46,11 @@ export function useUserProfile() {
   const handleUpdateUsername = async (name: string) => {
     try {
       await actualizarUsername(name);
-      setUsuario((prev) => (prev ? { ...prev, username: name } : null));
+      setUsuario((prev) => (prev ? { ...prev, username: name.trim() } : null));
       setMensaje('Nombre actualizado');
       return true;
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al actualizar');
+      setError(e instanceof Error ? e.message : 'No hemos podido cambiar el nombre');
       return false;
     }
   };
@@ -72,7 +62,7 @@ export function useUserProfile() {
       setMensaje('Foto actualizada');
       return true;
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error al actualizar foto');
+      setError(e instanceof Error ? e.message : 'No hemos podido cambiar la foto');
       return false;
     }
   };

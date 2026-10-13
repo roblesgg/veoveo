@@ -42,7 +42,8 @@ export function useSocialData() {
   // Search logic
   useEffect(() => {
     const q = busqueda.trim();
-    if (q.length < 1) {
+    // Búsqueda por nombre exacto o código de amigo: a partir de 3 caracteres
+    if (q.length < 3) {
       setResultados([]);
       return;
     }
@@ -62,7 +63,7 @@ export function useSocialData() {
 
   const handleSendSolicitud = async (uid: string, username?: string) => {
     try {
-      await enviarSolicitudAmistad(uid, username);
+      await enviarSolicitudAmistad(uid);
       setSolEnviadas((prev) => new Set([...prev, uid]));
       setMensaje('Solicitud enviada');
       return true;

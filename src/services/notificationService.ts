@@ -8,8 +8,8 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
-import { doc, getDoc } from 'firebase/firestore';
 import { getFirestoreDb } from './firebase';
+import { obtenerAvisos } from './repositorioUsuarios';
 
 export const DEFAULT_NOTIFICATION_CHANNEL_ID = 'default';
 
@@ -103,15 +103,23 @@ export async function enviarNotificacionPush(
  * Recupera automaticamente el token de un usuario desde Firestore y le envia el mensaje.
  * @param uid UID del destinatario.
  */
-export async function notificarAUsuario(uid: string, title: string, body: string, data?: any) {
-  const db = getFirestoreDb();
-  if (!db) return;
-
-  const snap = await getDoc(doc(db, 'usuarios', uid));
-  if (snap.exists()) {
-    const userData = snap.data();
-    if (userData.pushToken) {
-      await enviarNotificacionPush(userData.pushToken, title, body, data);
-    }
+export async function notificarAUsuario(
+  uid: string,
+  title: string,
+  body: string,
+  data?: { type?: 'message' | 'match' | 'solicitud' } & Record<string, unknown>,
+) {
+  if (!getFirestoreDb()) return;
+  // El token está en privado/avisos, que solo pueden leer sus amigos (si no, no hay aviso)
+  const avisos = await obtenerAvisos(uid);
+  if (!avisos?.pushToken) return;
+  // Preferencias del destinatario por tipo de aviso
+  const tipo = data?.type;
+  const prefs = avisos.notificaciones;
+  if (prefs) {
+    if (tipo === 'message' && prefs.mensajes === false) return;
+    if (tipo === 'match' && prefs.match === false) return;
+    if (tipo === 'solicitud' && prefs.solicitudes === false) return;
   }
+  await enviarNotificacionPush(avisos.pushToken, title, body, data);
 }

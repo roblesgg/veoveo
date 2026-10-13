@@ -5,21 +5,50 @@
  */
 
 // --- MODELOS DE USUARIO Y PERFIL ---
+
+/** Privacidad de cada usuario (la biblioteca la hacen cumplir las reglas; Vistas en Social y Match, la app). */
+export type Privacidad = {
+  biblioteca: 'amigos' | 'nadie';
+  vistasEnSocial: boolean;
+  vistasEnMatch: boolean;
+  solicitudes: 'todos' | 'nadie';
+};
+
+export const PRIVACIDAD_POR_DEFECTO: Privacidad = {
+  biblioteca: 'amigos',
+  vistasEnSocial: true,
+  vistasEnMatch: true,
+  solicitudes: 'todos',
+};
+
+/** Perfil público: `usuarios/{uid}`. Lo puede leer cualquiera con sesión. */
 export type UsuarioPerfil = {
-  uid: string; // ID única del usuario en Firebase
-  username: string; // Nombre de pantalla
-  username_servido?: string; // Username en minúsculas para búsquedas eficientes
-  email: string; // Correo electrónico
-  fotoPerfil: string | null; // URL de la imagen de perfil
-  amigos: string[]; // Lista de UIDs de amigos
-  fechaCreacion?: number; // Timestamp de registro
-  bloqueados?: string[]; // Lista de UIDs bloqueados
-  estado?: 'online' | 'offline' | 'ausente'; // Estado de conexión en tiempo real
-  ultimoAcceso?: number; // Última vez que abrió la app
-  pushToken?: string; // Token de Expo para notificaciones push
-  appVersion?: string; // Última versión de app reportada por el cliente
-  appVersionCode?: number; // Último versionCode reportado por el cliente
-  platform?: string; // Plataforma del dispositivo
+  uid: string;
+  username: string;
+  username_servido?: string; // nombre en minúsculas, para el buscador
+  codigoAmigo?: string; // 6 caracteres, para añadir amigos sin buscar por nombre
+  fotoPerfil: string | null; // URL (de Google); el tamaño se pide al pintar
+  bio?: string;
+  amigos: string[];
+  fechaCreacion?: number;
+  estado?: 'online' | 'offline' | 'ausente';
+  ultimoAcceso?: number;
+  privacidad?: Privacidad;
+};
+
+/** Datos privados de la cuenta: `usuarios/{uid}/privado/cuenta`. Solo el dueño. */
+export type CuentaPrivada = {
+  email?: string;
+  bloqueados?: string[];
+  appVersion?: string;
+  appVersionCode?: number;
+  platform?: string;
+};
+
+/** Avisos: `usuarios/{uid}/privado/avisos`. El dueño y sus amigos (para enviarle notificaciones). */
+export type AvisosPrivados = {
+  pushToken?: string;
+  notificaciones?: { mensajes: boolean; solicitudes: boolean; match: boolean };
 };
 
 // --- MODELOS SOCIALES ---
