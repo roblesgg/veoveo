@@ -26,6 +26,7 @@ Hay dos proyectos de Firebase y nunca se mezclan.
 |---|---|
 | Compilar el APK de pruebas | `powershell -File scripts/pruebas/compilar-apk.ps1` |
 | Instalarlo en el móvil de Álvaro | `adb install -r <apk>` y nada más (ver la norma del móvil personal) |
+| Hacer de Beto o Carla (probar con un solo móvil: mensajes en tiempo real y avisos) | `node scripts/pruebas/actuar.mjs mensaje beto "texto"` o `... grupo carla "texto"` |
 | Crear cuentas y datos de ejemplo | `node scripts/pruebas/preparar.mjs` (necesita `firebase login`; no repite datos si ya existen) |
 | Desplegar reglas e índices en pruebas | `firebase deploy --only firestore --project veoveo-pruebas` |
 | Probar las reglas sin Firebase | `npm run test:reglas` (emulador) |
