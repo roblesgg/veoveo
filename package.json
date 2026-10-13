@@ -12,6 +12,7 @@
     "prebuild": "expo prebuild",
     "typecheck": "tsc --noEmit",
     "test:reglas": "firebase emulators:exec --only firestore,storage --project demo-veoveo \"node --test tests/reglas/firestore.test.mjs\"",
+    "test:migracion": "firebase emulators:exec --only firestore --project demo-veoveo \"node --test tests/migracion/migracion.test.mjs\"",
     "security:check": "node scripts/check-security.mjs",
     "clean": "powershell -ExecutionPolicy Bypass -Command \"rm -Recurse -Force .expo, android, backups/recycled/*\"",
     "env:sync": "node scripts/sync-firebase-env.mjs",
