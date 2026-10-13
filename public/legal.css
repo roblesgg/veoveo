@@ -1,0 +1,47 @@
+/* Páginas legales de VeoVeo (/privacidad, /normas, /borrar-cuenta). Colores de la app. */
+:root {
+  --fondo: #020617;
+  --superficie: #0f172a;
+  --texto: #f8fafc;
+  --suave: #94a3b8;
+  --celeste: #38bdf8;
+  --turquesa: #69dfd9;
+  --borde: rgba(255, 255, 255, 0.1);
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font: 16px/1.65 'Montserrat', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+main { max-width: 720px; margin: 0 auto; padding: 32px 16px 64px; }
+header { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+header a { color: var(--texto); text-decoration: none; font-weight: 800; font-size: 20px; letter-spacing: -0.02em; }
+header a span { color: var(--turquesa); }
+nav { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0 0 32px; font-size: 14px; }
+nav a { color: var(--suave); }
+nav a[aria-current='page'] { color: var(--celeste); font-weight: 600; }
+h1 { font-size: clamp(28px, 6vw, 38px); line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 8px; }
+h2 { font-size: 20px; margin: 36px 0 8px; }
+h3 { font-size: 16px; margin: 20px 0 4px; }
+p, li { color: #e2e8f0; }
+.fecha { color: var(--suave); font-size: 14px; margin: 0 0 24px; }
+a { color: var(--celeste); }
+ul, ol { padding-left: 22px; }
+li { margin: 4px 0; }
+.caja {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin: 16px 0;
+}
+.caja p:first-child { margin-top: 0; }
+.caja p:last-child { margin-bottom: 0; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; margin: 12px 0; }
+th, td { text-align: left; vertical-align: top; padding: 10px 8px; border-bottom: 1px solid var(--borde); }
+th { color: var(--suave); font-weight: 600; }
+.tabla { overflow-x: auto; }
+footer { margin-top: 48px; color: var(--suave); font-size: 14px; }
