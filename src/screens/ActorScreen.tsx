@@ -7,7 +7,6 @@
 
 import React, { useState, useMemo } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   Image,
   Pressable,
@@ -30,6 +29,8 @@ import { FilterSortMenu, type FilterSortOption } from '../components/FilterSortM
 import { posterUrl } from '../services/tmdbClient';
 import { SHADOWS } from '../theme/theme';
 import { shareActor } from '../utils/shareUtils';
+import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { EstadoError, EstadoVacio } from '../components/common/EstadoPantalla';
 import type { RootStackParamList } from '../navigation/types';
 
 const { width } = Dimensions.get('window');
@@ -67,7 +68,7 @@ export function ActorScreen() {
   const fontFamily = ff || 'System';
 
   // HOOK: Obtiene biografía, fotos y filmografía desde TMDB
-  const { detalles, peliculas, cargando } = useActorData(actorId);
+  const { detalles, peliculas, cargando, error, recargar } = useActorData(actorId);
 
   const [filtroGenero, setFiltroGenero] = useState<number | null>(null);
   const [orden, setOrden] = useState<'popularity' | 'date'>('popularity');
@@ -103,7 +104,15 @@ export function ActorScreen() {
   if (cargando) {
     return (
       <GradientBackground style={styles.center}>
-        <ActivityIndicator color="#fff" size="large" />
+        <LoaderClaqueta />
+      </GradientBackground>
+    );
+  }
+
+  if (error && !detalles) {
+    return (
+      <GradientBackground style={styles.center}>
+        <EstadoError onReintentar={recargar} />
       </GradientBackground>
     );
   }
@@ -183,28 +192,35 @@ export function ActorScreen() {
           <Text style={[styles.secTitle, { fontFamily, marginLeft: 25, marginBottom: 15 }]}>
             Filmografía destacada
           </Text>
-          <FlatList
-            data={pelisFiltradas}
-            keyExtractor={(item) => String(item.id)}
-            numColumns={3}
-            scrollEnabled={false} // Se desplaza con el ScrollView padre
-            contentContainerStyle={styles.list}
-            renderItem={({ item: p }) => (
-              <Pressable
-                style={[styles.card, SHADOWS.macLight]}
-                onPress={() => navigation.push('Pelicula', { movieId: p.id })}
-              >
-                {p.poster_path ? (
-                  <Image source={{ uri: posterUrl(p.poster_path, 'w342')! }} style={styles.poster} />
-                ) : (
-                  <View style={styles.noPoster}>
-                    <Text style={[styles.noPosterText, { fontFamily }]}>{p.title}</Text>
-                  </View>
-                )}
-              </Pressable>
-            )}
-            columnWrapperStyle={styles.row}
-          />
+          {pelisFiltradas.length === 0 ? (
+            <EstadoVacio titulo="No hay películas" texto="Prueba con otro filtro." />
+          ) : (
+            <FlatList
+              data={pelisFiltradas}
+              keyExtractor={(item) => String(item.id)}
+              numColumns={3}
+              scrollEnabled={false} // Se desplaza con el ScrollView padre
+              contentContainerStyle={styles.list}
+              renderItem={({ item: p }) => (
+                <Pressable
+                  style={[styles.card, SHADOWS.macLight]}
+                  onPress={() => navigation.push('Pelicula', { movieId: p.id })}
+                >
+                  {p.poster_path ? (
+                    <Image
+                      source={{ uri: posterUrl(p.poster_path, 'w342')! }}
+                      style={styles.poster}
+                    />
+                  ) : (
+                    <View style={styles.noPoster}>
+                      <Text style={[styles.noPosterText, { fontFamily }]}>{p.title}</Text>
+                    </View>
+                  )}
+                </Pressable>
+              )}
+              columnWrapperStyle={styles.row}
+            />
+          )}
         </View>
       </ScrollView>
 

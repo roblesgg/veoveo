@@ -5,6 +5,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GradientBackground } from '../components/GradientBackground';
+import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { EstadoError } from '../components/common/EstadoPantalla';
 import type { RootStackParamList } from '../navigation/types';
 import {
   desbloquearUsuario,
@@ -23,10 +25,12 @@ export function BloqueadosScreen() {
 
   const [cargando, setCargando] = useState(true);
   const [filas, setFilas] = useState<Fila[]>([]);
+  const [error, setError] = useState(false);
   const [quitando, setQuitando] = useState<string | null>(null);
 
   const cargar = useCallback(async () => {
     setCargando(true);
+    setError(false);
     try {
       const uids = await obtenerBloqueadosUids();
       const res: Fila[] = [];
@@ -35,6 +39,8 @@ export function BloqueadosScreen() {
         res.push({ uid, username: u?.username ?? uid.slice(0, 8) + '…' });
       }
       setFilas(res);
+    } catch {
+      setError(true);
     } finally {
       setCargando(false);
     }
@@ -58,7 +64,9 @@ export function BloqueadosScreen() {
       </View>
 
       {cargando ? (
-        <ActivityIndicator color="#fff" style={{ marginTop: 40 }} />
+        <LoaderClaqueta />
+      ) : error ? (
+        <EstadoError texto="No hemos podido cargar tus bloqueados." onReintentar={cargar} />
       ) : (
         <FlatList
           data={filas}

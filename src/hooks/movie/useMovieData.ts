@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { tmdbApi } from '../../services/tmdbClient';
 import type {
   CastMember,
@@ -14,6 +14,7 @@ export function useMovieData(movieId: number) {
   const [reparto, setReparto] = useState<CastMember[]>([]);
   const [providers, setProviders] = useState<WatchProvidersResponse | null>(null);
   const [coleccion, setColeccion] = useState<CollectionDetails | null>(null);
+  const [intento, setIntento] = useState(0); // Se incrementa para volver a cargar
 
   useEffect(() => {
     let alive = true;
@@ -77,7 +78,9 @@ export function useMovieData(movieId: number) {
     return () => {
       alive = false;
     };
-  }, [movieId]);
+  }, [movieId, intento]);
 
-  return { cargando, error, detalles, reparto, providers, coleccion };
+  const recargar = useCallback(() => setIntento((n) => n + 1), []);
+
+  return { cargando, error, detalles, reparto, providers, coleccion, recargar };
 }

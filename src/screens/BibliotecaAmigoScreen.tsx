@@ -5,7 +5,6 @@ import { BlurView } from 'expo-blur';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   Image,
   Platform,
   Pressable,
@@ -38,6 +37,7 @@ import { useMontserrat } from '../theme/useMontserrat';
 import { GradientBackground } from '../components/GradientBackground';
 import { FilterSortMenu } from '../components/FilterSortMenu';
 import { RatingBadge } from '../components/RatingBadge';
+import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
 import { RootStackParamList } from '../navigation/types';
 
 const Container = Platform.OS === 'ios' ? BlurView : View;
@@ -129,7 +129,7 @@ export function BibliotecaAmigoScreen() {
   if (cargando) {
     return (
       <View style={[styles.flex, styles.center, { backgroundColor: '#1A1A2E' }]}>
-        <ActivityIndicator color="#fff" size="large" />
+        <LoaderClaqueta />
       </View>
     );
   }

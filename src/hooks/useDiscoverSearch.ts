@@ -13,12 +13,16 @@ export function useDiscoverSearch() {
   const [textoBuscar, setTextoBuscar] = useState('');
   const [resultadosBusqueda, setResultadosBusqueda] = useState<any[]>([]);
   const [buscando, setBuscando] = useState(false);
+  const [error, setError] = useState(false);
+  const [buscado, setBuscado] = useState(''); // Texto de la última búsqueda terminada
+  const [intento, setIntento] = useState(0); // Se incrementa para repetir la búsqueda
   const [tipoBusqueda, setTipoBusqueda] = useState<'movie' | 'person'>('movie');
 
   useEffect(() => {
     // Evitamos búsquedas con menos de 3 caracteres
     if (textoBuscar.length < 3) {
       setResultadosBusqueda([]);
+      setError(false);
       return;
     }
 
@@ -28,6 +32,7 @@ export function useDiscoverSearch() {
      */
     const timer = setTimeout(async () => {
       setBuscando(true);
+      setError(false);
       try {
         if (tipoBusqueda === 'movie') {
           // 🎬 BÚSQUEDA DE PELÍCULAS
@@ -58,20 +63,28 @@ export function useDiscoverSearch() {
           setResultadosBusqueda(res.results);
         }
       } catch {
-        // Error silencioso en UI: resultados vacíos
+        setResultadosBusqueda([]);
+        setError(true);
       } finally {
+        setBuscado(textoBuscar);
         setBuscando(false);
       }
     }, 500);
 
     return () => clearTimeout(timer); // Limpieza del timer si el efecto se vuelve a disparar
-  }, [textoBuscar, tipoBusqueda]);
+  }, [textoBuscar, tipoBusqueda, intento]);
+
+  const reintentar = () => setIntento((n) => n + 1);
 
   return {
     textoBuscar,
     setTextoBuscar,
     resultadosBusqueda,
     buscando,
+    error,
+    reintentar,
+    sinResultados:
+      buscado === textoBuscar && textoBuscar.length >= 3 && resultadosBusqueda.length === 0,
     tipoBusqueda,
     setTipoBusqueda,
   };

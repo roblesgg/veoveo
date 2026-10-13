@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { tmdbApi } from '../../services/tmdbClient';
 import type { ActorDetails, ActorMovie } from '../../types';
 
@@ -7,9 +7,12 @@ export function useActorData(actorId: number) {
   const [peliculas, setPeliculas] = useState<ActorMovie[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [intento, setIntento] = useState(0); // Se incrementa para volver a cargar
 
   useEffect(() => {
     let mounted = true;
+    setCargando(true);
+    setError(null);
     void (async () => {
       try {
         const [d, c] = await Promise.all([
@@ -29,7 +32,9 @@ export function useActorData(actorId: number) {
     return () => {
       mounted = false;
     };
-  }, [actorId]);
+  }, [actorId, intento]);
 
-  return { detalles, peliculas, cargando, error };
+  const recargar = useCallback(() => setIntento((n) => n + 1), []);
+
+  return { detalles, peliculas, cargando, error, recargar };
 }

@@ -64,6 +64,7 @@ export function PeliculaScreen() {
     reparto,
     providers,
     coleccion,
+    recargar,
   } = useMovieData(movieId);
 
   // HOOK: Verifica si el usuario ya tiene esta peli en su biblioteca y gestiona acciones
@@ -114,6 +115,11 @@ export function PeliculaScreen() {
         <Ionicons name="alert-circle-outline" size={64} color="rgba(255,255,255,0.2)" />
         <Text style={[styles.errTitle, { fontFamily }]}>¡Ups!</Text>
         <Text style={[styles.err, { fontFamily }]}>{error}</Text>
+        {tmdbError && (
+          <Pressable style={styles.errBtn} onPress={recargar}>
+            <Text style={{ color: '#fff', fontFamily, fontWeight: '700' }}>Reintentar</Text>
+          </Pressable>
+        )}
         <Pressable style={styles.errBtn} onPress={() => navigation.goBack()}>
           <Text style={{ color: '#fff', fontFamily, fontWeight: '700' }}>Volver</Text>
         </Pressable>
@@ -136,7 +142,9 @@ export function PeliculaScreen() {
               La calidad final no se recorta. */}
           <ExpoImage
             source={{ uri: posterUrl(detalles.backdrop_path || detalles.poster_path, 'w1280')! }}
-            placeholder={{ uri: posterUrl(detalles.backdrop_path || detalles.poster_path, 'w300')! }}
+            placeholder={{
+              uri: posterUrl(detalles.backdrop_path || detalles.poster_path, 'w300')!,
+            }}
             placeholderContentFit="cover"
             contentFit="cover"
             cachePolicy="memory-disk"

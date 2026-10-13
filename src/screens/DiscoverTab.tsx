@@ -45,6 +45,7 @@ import { SHADOWS } from '../theme/theme';
 
 import { CarruselPeliculas } from '../components/discover/CarruselPeliculas';
 import { CategoryModal } from '../components/discover/CategoryModal';
+import { EstadoError, EstadoVacio } from '../components/common/EstadoPantalla';
 import { useLanguage } from '../context/LanguageContext';
 
 /**
@@ -159,6 +160,9 @@ export function DiscoverTab({
     setTextoBuscar,
     resultadosBusqueda,
     buscando,
+    error: errorBusqueda,
+    reintentar: reintentarBusqueda,
+    sinResultados,
     tipoBusqueda,
     setTipoBusqueda,
   } = useDiscoverSearch();
@@ -412,6 +416,17 @@ export function DiscoverTab({
         <Animated.View entering={FadeIn} exiting={FadeOut} style={[styles.busquedaBox, { top: 0 }]}>
           {buscando ? (
             <ActivityIndicator color="#fff" style={{ marginTop: insets.top + 140 }} />
+          ) : errorBusqueda ? (
+            <View style={{ marginTop: insets.top + 140 }}>
+              <EstadoError
+                texto="No hemos podido buscar. Revisa la conexión."
+                onReintentar={reintentarBusqueda}
+              />
+            </View>
+          ) : sinResultados ? (
+            <View style={{ marginTop: insets.top + 140 }}>
+              <EstadoVacio titulo="Sin resultados" texto="Prueba con otro título." />
+            </View>
           ) : (
             <FlatList
               data={resultadosBusqueda}
