@@ -137,10 +137,11 @@ La calidad final no se recorta: se carga de forma progresiva.
 - **Denunciar** usuarios, mensajes y grupos.
 - **Acerca de** completo: versión, TMDB y JustWatch, privacidad, términos y borrar cuenta.
 
-## ⚠️ Choques que necesitan decisión (no las recorto por mi cuenta)
+## Decidido por el jefe de proyectos (13-10-2026)
 
-1. **Foto de perfil desde la galería → necesita Firebase Storage, que hoy no está activado.**
-   - Desde octubre de 2024, crear el bucket de Storage exige el plan de pago **Blaze** (aunque el uso sea pequeño), y la norma es coste cero.
-   - **Propuesta:** avatares propios (emoji o inicial con color, como en las maquetas) más la foto de Google. Si Álvaro quiere galería, hay que aceptar Blaze con un límite de gasto.
-2. **Idioma ES/EN:** está en la lista aprobada, pero la decisión es que la 3.0 salga solo en español. Propongo dejarlo fuera de la 3.0 y apuntarlo para después.
-3. **Notificaciones por tipo:** sin servidor (coste cero), el aviso lo manda el móvil del que escribe, así que tiene que poder leer las preferencias del destinatario. Encaja con el diseño de seguridad de D5: preferencias y token en un documento que solo leen sus amigos. Solo lo aviso; no es un problema.
+- **Idioma:** la 3.0 sale **solo en español**, también la ficha de Google Play. Fuera de la lista.
+- **Foto de perfil desde la galería:** **no entra en la 3.0**. Necesita Firebase Storage, y desde octubre de 2024 crear el bucket exige el plan **Blaze**. Blaze tiene una franja gratuita, pero pide una tarjeta, y la norma de Álvaro es coste cero. Sigue la foto de Google, ya a la resolución real del dispositivo (`4932cda`). **Candidata para la 3.1**, si Álvaro quiere verla.
+
+## Nota técnica
+
+- **Notificaciones por tipo:** sin servidor (coste cero), el aviso lo manda el móvil del que escribe, así que tiene que poder leer las preferencias del destinatario. Encaja con el diseño de seguridad de D5: preferencias y token en un documento que solo leen sus amigos.
