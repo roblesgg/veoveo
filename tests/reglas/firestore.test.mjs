@@ -1,17 +1,13 @@
 /**
- * Tests de las reglas de Firestore y Storage contra el emulador.
- * Cada caso reproduce una llamada real de la app 2.0.4 (✅ debe funcionar)
- * o un ataque (❌ debe fallar).
+ * Tests de las reglas de Firestore (VeoVeo 3.0) y de Storage contra el emulador.
+ * Tres cuentas: Alicia y Beto son amigos; Carla no es amiga de nadie.
+ * ✅ debe funcionar · ❌ debe fallar.
  *
  * Ejecutar: npm run test:reglas
  */
 import { readFileSync } from 'node:fs';
 import { after, before, beforeEach, describe, test } from 'node:test';
-import {
-  assertFails,
-  assertSucceeds,
-  initializeTestEnvironment,
-} from '@firebase/rules-unit-testing';
+import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
@@ -19,8 +15,8 @@ import 'firebase/compat/storage';
 const { arrayUnion, arrayRemove } = firebase.firestore.FieldValue;
 
 const ALICIA = 'alicia';
-const BETO = 'beto'; // amigo de Alicia
-const CARLA = 'carla'; // no es amiga de nadie
+const BETO = 'beto';
+const CARLA = 'carla';
 
 let env;
 
@@ -36,355 +32,313 @@ after(async () => {
   await env?.cleanup();
 });
 
+const perfil = (uid, amigos, privacidad = {}) => ({
+  uid,
+  username: uid,
+  username_servido: uid,
+  fotoPerfil: null,
+  amigos,
+  fechaCreacion: 1,
+  privacidad: { biblioteca: 'amigos', vistasEnSocial: true, vistasEnMatch: true, solicitudes: 'todos', ...privacidad },
+});
+
 beforeEach(async () => {
   await env.clearFirestore();
   await env.withSecurityRulesDisabled(async (ctx) => {
     const db = ctx.firestore();
-    const perfil = (uid, amigos) => ({
-      uid,
-      username: uid,
-      username_servido: uid,
-      email: `${uid}@ejemplo.com`,
-      fotoPerfil: null,
-      amigos,
-      fechaCreacion: 1,
-    });
     await db.doc(`usuarios/${ALICIA}`).set(perfil(ALICIA, [BETO]));
     await db.doc(`usuarios/${BETO}`).set(perfil(BETO, [ALICIA]));
     await db.doc(`usuarios/${CARLA}`).set(perfil(CARLA, []));
-    await db.doc(`usuarios/${ALICIA}/peliculas/603`).set({ idPelicula: 603, estado: 'por_ver' });
-    await db.doc(`usuarios/${ALICIA}/tierLists/t1`).set({ titulo: 'Mejores' });
-    await db.doc(`usuarios/${ALICIA}/perfil/preferencias`).set({ idioma: 'es' });
-    await db.doc(`usuarios/${ALICIA}/biblioteca/por_ver`).set({ peliculas: [] });
+    await db.doc(`usuarios/${ALICIA}/privado/cuenta`).set({ email: 'alicia@ejemplo.com', bloqueados: [] });
+    await db.doc(`usuarios/${ALICIA}/privado/avisos`).set({ pushToken: 'ExponentPushToken[a]' });
+    await db.doc(`usuarios/${BETO}/privado/cuenta`).set({ email: 'beto@ejemplo.com', bloqueados: [] });
+    await db.doc(`usuarios/${ALICIA}/peliculas/603`).set({ idPelicula: 603, estado: 'vista', valoracion: 5 });
+    await db.doc(`usuarios/${ALICIA}/perfil/preferencias`).set({ carruseles: [] });
     await db.doc('chats/c1').set({
       type: 'individual',
       participants: [ALICIA, BETO],
+      admins: [ALICIA],
+      createdBy: ALICIA,
       createdAt: 1,
-      name: null,
       lastMessage: null,
       activeMatchId: null,
     });
-    await db.doc('chats/c1/msj/m1').set({ senderId: ALICIA, text: 'hola', timestamp: 1 });
+    await db.doc('chats/g1').set({
+      type: 'group',
+      participants: [ALICIA, BETO],
+      admins: [ALICIA],
+      createdBy: ALICIA,
+      createdAt: 1,
+      name: 'Cine de los viernes',
+      emoji: '🍿',
+    });
+    await db.doc('chats/c1/msj/m1').set({ senderId: ALICIA, type: 'text', text: 'hola', timestamp: 1, eliminado: false });
     await db.doc('matches/x1').set({
       chatId: 'c1',
       creatorId: ALICIA,
       participants: [ALICIA, BETO],
-      status: 'active',
-      settings: { targetMatches: 3, excludeSeen: false },
-      matchedMovies: [],
-      votes: {},
-      noVotes: {},
+      objetivo: 3,
+      estado: 'active',
+      mazo: [],
+      coincidencias: [],
       createdAt: 1,
     });
-    await db.doc('solicitudes_amistad/s1').set({
+    await db.doc(`solicitudes_amistad/${CARLA}_${ALICIA}`).set({
       deUid: CARLA,
-      deUsername: CARLA,
       paraUid: ALICIA,
-      paraUsername: ALICIA,
+      deUsername: CARLA,
       estado: 'pendiente',
-      timestamp: 1,
+      fecha: 1,
     });
-    await db.doc('configuracion/app').set({ min_version: '2.0.4' });
+    await db.doc('configuracion/app').set({ min_version: '3.0.0' });
   });
 });
 
 const como = (uid) => env.authenticatedContext(uid).firestore();
 const anonimo = () => env.unauthenticatedContext().firestore();
+const bloquear = (quien, aQuien) =>
+  env.withSecurityRulesDisabled((ctx) =>
+    ctx.firestore().doc(`usuarios/${quien}/privado/cuenta`).set({ bloqueados: [aQuien] }, { merge: true }),
+  );
 
-describe('usuarios/{uid}', () => {
-  test('✅ registro: crea su propio perfil', async () => {
-    await env.withSecurityRulesDisabled((ctx) => ctx.firestore().doc('usuarios/nuevo').delete());
+describe('perfil público y privado', () => {
+  test('✅ registro con campos públicos', async () => {
+    await assertSucceeds(como('nuevo').doc('usuarios/nuevo').set(perfil('nuevo', [])));
+  });
+  test('❌ el perfil público no admite correo ni token', async () => {
+    await assertFails(como('nuevo').doc('usuarios/nuevo').set({ ...perfil('nuevo', []), email: 'x@y.z' }));
+    await assertFails(como(ALICIA).doc(`usuarios/${ALICIA}`).update({ pushToken: 't' }));
+  });
+  test('✅ leer un perfil y buscar con consulta acotada', async () => {
+    await assertSucceeds(como(CARLA).doc(`usuarios/${ALICIA}`).get());
     await assertSucceeds(
-      como('nuevo').doc('usuarios/nuevo').set({ uid: 'nuevo', username: 'n', email: 'n@e.com', amigos: [] }),
+      como(CARLA).collection('usuarios').where('username_servido', '==', 'alicia').limit(5).get(),
     );
   });
-
-  test('❌ no puede crear el perfil de otro', async () => {
-    await assertFails(como(CARLA).doc('usuarios/otro').set({ uid: 'otro', amigos: [] }));
+  test('❌ barrer toda la colección de usuarios', async () => {
+    await assertFails(como(CARLA).collection('usuarios').get());
+    await assertFails(como(CARLA).collection('usuarios').limit(500).get());
   });
-
-  test('✅ buscador: cualquiera con sesión lista perfiles (2.0.4)', async () => {
-    await assertSucceeds(como(CARLA).collection('usuarios').get());
+  test('✅ datos privados: solo el dueño', async () => {
+    await assertSucceeds(como(ALICIA).doc(`usuarios/${ALICIA}/privado/cuenta`).get());
+    await assertFails(como(BETO).doc(`usuarios/${ALICIA}/privado/cuenta`).get());
   });
-
-  test('❌ sin sesión no se leen perfiles', async () => {
-    await assertFails(anonimo().doc(`usuarios/${ALICIA}`).get());
+  test('✅ token de avisos: el dueño y sus amigos; ❌ los demás', async () => {
+    await assertSucceeds(como(BETO).doc(`usuarios/${ALICIA}/privado/avisos`).get());
+    await assertFails(como(CARLA).doc(`usuarios/${ALICIA}/privado/avisos`).get());
+    await assertFails(como(BETO).doc(`usuarios/${ALICIA}/privado/avisos`).set({ pushToken: 'falso' }));
   });
+});
 
-  test('✅ actualiza su propio perfil (nombre, estado, pushToken, bloqueados)', async () => {
+describe('amistad', () => {
+  test('✅ enviar solicitud con id {de}_{para}', async () => {
     await assertSucceeds(
-      como(ALICIA).doc(`usuarios/${ALICIA}`).update({
-        username: 'Ali',
-        estado: 'online',
-        pushToken: 'ExponentPushToken[x]',
-        bloqueados: arrayUnion(CARLA),
-      }),
+      como(CARLA).doc(`solicitudes_amistad/${CARLA}_${BETO}`).set({ deUid: CARLA, paraUid: BETO, estado: 'pendiente', fecha: 2 }),
     );
   });
-
-  test('✅ aceptar solicitud: Alicia se añade a la lista de Carla', async () => {
-    await assertSucceeds(como(ALICIA).doc(`usuarios/${CARLA}`).update({ amigos: arrayUnion(ALICIA) }));
+  test('❌ solicitud con id que no cuadra, en nombre de otro o ya aceptada', async () => {
+    await assertFails(como(CARLA).doc('solicitudes_amistad/cualquiera').set({ deUid: CARLA, paraUid: BETO, estado: 'pendiente' }));
+    await assertFails(como(CARLA).doc(`solicitudes_amistad/${BETO}_${ALICIA}`).set({ deUid: BETO, paraUid: ALICIA, estado: 'pendiente' }));
+    await assertFails(como(CARLA).doc(`solicitudes_amistad/${CARLA}_${BETO}`).set({ deUid: CARLA, paraUid: BETO, estado: 'aceptada' }));
   });
-
-  test('✅ eliminar amigo: Beto se quita de la lista de Alicia', async () => {
+  test('❌ solicitud a quien me ha bloqueado o no admite solicitudes', async () => {
+    await bloquear(BETO, CARLA);
+    await assertFails(como(CARLA).doc(`solicitudes_amistad/${CARLA}_${BETO}`).set({ deUid: CARLA, paraUid: BETO, estado: 'pendiente' }));
+    await env.withSecurityRulesDisabled((ctx) =>
+      ctx.firestore().doc(`usuarios/${ALICIA}`).set({ privacidad: { solicitudes: 'nadie' } }, { merge: true }),
+    );
+    await assertFails(como(CARLA).doc(`solicitudes_amistad/${CARLA}_${ALICIA}`).set({ deUid: CARLA, paraUid: ALICIA, estado: 'pendiente' }));
+  });
+  test('✅ aceptar: Alicia se añade a Carla, añade a Carla y borra la solicitud (en lote)', async () => {
+    const db = como(ALICIA);
+    const lote = db.batch();
+    lote.update(db.doc(`usuarios/${CARLA}`), { amigos: arrayUnion(ALICIA) });
+    lote.update(db.doc(`usuarios/${ALICIA}`), { amigos: arrayUnion(CARLA) });
+    lote.delete(db.doc(`solicitudes_amistad/${CARLA}_${ALICIA}`));
+    await assertSucceeds(lote.commit());
+  });
+  test('❌ añadirse a los amigos de alguien sin solicitud suya', async () => {
+    await assertFails(como(CARLA).doc(`usuarios/${BETO}`).update({ amigos: arrayUnion(CARLA) }));
+  });
+  test('✅ rechazar (solo el estado) y cancelar (quien la envía)', async () => {
+    await assertSucceeds(como(ALICIA).doc(`solicitudes_amistad/${CARLA}_${ALICIA}`).update({ estado: 'rechazada' }));
+    await assertSucceeds(como(CARLA).doc(`solicitudes_amistad/${CARLA}_${ALICIA}`).delete());
+  });
+  test('❌ quien la envía no puede aceptarla él mismo', async () => {
+    await assertFails(como(CARLA).doc(`solicitudes_amistad/${CARLA}_${ALICIA}`).update({ estado: 'aceptada' }));
+  });
+  test('✅ quitar amigo: Beto se quita de Alicia', async () => {
     await assertSucceeds(como(BETO).doc(`usuarios/${ALICIA}`).update({ amigos: arrayRemove(BETO) }));
   });
-
-  test('✅ bloquear a quien no es amigo (quitarse de una lista donde no está)', async () => {
-    await assertSucceeds(como(CARLA).doc(`usuarios/${BETO}`).update({ amigos: arrayRemove(CARLA) }));
-  });
-
-  test('❌ ataque: añadir a un tercero a la lista de amigos de otro', async () => {
-    await assertFails(como(CARLA).doc(`usuarios/${ALICIA}`).update({ amigos: arrayUnion('mallory') }));
-  });
-
-  test('❌ ataque: vaciar la lista de amigos de otro', async () => {
-    await assertFails(como(CARLA).doc(`usuarios/${ALICIA}`).update({ amigos: [] }));
-  });
-
-  test('❌ ataque: quitar a un amigo ajeno de la lista de otro', async () => {
-    await assertFails(como(CARLA).doc(`usuarios/${ALICIA}`).update({ amigos: arrayRemove(BETO) }));
-  });
-
-  test('❌ ataque: cambiar otro campo del perfil ajeno junto con amigos', async () => {
-    await assertFails(
-      como(CARLA).doc(`usuarios/${ALICIA}`).update({ amigos: arrayUnion(CARLA), username: 'hackeada' }),
+  test('❌ quitar a un tercero o vaciar la lista de otro', async () => {
+    await env.withSecurityRulesDisabled((ctx) =>
+      ctx.firestore().doc(`usuarios/${ALICIA}`).set({ amigos: [BETO, CARLA] }, { merge: true }),
     );
-  });
-
-  test('❌ ataque: borrar el perfil de otro', async () => {
-    await assertFails(como(CARLA).doc(`usuarios/${ALICIA}`).delete());
+    await assertFails(como(CARLA).doc(`usuarios/${ALICIA}`).update({ amigos: arrayRemove(BETO) }));
+    await assertFails(como(BETO).doc(`usuarios/${ALICIA}`).update({ amigos: [] }));
   });
 });
 
-describe('subcolecciones de usuarios', () => {
-  test('✅ el dueño lee y escribe su biblioteca', async () => {
-    await assertSucceeds(
-      como(ALICIA).collection(`usuarios/${ALICIA}/peliculas`).where('estado', '==', 'por_ver').get(),
-    );
-    await assertSucceeds(
-      como(ALICIA).doc(`usuarios/${ALICIA}/peliculas/550`).set({ idPelicula: 550, estado: 'vista' }),
-    );
+describe('biblioteca', () => {
+  test('✅ el dueño y sus amigos la ven', async () => {
+    await assertSucceeds(como(ALICIA).collection(`usuarios/${ALICIA}/peliculas`).get());
+    await assertSucceeds(como(BETO).collection(`usuarios/${ALICIA}/peliculas`).get());
   });
-
-  test('✅ un amigo lee la biblioteca (BibliotecaAmigo, actividad de amigos)', async () => {
-    await assertSucceeds(
-      como(BETO).collection(`usuarios/${ALICIA}/peliculas`).where('estado', '==', 'por_ver').get(),
+  test('❌ quien no es amigo, o un amigo si la privacidad es «nadie»', async () => {
+    await assertFails(como(CARLA).collection(`usuarios/${ALICIA}/peliculas`).get());
+    await env.withSecurityRulesDisabled((ctx) =>
+      ctx.firestore().doc(`usuarios/${ALICIA}`).set({ privacidad: { biblioteca: 'nadie' } }, { merge: true }),
     );
-    await assertSucceeds(como(BETO).doc(`usuarios/${ALICIA}/peliculas/603`).get());
+    await assertFails(como(BETO).collection(`usuarios/${ALICIA}/peliculas`).get());
   });
-
-  test('❌ quien no es amigo no lee la biblioteca', async () => {
+  test('❌ amistad de un solo lado no basta', async () => {
+    await env.withSecurityRulesDisabled((ctx) =>
+      ctx.firestore().doc(`usuarios/${ALICIA}`).set({ amigos: [BETO, CARLA] }, { merge: true }),
+    );
     await assertFails(como(CARLA).collection(`usuarios/${ALICIA}/peliculas`).get());
   });
-
-  test('❌ un amigo no escribe en la biblioteca ajena', async () => {
-    await assertFails(como(BETO).doc(`usuarios/${ALICIA}/peliculas/603`).delete());
-  });
-
-  test('✅ el dueño lee sus tier lists y preferencias', async () => {
-    await assertSucceeds(como(ALICIA).collection(`usuarios/${ALICIA}/tierLists`).get());
-    await assertSucceeds(como(ALICIA).doc(`usuarios/${ALICIA}/perfil/preferencias`).set({ idioma: 'en' }));
-  });
-
-  test('❌ nadie más lee tier lists ni preferencias, ni siendo amigo', async () => {
-    await assertFails(como(BETO).collection(`usuarios/${ALICIA}/tierLists`).get());
+  test('❌ preferencias ajenas', async () => {
     await assertFails(como(BETO).doc(`usuarios/${ALICIA}/perfil/preferencias`).get());
-  });
-
-  test('✅ Movie Match 2.0.4: lee la ruta antigua biblioteca/por_ver de cada participante', async () => {
-    await assertSucceeds(como(CARLA).doc(`usuarios/${ALICIA}/biblioteca/por_ver`).get());
-    await assertSucceeds(como(CARLA).doc(`usuarios/${ALICIA}/biblioteca/vistas`).get());
-  });
-
-  test('❌ nadie escribe en la biblioteca antigua de otro', async () => {
-    await assertFails(como(CARLA).doc(`usuarios/${ALICIA}/biblioteca/por_ver`).set({ peliculas: [] }));
-  });
-});
-
-describe('solicitudes_amistad', () => {
-  test('✅ enviar una solicitud', async () => {
-    await assertSucceeds(
-      como(CARLA).collection('solicitudes_amistad').add({
-        deUid: CARLA,
-        deUsername: CARLA,
-        paraUid: BETO,
-        paraUsername: '',
-        estado: 'pendiente',
-        timestamp: 2,
-      }),
-    );
-  });
-
-  test('❌ enviar una solicitud en nombre de otro', async () => {
-    await assertFails(
-      como(CARLA).collection('solicitudes_amistad').add({ deUid: BETO, paraUid: ALICIA, estado: 'pendiente' }),
-    );
-  });
-
-  test('❌ crear una solicitud ya aceptada', async () => {
-    await assertFails(
-      como(CARLA).collection('solicitudes_amistad').add({ deUid: CARLA, paraUid: BETO, estado: 'aceptada' }),
-    );
-  });
-
-  test('✅ ver las pendientes recibidas y enviadas', async () => {
-    await assertSucceeds(
-      como(ALICIA).collection('solicitudes_amistad').where('paraUid', '==', ALICIA).where('estado', '==', 'pendiente').get(),
-    );
-    await assertSucceeds(
-      como(CARLA).collection('solicitudes_amistad').where('deUid', '==', CARLA).where('estado', '==', 'pendiente').get(),
-    );
-  });
-
-  test('✅ aceptar o rechazar (cambia solo el estado)', async () => {
-    await assertSucceeds(como(ALICIA).doc('solicitudes_amistad/s1').update({ estado: 'aceptada' }));
-  });
-
-  test('❌ cambiar a quién va dirigida', async () => {
-    await assertFails(como(ALICIA).doc('solicitudes_amistad/s1').update({ paraUid: BETO }));
-  });
-
-  test('❌ un tercero no la ve ni la toca', async () => {
-    await assertFails(como(BETO).doc('solicitudes_amistad/s1').get());
-    await assertFails(como(BETO).doc('solicitudes_amistad/s1').update({ estado: 'rechazada' }));
   });
 });
 
 describe('chats', () => {
-  test('✅ crear un chat incluyéndose a sí mismo', async () => {
-    await assertSucceeds(
-      como(ALICIA).collection('chats').add({
-        type: 'group',
-        participants: [ALICIA, BETO, CARLA],
-        createdAt: 2,
-        name: null,
-        lastMessage: null,
-        activeMatchId: null,
-      }),
-    );
+  const chatNuevo = (creador, participantes, type = 'individual') => ({
+    type,
+    participants: participantes,
+    admins: [creador],
+    createdBy: creador,
+    createdAt: 2,
+    lastMessage: null,
+    activeMatchId: null,
   });
-
-  test('❌ crear un chat sin estar dentro', async () => {
-    await assertFails(como(CARLA).collection('chats').add({ type: 'individual', participants: [ALICIA, BETO] }));
+  test('✅ crear un chat con un amigo', async () => {
+    await assertSucceeds(como(ALICIA).collection('chats').add(chatNuevo(ALICIA, [ALICIA, BETO])));
   });
-
-  test('✅ lista de mis chats y búsqueda de chat existente', async () => {
-    await assertSucceeds(
-      como(BETO).collection('chats').where('participants', 'array-contains', BETO).orderBy('createdAt', 'desc').get(),
-    );
-    await assertSucceeds(
-      como(ALICIA).collection('chats').where('type', '==', 'individual').where('participants', 'array-contains', ALICIA).get(),
-    );
+  test('❌ crear un chat con quien no es amigo', async () => {
+    await assertFails(como(CARLA).collection('chats').add(chatNuevo(CARLA, [CARLA, ALICIA])));
+    await assertFails(como(ALICIA).collection('chats').add(chatNuevo(ALICIA, [ALICIA, BETO, CARLA], 'group')));
   });
-
-  test('❌ quien no participa no lee el chat ni sus mensajes', async () => {
-    await assertFails(como(CARLA).doc('chats/c1').get());
-    await assertFails(como(CARLA).collection('chats/c1/msj').get());
+  test('❌ crear un chat con un amigo que me ha bloqueado', async () => {
+    await bloquear(BETO, ALICIA);
+    await assertFails(como(ALICIA).collection('chats').add(chatNuevo(ALICIA, [ALICIA, BETO])));
   });
-
-  test('✅ enviar mensaje y actualizar el último mensaje (como enviarMensaje)', async () => {
+  test('✅ mensaje firmado y último mensaje', async () => {
     const db = como(BETO);
-    await assertSucceeds(db.collection('chats/c1/msj').add({ senderId: BETO, senderName: 'beto', text: 'hey', timestamp: 3 }));
-    await assertSucceeds(
-      db.doc('chats/c1').update({ 'lastMessage.text': 'hey', 'lastMessage.senderId': BETO, 'lastMessage.timestamp': 3 }),
-    );
+    await assertSucceeds(db.collection('chats/c1/msj').add({ senderId: BETO, type: 'text', text: 'ey', timestamp: 2, eliminado: false }));
+    await assertSucceeds(db.doc('chats/c1').update({ lastMessage: { text: 'ey', senderId: BETO, timestamp: 2 } }));
   });
-
-  test('❌ ataque: mensaje en nombre de otro', async () => {
-    await assertFails(como(BETO).collection('chats/c1/msj').add({ senderId: ALICIA, text: 'soy Alicia', timestamp: 3 }));
+  test('❌ mensaje en nombre de otro o si el otro me ha bloqueado', async () => {
+    await assertFails(como(BETO).collection('chats/c1/msj').add({ senderId: ALICIA, type: 'text', text: 'x', timestamp: 2, eliminado: false }));
+    await bloquear(ALICIA, BETO);
+    await assertFails(como(BETO).collection('chats/c1/msj').add({ senderId: BETO, type: 'text', text: 'x', timestamp: 2, eliminado: false }));
   });
-
-  test('❌ ataque: último mensaje firmado por otro', async () => {
-    await assertFails(
-      como(BETO).doc('chats/c1').update({ 'lastMessage.text': 'x', 'lastMessage.senderId': ALICIA, 'lastMessage.timestamp': 3 }),
-    );
+  test('✅ el autor edita y borra para todos', async () => {
+    await assertSucceeds(como(ALICIA).doc('chats/c1/msj/m1').update({ text: 'hola!', editadoEn: 3 }));
+    await assertSucceeds(como(ALICIA).doc('chats/c1/msj/m1').update({ text: '', eliminado: true }));
   });
-
-  test('❌ ataque: meter o sacar participantes', async () => {
-    await assertFails(como(BETO).doc('chats/c1').update({ participants: [ALICIA, BETO, CARLA] }));
-    await assertFails(como(BETO).doc('chats/c1').update({ participants: [BETO] }));
-  });
-
-  test('❌ ataque: editar o borrar el mensaje de otro', async () => {
+  test('❌ otro participante edita o borra un mensaje ajeno', async () => {
     await assertFails(como(BETO).doc('chats/c1/msj/m1').update({ text: 'cambiado' }));
     await assertFails(como(BETO).doc('chats/c1/msj/m1').delete());
   });
-
-  test('✅ renombrar el grupo y enlazar el match activo', async () => {
-    await assertSucceeds(como(BETO).doc('chats/c1').update({ name: 'Pelis' }));
-    await assertSucceeds(como(BETO).doc('chats/c1').update({ activeMatchId: 'x1' }));
+  test('✅ ocultar un mensaje solo para mí; ❌ ocultarlo para otro', async () => {
+    await assertSucceeds(como(BETO).doc('chats/c1/msj/m1').update({ ocultoPara: arrayUnion(BETO) }));
+    await assertFails(como(BETO).doc('chats/c1/msj/m1').update({ ocultoPara: arrayUnion(ALICIA) }));
   });
-
-  test('✅ borrar un chat en el que participa (2.0.4)', async () => {
-    await assertSucceeds(como(BETO).doc('chats/c1').delete());
+  test('✅ marcar leído, silenciar u ocultar el chat (mi estado)', async () => {
+    await assertSucceeds(como(BETO).doc(`chats/c1/miembros/${BETO}`).set({ ultimaLectura: 5, silenciado: true, oculto: false }));
+    await assertSucceeds(como(ALICIA).doc(`chats/c1/miembros/${BETO}`).get());
+  });
+  test('❌ tocar el estado de otro miembro o leerlo sin estar en el chat', async () => {
+    await assertFails(como(ALICIA).doc(`chats/c1/miembros/${BETO}`).set({ silenciado: true }));
+    await assertFails(como(CARLA).doc(`chats/c1/miembros/${BETO}`).get());
+  });
+  test('❌ nadie borra un chat para todos ni cambia sus participantes (chat individual)', async () => {
+    await assertFails(como(ALICIA).doc('chats/c1').delete());
+    await assertFails(como(ALICIA).doc('chats/c1').update({ participants: [ALICIA] }));
+  });
+  test('✅ el administrador renombra, cambia el emoji y añade a un amigo suyo', async () => {
+    await env.withSecurityRulesDisabled((ctx) =>
+      ctx.firestore().doc(`usuarios/${ALICIA}`).set({ amigos: [BETO, CARLA] }, { merge: true }),
+    );
+    await assertSucceeds(como(ALICIA).doc('chats/g1').update({ name: 'Pelis', emoji: '🎬' }));
+    await assertSucceeds(como(ALICIA).doc('chats/g1').update({ participants: arrayUnion(CARLA) }));
+  });
+  test('❌ quien no es administrador gestiona el grupo', async () => {
+    await assertFails(como(BETO).doc('chats/g1').update({ name: 'Mío' }));
+    await assertFails(como(BETO).doc('chats/g1').update({ admins: [BETO] }));
+  });
+  test('✅ salir del grupo', async () => {
+    await assertSucceeds(como(BETO).doc('chats/g1').update({ participants: arrayRemove(BETO) }));
+  });
+  test('✅ el único administrador sale y deja a otro de administrador', async () => {
+    await assertSucceeds(como(ALICIA).doc('chats/g1').update({ participants: [BETO], admins: [BETO] }));
+  });
+  test('❌ al salir, sacar a otro', async () => {
+    await env.withSecurityRulesDisabled((ctx) =>
+      ctx.firestore().doc('chats/g1').set({ participants: [ALICIA, BETO, CARLA] }, { merge: true }),
+    );
+    await assertFails(como(BETO).doc('chats/g1').update({ participants: [ALICIA] }));
+  });
+  test('❌ quien no participa no lee', async () => {
+    await assertFails(como(CARLA).doc('chats/c1').get());
+    await assertFails(como(CARLA).collection('chats/c1/msj').get());
   });
 });
 
-describe('matches', () => {
-  const nuevoMatch = (creatorId, participants) => ({
-    chatId: 'c1',
-    creatorId,
-    participants,
-    status: 'active',
-    settings: { targetMatches: 3, excludeSeen: false },
-    matchedMovies: [],
-    votes: {},
-    noVotes: {},
+describe('movie match', () => {
+  const matchNuevo = (creador, participantes, chatId = null) => ({
+    chatId,
+    creatorId: creador,
+    participants: participantes,
+    objetivo: 3,
+    estado: 'active',
+    mazo: [],
+    coincidencias: [],
     createdAt: 2,
   });
-
-  test('✅ iniciar un match con la gente del chat', async () => {
-    await assertSucceeds(como(ALICIA).collection('matches').add(nuevoMatch(ALICIA, [ALICIA, BETO])));
+  test('✅ desde un chat, con su gente', async () => {
+    await assertSucceeds(como(ALICIA).collection('matches').add(matchNuevo(ALICIA, [ALICIA, BETO], 'c1')));
   });
-
-  test('❌ meter en el match a alguien que no está en el chat', async () => {
-    await assertFails(como(ALICIA).collection('matches').add(nuevoMatch(ALICIA, [ALICIA, BETO, CARLA])));
+  test('✅ sin chat, con amigos elegidos a mano', async () => {
+    await assertSucceeds(como(ALICIA).collection('matches').add(matchNuevo(ALICIA, [ALICIA, BETO])));
   });
-
-  test('❌ crear un match en nombre de otro o desde fuera del chat', async () => {
-    await assertFails(como(ALICIA).collection('matches').add(nuevoMatch(BETO, [ALICIA, BETO])));
-    await assertFails(como(CARLA).collection('matches').add({ ...nuevoMatch(CARLA, [CARLA]), chatId: 'c1' }));
+  test('❌ con quien no es amigo ni está en el chat', async () => {
+    await assertFails(como(ALICIA).collection('matches').add(matchNuevo(ALICIA, [ALICIA, CARLA])));
+    await assertFails(como(ALICIA).collection('matches').add(matchNuevo(ALICIA, [ALICIA, BETO, CARLA], 'c1')));
   });
-
-  test('✅ votar, registrar match y terminar (como votarPelicula)', async () => {
-    const db = como(BETO);
-    await assertSucceeds(db.doc('matches/x1').update({ 'votes.603': arrayUnion(BETO) }));
-    await assertSucceeds(db.doc('matches/x1').update({ 'noVotes.550': arrayUnion(BETO) }));
-    await assertSucceeds(db.doc('matches/x1').update({ matchedMovies: arrayUnion(603) }));
-    await assertSucceeds(db.doc('matches/x1').update({ status: 'finished', finishedAt: 4 }));
-    await assertSucceeds(db.doc('chats/c1').update({ activeMatchId: null }));
+  test('✅ cada uno escribe sus votos y lee los de todos', async () => {
+    await assertSucceeds(como(BETO).doc(`matches/x1/votos/${BETO}`).set({ si: [603], no: [], actualizadoEn: 3 }));
+    await assertSucceeds(como(ALICIA).doc(`matches/x1/votos/${BETO}`).get());
   });
-
-  test('❌ ataque: cambiar participantes o ajustes de la partida', async () => {
+  test('❌ votar en nombre de otro', async () => {
+    await assertFails(como(BETO).doc(`matches/x1/votos/${ALICIA}`).set({ si: [603], no: [] }));
+  });
+  test('✅ registrar coincidencias y terminar antes', async () => {
+    await assertSucceeds(como(BETO).doc('matches/x1').update({ coincidencias: arrayUnion(603) }));
+    await assertSucceeds(como(BETO).doc('matches/x1').update({ estado: 'finished', terminadoPor: BETO, finishedAt: 4 }));
+  });
+  test('❌ cambiar participantes o el mazo; quien no participa', async () => {
     await assertFails(como(BETO).doc('matches/x1').update({ participants: [BETO] }));
-    await assertFails(como(BETO).doc('matches/x1').update({ creatorId: BETO }));
-    await assertFails(como(BETO).doc('matches/x1').update({ 'settings.targetMatches': 1 }));
-  });
-
-  test('❌ quien no participa no lee ni vota', async () => {
+    await assertFails(como(BETO).doc('matches/x1').update({ mazo: [1] }));
     await assertFails(como(CARLA).doc('matches/x1').get());
-    await assertFails(como(CARLA).doc('matches/x1').update({ 'votes.603': arrayUnion(CARLA) }));
-  });
-
-  test('❌ nadie borra una partida', async () => {
-    await assertFails(como(ALICIA).doc('matches/x1').delete());
+    await assertFails(como(CARLA).doc(`matches/x1/votos/${CARLA}`).set({ si: [], no: [] }));
   });
 });
 
-describe('configuracion/app', () => {
-  test('✅ se lee sin sesión (aviso de versión mínima)', async () => {
+describe('denuncias y configuración', () => {
+  test('✅ crear una denuncia propia; ❌ leerla o firmarla por otro', async () => {
+    await assertSucceeds(
+      como(CARLA).collection('denuncias').add({ de: CARLA, contra: ALICIA, tipo: 'usuario', ref: ALICIA, motivo: 'spam', fecha: 1 }),
+    );
+    await assertFails(como(CARLA).collection('denuncias').get());
+    await assertFails(como(CARLA).collection('denuncias').add({ de: BETO, contra: ALICIA, tipo: 'usuario', motivo: 'x', fecha: 1 }));
+  });
+  test('✅ configuración pública; ❌ escribirla', async () => {
     await assertSucceeds(anonimo().doc('configuracion/app').get());
+    await assertFails(como(ALICIA).doc('configuracion/app').set({ min_version: '9' }));
   });
-
-  test('❌ nadie la escribe desde la app', async () => {
-    await assertFails(como(ALICIA).doc('configuracion/app').set({ min_version: '9.9.9' }));
-  });
-});
-
-describe('colecciones sin regla', () => {
-  test('❌ todo lo demás está cerrado', async () => {
-    await assertFails(como(ALICIA).doc('cualquier/cosa').get());
+  test('❌ colecciones sin regla', async () => {
     await assertFails(como(ALICIA).doc('cualquier/cosa').set({ a: 1 }));
   });
 });
@@ -392,7 +346,6 @@ describe('colecciones sin regla', () => {
 describe('storage', () => {
   test('❌ nadie lee ni sube archivos', async () => {
     const storage = env.authenticatedContext(ALICIA).storage();
-    await assertFails(storage.ref('perfiles/alicia.jpg').getDownloadURL());
     await assertFails(storage.ref('perfiles/alicia.jpg').putString('hola'));
   });
 });

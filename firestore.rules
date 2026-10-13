@@ -1,138 +1,281 @@
 rules_version = '2';
 
-// Reglas de Firestore de VeoVeo (proyecto veoveo-48667).
+// Reglas de Firestore de VeoVeo 3.0 (proyecto veoveo-48667).
 // Se despliegan SIEMPRE desde este archivo: firebase deploy --only firestore:rules
-// Deben seguir funcionando con la app 2.0.4 instalada. Los tests están en tests/reglas/.
+// Modelo de datos y razones: docs/encargos/2026-10-13-veoveo-3.md, «Plan de la Fase D».
+// Tests: npm run test:reglas (emulador, tres cuentas).
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ── Ayudas ──────────────────────────────────────────────────
     function conSesion() {
       return request.auth != null;
     }
-
-    function esDueno(uid) {
-      return conSesion() && request.auth.uid == uid;
+    function yo() {
+      return request.auth.uid;
     }
-
+    function esDueno(uid) {
+      return conSesion() && yo() == uid;
+    }
     function cambiaSolo(campos) {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(campos);
     }
-
-    // El que escribe está en la lista de amigos del dueño de {uid}.
-    function esAmigoDe(uid) {
-      return conSesion()
-        && request.auth.uid in get(/databases/$(database)/documents/usuarios/$(uid)).data.get('amigos', []);
+    function perfil(uid) {
+      return get(/databases/$(database)/documents/usuarios/$(uid)).data;
+    }
+    function misAmigos() {
+      return perfil(yo()).get('amigos', []);
+    }
+    // Amistad en los dos sentidos
+    function sonAmigos(uid) {
+      return conSesion() && yo() in perfil(uid).get('amigos', []) && uid in misAmigos();
+    }
+    // {uid} me tiene bloqueado (su lista es privada, pero las reglas sí pueden leerla)
+    function meBloqueo(uid) {
+      let ruta = /databases/$(database)/documents/usuarios/$(uid)/privado/cuenta;
+      return exists(ruta) && yo() in get(ruta).data.get('bloqueados', []);
+    }
+    // Lo añadido y lo quitado de una lista, como conjuntos
+    function anadidos(antes, despues) {
+      return despues.toSet().difference(antes.toSet());
+    }
+    function quitados(antes, despues) {
+      return antes.toSet().difference(despues.toSet());
     }
 
-    // Otro usuario solo puede tocar el campo `amigos` de un perfil ajeno para
-    // añadirse o quitarse a sí mismo (aceptar una solicitud o dejar de ser amigos).
-    function soloSeAnadeOQuitaASiMismo() {
-      let antes = resource.data.get('amigos', []).toSet();
-      let despues = request.resource.data.get('amigos', []).toSet();
-      return cambiaSolo(['amigos'])
-        && despues.difference(antes).union(antes.difference(despues)).hasOnly([request.auth.uid]);
-    }
-
-    // ── Perfiles ────────────────────────────────────────────────
+    // ── Perfil público ──────────────────────────────────────────
     match /usuarios/{userId} {
-      // Abierto a cualquiera con sesión: la 2.0.4 lo necesita para el buscador,
-      // los avisos push y la cabecera del chat. Se cierra en la próxima versión.
-      allow read: if conSesion();
-      allow create: if esDueno(userId);
-      allow update: if esDueno(userId) || (conSesion() && soloSeAnadeOQuitaASiMismo());
+      function camposPublicos() {
+        return ['uid', 'username', 'username_servido', 'fotoPerfil', 'bio', 'estado', 'ultimoAcceso',
+                'amigos', 'fechaCreacion', 'privacidad', 'codigoAmigo'];
+      }
+
+      // Leer un perfil: cualquiera con sesión. Listar: solo consultas pequeñas (buscador puntual,
+      // lista de amigos); nunca un barrido de toda la colección.
+      allow get: if conSesion();
+      allow list: if conSesion() && request.query.limit <= 30;
+
+      allow create: if esDueno(userId) && request.resource.data.keys().hasOnly(camposPublicos());
       allow delete: if esDueno(userId);
 
-      // Biblioteca: el dueño y sus amigos.
+      // El dueño: solo campos públicos (correo, token y bloqueados van en privado/)
+      allow update: if esDueno(userId) && request.resource.data.keys().hasOnly(camposPublicos());
+
+      // Otra persona solo puede tocar `amigos` del perfil ajeno:
+      // - para quitarse a sí misma (dejar de ser amigos);
+      // - para añadirse a sí misma si el dueño le envió una solicitud ({dueño}_{yo}).
+      allow update: if conSesion() && !esDueno(userId) && cambiaSolo(['amigos']) && (
+        (
+          quitados(resource.data.get('amigos', []), request.resource.data.get('amigos', [])).hasOnly([yo()]) &&
+          anadidos(resource.data.get('amigos', []), request.resource.data.get('amigos', [])).size() == 0
+        ) || (
+          anadidos(resource.data.get('amigos', []), request.resource.data.get('amigos', [])).hasOnly([yo()]) &&
+          quitados(resource.data.get('amigos', []), request.resource.data.get('amigos', [])).size() == 0 &&
+          exists(/databases/$(database)/documents/solicitudes_amistad/$(userId + '_' + yo()))
+        )
+      );
+
+      // Datos privados de la cuenta: correo, bloqueados, versión. Solo el dueño.
+      match /privado/cuenta {
+        allow read, write: if esDueno(userId);
+      }
+      // Token de avisos y preferencias de notificación: el dueño y sus amigos (para enviarle avisos).
+      match /privado/avisos {
+        allow read: if esDueno(userId) || sonAmigos(userId);
+        allow write: if esDueno(userId);
+      }
+
+      // Biblioteca: el dueño, y sus amigos si su privacidad lo permite.
       match /peliculas/{peliculaId} {
-        allow read: if esDueno(userId) || esAmigoDe(userId);
+        allow read: if esDueno(userId) || (
+          sonAmigos(userId) && perfil(userId).get('privacidad', {}).get('biblioteca', 'amigos') == 'amigos'
+        );
         allow write: if esDueno(userId);
       }
 
-      // Ruta antigua que el Movie Match de la 2.0.4 aún lee de cada participante.
-      match /biblioteca/{docId} {
-        allow read: if conSesion();
-        allow write: if esDueno(userId);
-      }
-
-      // Tier lists, preferencias y cualquier otra subcolección: solo el dueño.
+      // Cualquier otra subcolección (preferencias, tier lists antiguas): solo el dueño.
       match /{subcoleccion}/{resto=**} {
         allow read, write: if esDueno(userId);
       }
     }
 
-    // ── Solicitudes de amistad ──────────────────────────────────
+    // ── Solicitudes de amistad: id {de}_{para} ──────────────────
     match /solicitudes_amistad/{solicitudId} {
-      allow read: if conSesion() && (
-        request.auth.uid == resource.data.deUid ||
-        request.auth.uid == resource.data.paraUid
-      );
+      allow read: if conSesion() && (yo() == resource.data.deUid || yo() == resource.data.paraUid);
+
       allow create: if conSesion()
-        && request.auth.uid == request.resource.data.deUid
-        && request.resource.data.paraUid != request.auth.uid
-        && request.resource.data.estado == 'pendiente';
-      // Solo cambia el estado; quién la envía y a quién no se toca.
+        && request.resource.data.deUid == yo()
+        && solicitudId == yo() + '_' + request.resource.data.paraUid
+        && request.resource.data.paraUid != yo()
+        && request.resource.data.estado == 'pendiente'
+        && perfil(request.resource.data.paraUid).get('privacidad', {}).get('solicitudes', 'todos') == 'todos'
+        && !meBloqueo(request.resource.data.paraUid);
+
+      // Aceptar o rechazar: solo quien la recibe, y solo el estado
       allow update: if conSesion()
-        && (request.auth.uid == resource.data.deUid || request.auth.uid == resource.data.paraUid)
+        && yo() == resource.data.paraUid
         && cambiaSolo(['estado'])
-        && request.resource.data.estado in ['pendiente', 'aceptada', 'rechazada'];
-      allow delete: if conSesion() && (
-        request.auth.uid == resource.data.deUid ||
-        request.auth.uid == resource.data.paraUid
-      );
+        && request.resource.data.estado in ['aceptada', 'rechazada'];
+
+      // Cancelar (quien la envía) o limpiar (quien la recibe)
+      allow delete: if conSesion() && (yo() == resource.data.deUid || yo() == resource.data.paraUid);
     }
 
     // ── Chats ───────────────────────────────────────────────────
     match /chats/{chatId} {
-      function esParticipante() {
-        return conSesion() && request.auth.uid in resource.data.participants;
+      function participa() {
+        return conSesion() && yo() in resource.data.participants;
+      }
+      function esAdmin() {
+        return participa() && yo() in resource.data.get('admins', []);
+      }
+      function nuevo() {
+        return request.resource.data;
       }
 
-      allow read, delete: if esParticipante();
-      allow create: if conSesion() && request.auth.uid in request.resource.data.participants;
-      // Los participantes, el tipo y la fecha no cambian. El último mensaje
-      // solo puede firmarlo quien escribe.
-      allow update: if esParticipante()
-        && cambiaSolo(['lastMessage', 'activeMatchId', 'name'])
+      allow read: if participa();
+
+      // Crear: con amigos (los demás participantes están en mi lista de amigos),
+      // yo como creador y administrador, y sin que el otro me tenga bloqueado (chat individual).
+      allow create: if conSesion()
+        && yo() in nuevo().participants
+        && nuevo().createdBy == yo()
+        && nuevo().admins == [yo()]
+        && nuevo().participants.size() >= 2
+        && nuevo().participants.toSet().difference([yo()].toSet()).hasOnly(misAmigos())
+        && (nuevo().type == 'group' || (
+          nuevo().type == 'individual' && nuevo().participants.size() == 2
+          && (nuevo().participants[0] == yo() || !meBloqueo(nuevo().participants[0]))
+          && (nuevo().participants[1] == yo() || !meBloqueo(nuevo().participants[1]))
+        ));
+
+      // Cualquier participante: último mensaje (firmado por él) y match activo
+      allow update: if participa()
+        && cambiaSolo(['lastMessage', 'activeMatchId'])
         && (
           !('lastMessage' in request.resource.data.diff(resource.data).affectedKeys())
-          || request.resource.data.lastMessage.senderId == request.auth.uid
+          || nuevo().lastMessage.senderId == yo()
         );
 
-      match /msj/{messageId} {
+      // Administradores (grupos): nombre, emoji, miembros y administradores.
+      // Solo pueden añadir a sus amigos, y los administradores tienen que ser participantes.
+      allow update: if esAdmin()
+        && resource.data.type == 'group'
+        && cambiaSolo(['name', 'emoji', 'participants', 'admins'])
+        && anadidos(resource.data.participants, nuevo().participants).hasOnly(misAmigos())
+        && nuevo().admins.toSet().hasOnly(nuevo().participants)
+        && nuevo().admins.size() >= 1;
+
+      // Salir del grupo: uno se quita a sí mismo (y de administradores). Si era el único
+      // administrador, puede dejar de administrador a otro participante.
+      allow update: if participa()
+        && resource.data.type == 'group'
+        && cambiaSolo(['participants', 'admins'])
+        && quitados(resource.data.participants, nuevo().participants).hasOnly([yo()])
+        && anadidos(resource.data.participants, nuevo().participants).size() == 0
+        && !(yo() in nuevo().admins)
+        && nuevo().admins.toSet().hasOnly(nuevo().participants);
+
+      // Nadie borra un chat para todos: «borrar» es ocultarlo para uno mismo (miembros/{uid}).
+
+      // Estado de cada miembro: última lectura (✓✓ y no leídos), silenciado, oculto.
+      match /miembros/{uid} {
         function participaEnElChat() {
           return conSesion() &&
-            request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+            yo() in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        }
+        allow read: if participaEnElChat();
+        allow write: if esDueno(uid) && participaEnElChat();
+      }
+
+      match /msj/{messageId} {
+        function chat() {
+          return get(/databases/$(database)/documents/chats/$(chatId)).data;
+        }
+        function participaEnElChat() {
+          return conSesion() && yo() in chat().participants;
+        }
+        function camposMensaje() {
+          return ['senderId', 'type', 'text', 'timestamp', 'eliminado', 'editadoEn', 'respuestaA',
+                  'movieData', 'matchId', 'ocultoPara'];
         }
 
         allow read: if participaEnElChat();
-        // Nadie puede escribir en nombre de otro.
-        allow create: if participaEnElChat() && request.resource.data.senderId == request.auth.uid;
-        // Cada uno solo edita o borra sus propios mensajes.
+
+        // Nadie escribe en nombre de otro; en un chat individual, no si el otro me ha bloqueado.
+        allow create: if participaEnElChat()
+          && request.resource.data.senderId == yo()
+          && request.resource.data.get('eliminado', false) == false
+          && request.resource.data.keys().hasOnly(camposMensaje())
+          && (chat().type == 'group' || (
+            (chat().participants[0] == yo() || !meBloqueo(chat().participants[0])) &&
+            (chat().participants[1] == yo() || !meBloqueo(chat().participants[1]))
+          ));
+
+        // El autor edita o borra para todos (queda «Mensaje eliminado»)
         allow update: if participaEnElChat()
-          && resource.data.senderId == request.auth.uid
-          && request.resource.data.senderId == request.auth.uid;
-        allow delete: if participaEnElChat() && resource.data.senderId == request.auth.uid;
+          && resource.data.senderId == yo()
+          && request.resource.data.senderId == yo()
+          && cambiaSolo(['text', 'editadoEn', 'eliminado', 'movieData', 'matchId', 'respuestaA']);
+
+        // Cualquiera lo oculta solo para sí mismo
+        allow update: if participaEnElChat()
+          && cambiaSolo(['ocultoPara'])
+          && anadidos(resource.data.get('ocultoPara', []), request.resource.data.ocultoPara).hasOnly([yo()])
+          && quitados(resource.data.get('ocultoPara', []), request.resource.data.ocultoPara).size() == 0;
       }
     }
 
     // ── Movie Match ─────────────────────────────────────────────
     match /matches/{matchId} {
-      function esParticipante() {
-        return conSesion() && request.auth.uid in resource.data.participants;
+      function participa() {
+        return conSesion() && yo() in resource.data.participants;
+      }
+      function nuevo() {
+        return request.resource.data;
       }
 
-      allow read: if esParticipante();
-      // Lo crea uno de los participantes del chat, y solo con gente de ese chat.
+      allow read: if participa();
+
+      // Desde un chat: con la gente de ese chat. Sin chat: con mis amigos.
       allow create: if conSesion()
-        && request.resource.data.creatorId == request.auth.uid
-        && request.auth.uid in request.resource.data.participants
-        && request.resource.data.participants.toSet().hasOnly(
-             get(/databases/$(database)/documents/chats/$(request.resource.data.chatId)).data.participants
-           );
-      // Durante la partida solo cambian los votos y el resultado.
-      allow update: if esParticipante()
-        && cambiaSolo(['votes', 'noVotes', 'matchedMovies', 'status', 'finishedAt']);
+        && nuevo().creatorId == yo()
+        && yo() in nuevo().participants
+        && nuevo().estado == 'active'
+        && nuevo().coincidencias == []
+        && (
+          (nuevo().get('chatId', null) == null
+            && nuevo().participants.toSet().difference([yo()].toSet()).hasOnly(misAmigos()))
+          || (nuevo().get('chatId', null) != null
+            && yo() in get(/databases/$(database)/documents/chats/$(nuevo().chatId)).data.participants
+            && nuevo().participants.toSet().hasOnly(
+                 get(/databases/$(database)/documents/chats/$(nuevo().chatId)).data.participants))
+        );
+
+      // Durante la partida solo cambian las coincidencias y el final (terminar antes incluido)
+      allow update: if participa()
+        && cambiaSolo(['coincidencias', 'estado', 'terminadoPor', 'finishedAt'])
+        && nuevo().estado in ['active', 'finished', 'cancelled'];
+
+      // Cada uno escribe solo sus votos; los participantes leen todos para calcular coincidencias
+      match /votos/{uid} {
+        function participaEnElMatch() {
+          return conSesion() &&
+            yo() in get(/databases/$(database)/documents/matches/$(matchId)).data.participants;
+        }
+        allow read: if participaEnElMatch();
+        allow write: if esDueno(uid) && participaEnElMatch()
+          && request.resource.data.keys().hasOnly(['si', 'no', 'actualizadoEn']);
+      }
+    }
+
+    // ── Denuncias: solo crear; nadie las lee desde la app ───────
+    match /denuncias/{denunciaId} {
+      allow create: if conSesion()
+        && request.resource.data.de == yo()
+        && request.resource.data.keys().hasOnly(['de', 'contra', 'tipo', 'ref', 'motivo', 'detalle', 'fecha'])
+        && request.resource.data.tipo in ['usuario', 'mensaje', 'chat'];
     }
 
     // ── Configuración pública (aviso de versión mínima) ────────
