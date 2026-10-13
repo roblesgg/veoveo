@@ -4,8 +4,8 @@ Respuestas listas para copiar en Play Console → Política → Contenido de la 
 Salen del código de la 3.0 (rama `play/d1-navegacion`). Si cambia algo de lo que recoge la
 app, hay que actualizar esto y `public/privacidad.html` a la vez.
 
-**Decisiones de Álvaro antes de rellenar (marcadas ⚠️):** edad mínima y público objetivo,
-cuenta para los revisores de Google y correo de contacto.
+**Decidido el 13-10-2026:** edad mínima 16, cuenta de revisión `prueba3` (no se borra) y correo
+de contacto `dripdev.dev@gmail.com`.
 
 ---
 
@@ -16,20 +16,18 @@ cuenta para los revisores de Google y correo de contacto.
 - **¿Toda la funcionalidad está disponible sin restricciones?** No: hace falta cuenta.
 - **Instrucciones para los revisores:**
   - Nombre: `Cuenta de revisión`
-  - Usuario: ⚠️ *correo de la cuenta de revisión*
-  - Contraseña: ⚠️ *(no se pega aquí; Álvaro la copia de `_copias`)*
+  - Usuario: `veoveo.prueba3@dripdev.dev`
+  - Contraseña: *(no se pega aquí; Álvaro la copia de `_copias`)*
   - Otras instrucciones: `Entra con correo y contraseña. La cuenta ya tiene amigos y pelis para probar el Movie Match y los chats.`
 
-> ⚠️ **Choca con «borrar las 3 cuentas de prueba antes de publicar».** Google revisa cada
-> versión y necesita una cuenta que funcione siempre. Propuesta: borrar `prueba1` y `prueba2`
-> y dejar `prueba3` como **cuenta de revisión**, con una contraseña nueva y unos datos de
-> ejemplo (sin datos de nadie real). Lo decide Álvaro.
+> **La cuenta `veoveo.prueba3@dripdev.dev` es la cuenta de revisión y NO se borra al publicar.**
+> `prueba1` y `prueba2` sí se borran. La contraseña está en `DripDev/_copias/veoveo/`.
 
 ## 3. Anuncios
 **¿La app contiene anuncios?** No.
 
 ## 4. Clasificación de contenido (cuestionario IARC)
-- Correo: ⚠️ el de contacto.
+- Correo: `dripdev.dev@gmail.com`.
 - **Categoría:** «Todas las demás categorías de aplicaciones» *(no es un juego; si la consola
   ofrece «Redes sociales o comunicación», elegir esa)*.
 
@@ -48,16 +46,11 @@ cuenta para los revisores de Google y correo de contacto.
 | ¿Navegador web o buscador sin restricciones? | No |
 | ¿Es principalmente una app de noticias o educativa? | No |
 
-> ⚠️ **Bloqueador:** Ajustes tiene el interruptor «Mostrar contenido para adultos (XXX)», que pide`
-> a TMDB `include_adult=true` (pornografía). Google Play no admite contenido sexual explícito.`
-> Propuesta: quitar el interruptor en la 3.0 y pedir siempre `include_adult=false`. Con eso, las`
-> respuestas de esta tabla son correctas. Pendiente del OK de Álvaro.
+> Contenido adulto: quitado en la 3.0 (OK del 13-10-2026). TMDB se consulta siempre con
+> `include_adult=false` y no hay interruptor en Ajustes.
 
 ## 5. Público objetivo y contenido
-- ⚠️ **Edades objetivo:** propuesta **16-17 y 18 o más**.
-  - Si se marca un grupo de menores de 13, se aplica la política de Familias (no procede).
-  - Si se marca 13-15, Google revisa más y hay que justificar el chat con desconocidos.
-  - Si Álvaro elige 14 como edad mínima, cambiar también `privacidad.html` (sección 8).
+- **Edades objetivo:** **16-17 y 18 o más** (edad mínima 16, como dice `privacidad.html`).
 - **¿Atrae a niños?** No.
 
 ## 6. Seguridad de los datos

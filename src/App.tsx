@@ -29,6 +29,7 @@ import { ensureNotificationChannelConfigured } from './services/notificationServ
 import { IOSInstallPrompt } from './components/IOSInstallPrompt';
 import { InAppNotificationBanner } from './components/InAppNotificationBanner';
 import { AvisoSinConexion } from './components/common/AvisoSinConexion';
+import { olvidarPreferenciaAdulto } from './storage/preferences';
 import { NotificationPermissionPrompt } from './components/NotificationPermissionPrompt';
 
 import * as Notifications from 'expo-notifications';
@@ -166,6 +167,9 @@ function VersionShield() {
  * Integra todos los proveedores de contexto y la navegación raíz.
  */
 export default function App() {
+  React.useEffect(() => {
+    void olvidarPreferenciaAdulto();
+  }, []);
   const [fontsLoaded] = useFonts({ ...Ionicons.font });
   const [inAppNotif, setInAppNotif] = React.useState<{
     title: string;

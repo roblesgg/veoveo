@@ -8,34 +8,15 @@ const KEY_ORDEN_POR_VER = 'orden_por_ver';
 const KEY_ORDEN_VISTAS = 'orden_vistas';
 const KEY_PLATAFORMAS = 'mis_plataformas';
 
-let cachedAdultPreference: boolean | null = null;
-let cachedAdultPreferencePromise: Promise<boolean> | null = null;
 let cachedPlatforms: string[] | null = null;
 let cachedPlatformsPromise: Promise<string[]> | null = null;
 
-export async function cargarPreferenciaAdulto(): Promise<boolean> {
-  if (cachedAdultPreference != null) return cachedAdultPreference;
-  if (cachedAdultPreferencePromise) return cachedAdultPreferencePromise;
-
-  cachedAdultPreferencePromise = (async () => {
-    try {
-      const val = await AsyncStorage.getItem(KEY_INCLUIR_ADULTO);
-      cachedAdultPreference = val === 'true';
-      return cachedAdultPreference;
-    } catch {
-      cachedAdultPreference = false;
-      return false;
-    } finally {
-      cachedAdultPreferencePromise = null;
-    }
-  })();
-
-  return cachedAdultPreferencePromise;
-}
-
-export async function guardarPreferenciaAdulto(incluir: boolean): Promise<void> {
-  cachedAdultPreference = incluir;
-  await AsyncStorage.setItem(KEY_INCLUIR_ADULTO, incluir ? 'true' : 'false');
+/**
+ * El contenido para adultos se quitó en la 3.0 (Google Play no lo admite): TMDB se consulta
+ * siempre sin él. Borra la preferencia que guardaban las versiones anteriores.
+ */
+export async function olvidarPreferenciaAdulto(): Promise<void> {
+  await AsyncStorage.removeItem(KEY_INCLUIR_ADULTO).catch(() => undefined);
 }
 
 /** Ids de los carruseles activos. Convierte los nombres que se guardaban antes de la 3.0. */

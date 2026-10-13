@@ -13,7 +13,6 @@ import {
   Text,
   TextInput,
   View,
-  Switch, // 🆕 El interruptor real
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
@@ -36,20 +35,13 @@ export function AjustesScreen() {
   const { fontFamily: ff } = useMontserrat();
   const fontFamily = ff || 'System';
 
-  const [adulto, setAdulto] = useState(false);
   const [misPlataformas, setMisPlataformas] = useState<number[]>([]);
   const [busquedaPlataforma, setBusquedaPlataforma] = useState('');
   const { data: allPlataformas = [], isLoading: cargandoPlats } = usePlataformasRegion();
 
   useEffect(() => {
-    void preferences.cargarPreferenciaAdulto().then(setAdulto);
     void preferences.cargarPlataformas().then((res) => setMisPlataformas(res.map(Number)));
   }, []);
-
-  const handleToggleAdulto = async (val: boolean) => {
-    setAdulto(val);
-    await preferences.guardarPreferenciaAdulto(val);
-  };
 
   const handleTogglePlataforma = async (ids: number[]) => {
     let next: number[];
@@ -136,20 +128,6 @@ export function AjustesScreen() {
               <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.5)" />
             </Pressable>
           ))}
-          <View style={[styles.card, SHADOWS.macLight]}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.cardTitle, { fontFamily }]}>Mostrar contenido para adultos</Text>
-              <Text style={[styles.cardDesc, { fontFamily }]}>
-                Incluye resultados de cine erótico y mayores de +18 años.
-              </Text>
-            </View>
-            <Switch
-              value={adulto}
-              onValueChange={handleToggleAdulto}
-              trackColor={{ false: '#334155', true: COLORS.primary }}
-              thumbColor={adulto ? '#fff' : '#94a3b8'}
-            />
-          </View>
         </View>
 
         <View style={styles.section}>
@@ -250,13 +228,13 @@ export function AjustesScreen() {
             style={[styles.card, SHADOWS.macLight, { marginTop: 12 }]}
             onPress={() =>
               void Linking.openURL(
-                `mailto:Alvaro@dripdev.dev?subject=${encodeURIComponent(`VeoVeo ${Constants.expoConfig?.version ?? ''}`)}`,
+                `mailto:dripdev.dev@gmail.com?subject=${encodeURIComponent(`VeoVeo ${Constants.expoConfig?.version ?? ''}`)}`,
               )
             }
           >
             <View style={{ flex: 1 }}>
               <Text style={[styles.cardTitle, { fontFamily }]}>Contacto y soporte</Text>
-              <Text style={[styles.cardDesc, { fontFamily }]}>Escríbenos a Alvaro@dripdev.dev</Text>
+              <Text style={[styles.cardDesc, { fontFamily }]}>Escríbenos a dripdev.dev@gmail.com</Text>
             </View>
             <Ionicons name="mail-outline" size={20} color="rgba(255,255,255,0.5)" />
           </Pressable>

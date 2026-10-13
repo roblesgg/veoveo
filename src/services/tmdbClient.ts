@@ -14,7 +14,6 @@ import type {
   MovieResponse,
   WatchProvidersResponse,
 } from '../types';
-import * as preferences from '../storage/preferences';
 import { env } from '../config/env';
 import { contarPeticionTmdb } from '../utils/medicionArranque';
 
@@ -74,10 +73,9 @@ async function tmdbFetch<T>(path: string): Promise<T> {
 export const tmdbApi = {
   /** Busca películas por texto libre */
   async buscarPeliculas(nombrePelicula: string, idioma = 'es-ES') {
-    const incluirAdulto = await preferences.cargarPreferenciaAdulto();
     const q = encodeURIComponent(nombrePelicula);
     return tmdbFetch<MovieResponse>(
-      `search/movie?query=${q}&language=${idioma}&include_adult=${incluirAdulto}`,
+      `search/movie?query=${q}&language=${idioma}&include_adult=false`,
     );
   },
 
@@ -88,33 +86,29 @@ export const tmdbApi = {
     orden = 'popularity.desc',
     pagina = 1,
   ) {
-    const incluirAdulto = await preferences.cargarPreferenciaAdulto();
     return tmdbFetch<MovieResponse>(
-      `discover/movie?with_genres=${encodeURIComponent(generoId)}&language=${idioma}&sort_by=${encodeURIComponent(orden)}&page=${pagina}&include_adult=${incluirAdulto}`,
+      `discover/movie?with_genres=${encodeURIComponent(generoId)}&language=${idioma}&sort_by=${encodeURIComponent(orden)}&page=${pagina}&include_adult=false`,
     );
   },
 
   /** Obtiene las películas más populares actualmente */
   async obtenerPopulares(idioma = 'es-ES', pagina = 1) {
-    const incluirAdulto = await preferences.cargarPreferenciaAdulto();
     return tmdbFetch<MovieResponse>(
-      `movie/popular?language=${idioma}&page=${pagina}&include_adult=${incluirAdulto}`,
+      `movie/popular?language=${idioma}&page=${pagina}&include_adult=false`,
     );
   },
 
   /** Obtiene películas que están ahora mismo en cines */
   async obtenerEnCartelera(idioma = 'es-ES', pagina = 1) {
-    const incluirAdulto = await preferences.cargarPreferenciaAdulto();
     return tmdbFetch<MovieResponse>(
-      `movie/now_playing?language=${idioma}&page=${pagina}&include_adult=${incluirAdulto}`,
+      `movie/now_playing?language=${idioma}&page=${pagina}&include_adult=false`,
     );
   },
 
   /** Obtiene las películas con mejor puntuación histórica */
   async obtenerMejorValoradas(idioma = 'es-ES', pagina = 1) {
-    const incluirAdulto = await preferences.cargarPreferenciaAdulto();
     return tmdbFetch<MovieResponse>(
-      `movie/top_rated?language=${idioma}&page=${pagina}&include_adult=${incluirAdulto}`,
+      `movie/top_rated?language=${idioma}&page=${pagina}&include_adult=false`,
     );
   },
 
@@ -130,11 +124,10 @@ export const tmdbApi = {
     pagina = 1,
     idioma = 'es-ES',
   ) {
-    const incluirAdulto = await preferences.cargarPreferenciaAdulto();
     const query = new URLSearchParams({
       language: idioma,
       page: String(pagina),
-      include_adult: String(incluirAdulto),
+      include_adult: 'false',
       ...params,
     });
     return tmdbFetch<MovieResponse>(`${ruta}?${query.toString()}`);
@@ -147,37 +140,33 @@ export const tmdbApi = {
 
   /** Acceso directo a discover para filtros personalizados complejos */
   async descubrirPeliculas(filtros: string, idioma = 'es-ES', pagina = 1) {
-    const incluirAdulto = await preferences.cargarPreferenciaAdulto();
     return tmdbFetch<MovieResponse>(
-      `discover/movie?language=${idioma}&page=${pagina}&include_adult=${incluirAdulto}&${filtros}`,
+      `discover/movie?language=${idioma}&page=${pagina}&include_adult=false&${filtros}`,
     );
   },
 
   /** Obtiene toda la información detallada de una película específica */
   async obtenerDetallesPelicula(movieId: number, idioma = 'es-ES') {
-    const incluirAdulto = await preferences.cargarPreferenciaAdulto();
     return getOrFetchCached(movieDetailsCache, movieId, () =>
       tmdbFetch<MovieDetails>(
-        `movie/${movieId}?language=${idioma}&include_adult=${incluirAdulto}&append_to_response=videos`,
+        `movie/${movieId}?language=${idioma}&include_adult=false&append_to_response=videos`,
       ),
     );
   },
 
   /** Obtiene el reparto (cast) y equipo técnico (crew) de una película */
   async obtenerCreditosPelicula(movieId: number, idioma = 'es-ES') {
-    const incluirAdulto = await preferences.cargarPreferenciaAdulto();
     return getOrFetchCached(movieCreditsCache, movieId, () =>
       tmdbFetch<CreditsResponse>(
-        `movie/${movieId}/credits?language=${idioma}&include_adult=${incluirAdulto}`,
+        `movie/${movieId}/credits?language=${idioma}&include_adult=false`,
       ),
     );
   },
 
   /** Obtiene las plataformas donde se puede ver la película (JustWatch) */
   async obtenerDondeVer(movieId: number) {
-    const incluirAdulto = await preferences.cargarPreferenciaAdulto();
     return tmdbFetch<WatchProvidersResponse>(
-      `movie/${movieId}/watch/providers?include_adult=${incluirAdulto}`,
+      `movie/${movieId}/watch/providers?include_adult=false`,
     );
   },
 
@@ -192,39 +181,35 @@ export const tmdbApi = {
 
   /** Obtiene biografía y detalles de un actor/persona */
   async obtenerDetallesActor(actorId: number, idioma = 'es-ES') {
-    const incluirAdulto = await preferences.cargarPreferenciaAdulto();
     return getOrFetchCached(actorDetailsCache, actorId, () =>
       tmdbFetch<ActorDetails>(
-        `person/${actorId}?language=${idioma}&include_adult=${incluirAdulto}`,
+        `person/${actorId}?language=${idioma}&include_adult=false`,
       ),
     );
   },
 
   /** Obtiene la filmografía completa de un actor */
   async obtenerPeliculasActor(actorId: number, idioma = 'es-ES') {
-    const incluirAdulto = await preferences.cargarPreferenciaAdulto();
     return getOrFetchCached(actorMoviesCache, actorId, () =>
       tmdbFetch<ActorMovieCredits>(
-        `person/${actorId}/movie_credits?language=${idioma}&include_adult=${incluirAdulto}`,
+        `person/${actorId}/movie_credits?language=${idioma}&include_adult=false`,
       ),
     );
   },
 
   /** Obtiene detalles de una colección (sagas como Star Wars, Marvel, etc.) */
   async obtenerColeccion(collectionId: number, idioma = 'es-ES') {
-    const incluirAdulto = await preferences.cargarPreferenciaAdulto();
     return getOrFetchCached(collectionCache, collectionId, () =>
       tmdbFetch<CollectionDetails>(
-        `collection/${collectionId}?language=${idioma}&include_adult=${incluirAdulto}`,
+        `collection/${collectionId}?language=${idioma}&include_adult=false`,
       ),
     );
   },
 
   /** Obtiene recomendaciones automáticas basadas en una película */
   async obtenerRecomendaciones(movieId: number, idioma = 'es-ES', pagina = 1) {
-    const incluirAdulto = await preferences.cargarPreferenciaAdulto();
     return tmdbFetch<MovieResponse>(
-      `movie/${movieId}/recommendations?language=${idioma}&page=${pagina}&include_adult=${incluirAdulto}`,
+      `movie/${movieId}/recommendations?language=${idioma}&page=${pagina}&include_adult=false`,
     );
   },
 
@@ -237,9 +222,8 @@ export const tmdbApi = {
 
   /** Busca personas/actores por nombre */
   async buscarActores(query: string, idioma = 'es-ES') {
-    const incluirAdulto = await preferences.cargarPreferenciaAdulto();
     return tmdbFetch<any>(
-      `search/person?query=${encodeURIComponent(query)}&language=${idioma}&include_adult=${incluirAdulto}`,
+      `search/person?query=${encodeURIComponent(query)}&language=${idioma}&include_adult=false`,
     );
   },
 };

@@ -10,7 +10,7 @@ Idioma: español (España), `es-ES`.
 | Nombre de la app (máx. 30) | `VeoVeo` |
 | Categoría | Entretenimiento |
 | Etiquetas (hasta 5) | Películas · Streaming · Redes sociales · Chat · Recomendaciones |
-| Correo de contacto | *(lo confirma Álvaro: propuesta `Alvaro@dripdev.dev`)* |
+| Correo de contacto | `dripdev.dev@gmail.com` |
 | Sitio web | `https://veoveo.dripdev.dev` |
 | Política de privacidad | `https://veoveo.dripdev.dev/privacidad` |
 | Borrar la cuenta (URL) | `https://veoveo.dripdev.dev/borrar-cuenta` |
