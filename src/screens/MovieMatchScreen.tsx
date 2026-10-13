@@ -343,11 +343,11 @@ export function MovieMatchScreen() {
             onPress={() => matchCount > 0 && setShowMatchesPanel(true)}
             hitSlop={8}
           >
-            <Ionicons name="flame" size={16} color="#ff6b00" />
+            <Ionicons name="flame" size={16} color="#69DFD9" />
             <Text style={styles.countText}>
               {matchCount} {matchCount === 1 ? 'Match' : 'Matches'}
             </Text>
-            {matchCount > 0 && <Ionicons name="chevron-forward" size={12} color="#ff6b00" />}
+            {matchCount > 0 && <Ionicons name="chevron-forward" size={12} color="#69DFD9" />}
           </Pressable>
         </View>
       </BlurView>
@@ -537,7 +537,7 @@ export function MovieMatchScreen() {
                       </Text>
                     </View>
                     <View style={styles.matchBadge}>
-                      <Ionicons name="flame" size={12} color="#ff6b00" />
+                      <Ionicons name="flame" size={12} color="#69DFD9" />
                       <Text style={styles.matchBadgeText}>Match</Text>
                     </View>
                   </Pressable>
@@ -568,15 +568,15 @@ const styles = StyleSheet.create({
   matchCounter: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,107,0,0.12)',
+    backgroundColor: 'rgba(105,223,217,0.12)',
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 12,
     gap: 5,
     borderWidth: 1,
-    borderColor: 'rgba(255,107,0,0.25)',
+    borderColor: 'rgba(105,223,217,0.25)',
   },
-  countText: { color: '#ff6b00', fontSize: 12, fontWeight: '900' },
+  countText: { color: '#69DFD9', fontSize: 12, fontWeight: '900' },
   deck: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 100 },
   card: { borderRadius: 24, overflow: 'hidden', backgroundColor: '#1e293b' },
   poster: { width: '100%', height: '100%' },
@@ -680,12 +680,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: 'rgba(255,107,0,0.85)',
+    backgroundColor: 'rgba(105,223,217,0.85)',
     paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: 8,
   },
-  matchBadgeText: { color: '#fff', fontSize: 10, fontWeight: '800' },
+  matchBadgeText: { color: '#020617', fontSize: 10, fontWeight: '800' },
   panelBackdrop: { ...StyleSheet.absoluteFillObject, zIndex: 0 },
   panel: {
     position: 'absolute',

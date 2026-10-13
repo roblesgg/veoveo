@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
   shareText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   downloadBtn: {
     marginTop: 16,
-    backgroundColor: 'rgba(255, 107, 0, 0.1)',
+    backgroundColor: 'rgba(105,223,217, 0.1)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 22,
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 107, 0, 0.4)',
+    borderColor: 'rgba(105,223,217, 0.4)',
   },
   downloadText: { color: '#fff', fontSize: 16, fontWeight: '800' },
   modalBackdrop: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },

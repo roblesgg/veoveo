@@ -397,7 +397,7 @@ export function ChatDetailScreen() {
             onPress={irAMatch}
             style={[styles.matchActionBtn, matchActivo && styles.matchActionBtnOn]}
           >
-            <Ionicons name="flame" size={20} color={matchActivo ? '#fff' : '#ff6b00'} />
+            <Ionicons name="flame" size={20} color={matchActivo ? '#020617' : '#69DFD9'} />
             {matchActivo && (
               <Text style={styles.matchCounter}>{matchActivo.matchedMovies.length}</Text>
             )}
@@ -577,11 +577,11 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255,107,0,0.1)',
+    backgroundColor: 'rgba(105,223,217,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  matchActionBtnOn: { backgroundColor: '#ff6b00' },
+  matchActionBtnOn: { backgroundColor: '#69DFD9' },
   matchCounter: {
     position: 'absolute',
     top: -4,
@@ -589,7 +589,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: 6,
     borderRadius: 10,
-    color: '#ff6b00',
+    color: '#69DFD9',
     fontSize: 11,
     fontWeight: '900',
     ...SHADOWS.macLight,

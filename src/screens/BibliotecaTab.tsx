@@ -536,11 +536,11 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
-  sectionHeaderLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,107,0,0.2)', marginLeft: 16 },
+  sectionHeaderLine: { flex: 1, height: 1, backgroundColor: 'rgba(105,223,217,0.2)', marginLeft: 16 },
   activeFilterBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,107,0,0.1)',
+    backgroundColor: 'rgba(105,223,217,0.1)',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 16,

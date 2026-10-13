@@ -112,7 +112,7 @@ const SocialChatRow = memo(
         </View>
         {chat.activeMatchId && (
           <View style={styles.matchBadgeMini}>
-            <Ionicons name="flame" size={12} color="#ff6b00" />
+            <Ionicons name="flame" size={12} color="#69DFD9" />
             <Text style={styles.matchBadgeText}>Match</Text>
           </View>
         )}
@@ -639,9 +639,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tabOnBtn: {
-    backgroundColor: 'rgba(255,107,0,0.15)',
+    backgroundColor: 'rgba(105,223,217,0.15)',
     borderWidth: 1,
-    borderColor: 'rgba(255,107,0,0.3)',
+    borderColor: 'rgba(105,223,217,0.3)',
   },
   tabText: { color: 'rgba(255,255,255,0.4)', fontSize: 13, fontWeight: '700' },
   tabOnText: { color: '#fff', fontWeight: '900' },
@@ -672,7 +672,7 @@ const styles = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: '#ff6b00',
+    backgroundColor: '#69DFD9',
     borderWidth: 2,
     borderColor: '#1e293b',
   },
@@ -682,13 +682,13 @@ const styles = StyleSheet.create({
   matchBadgeMini: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,107,0,0.1)',
+    backgroundColor: 'rgba(105,223,217,0.1)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
     gap: 4,
   },
-  matchBadgeText: { color: '#ff6b00', fontSize: 10, fontWeight: '800' },
+  matchBadgeText: { color: '#69DFD9', fontSize: 10, fontWeight: '800' },
   searchInput: {
     backgroundColor: 'rgba(255,255,255,0.05)',
     padding: 16,

@@ -96,7 +96,7 @@ export function FilterSortMenu({
                   <Ionicons
                     name={opt.icon}
                     size={22}
-                    color={currentValue === opt.value ? '#fff' : 'rgba(255,255,255,0.9)'}
+                    color={currentValue === opt.value ? '#020617' : 'rgba(255,255,255,0.9)'}
                   />
                 </View>
                 <View style={styles.itemText}>
@@ -108,7 +108,7 @@ export function FilterSortMenu({
                   {opt.description && <Text style={styles.itemDesc}>{opt.description}</Text>}
                 </View>
                 {currentValue === opt.value && (
-                  <Ionicons name="checkmark-circle" size={24} color="#6C63FF" />
+                  <Ionicons name="checkmark-circle" size={24} color="#69DFD9" />
                 )}
               </Pressable>
             ))}
@@ -139,7 +139,7 @@ export function FilterSortMenu({
                         <Ionicons
                           name={opt.icon}
                           size={22}
-                          color={isActive ? '#fff' : 'rgba(255,255,255,0.9)'}
+                          color={isActive ? '#020617' : 'rgba(255,255,255,0.9)'}
                         />
                       </View>
                       <View style={styles.itemText}>
@@ -148,7 +148,7 @@ export function FilterSortMenu({
                         </Text>
                         {opt.description && <Text style={styles.itemDesc}>{opt.description}</Text>}
                       </View>
-                      {isActive && <Ionicons name="checkmark-circle" size={24} color="#6C63FF" />}
+                      {isActive && <Ionicons name="checkmark-circle" size={24} color="#69DFD9" />}
                     </Pressable>
                   );
                 })}
@@ -208,8 +208,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.05)',
   },
   itemActive: {
-    backgroundColor: 'rgba(108,99,255,0.15)',
-    borderColor: 'rgba(108,99,255,0.4)',
+    backgroundColor: 'rgba(105,223,217,0.15)',
+    borderColor: 'rgba(105,223,217,0.4)',
   },
   iconWrap: {
     width: 46,
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   iconWrapActive: {
-    backgroundColor: '#6C63FF',
+    backgroundColor: '#69DFD9',
   },
   itemText: { flex: 1 },
   itemLabel: {

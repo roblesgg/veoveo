@@ -29,7 +29,7 @@ export const UserSearchRow = React.memo(({ usuario, enviada, onAdd, fontFamily }
         disabled={enviada}
         onPress={onAdd}
       >
-        <Ionicons name={enviada ? 'checkmark' : 'person-add'} size={18} color="#fff" />
+        <Ionicons name={enviada ? 'checkmark' : 'person-add'} size={18} color="#020617" />
       </Pressable>
     </View>
   );
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     height: 40,
     paddingHorizontal: 16,
     borderRadius: 20,
-    backgroundColor: '#6C63FF',
+    backgroundColor: '#69DFD9',
     justifyContent: 'center',
   },
   disabled: { opacity: 0.5, backgroundColor: 'rgba(255,255,255,0.2)' },

@@ -1,12 +1,14 @@
 /**
- * VeoVeo Theme - Midnight Blue Palette
- * Inspired by modern dark mode designs (tailwind-like shades).
+ * Paleta de VeoVeo (manual de marca: _marca/drip-garage-recursos/manual-productos/veoveo.md).
+ * Celeste = acción principal. Turquesa = Match, destacados y brillos
+ * (sustituye al índigo y al morado anteriores; decisión de Álvaro del 13-10-2026).
  */
 
 export const COLORS = {
-  primary: '#38bdf8', // Sky 400
-  secondary: '#6366f1', // Indigo 500
-  background: '#020617', // Slate 950
+  primary: '#38bdf8', // Celeste: botones, enlaces y pestaña activa
+  accent: '#69DFD9', // Turquesa: Match, destacados y brillos
+  onAccent: '#020617', // Texto sobre turquesa o celeste
+  background: '#020617', // Noche
   surface: '#0f172a', // Slate 900
   card: '#1e293b', // Slate 800
   text: '#f8fafc', // Slate 50
