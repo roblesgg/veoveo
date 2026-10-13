@@ -15,7 +15,6 @@
   <img src="https://img.shields.io/badge/React%20Native-0.81-1E293B?style=flat-square&logo=react" alt="React Native 0.81">
   <img src="https://img.shields.io/badge/Firebase-Auth%20%C2%B7%20Firestore%20%C2%B7%20Storage-1E293B?style=flat-square&logo=firebase" alt="Firebase">
   <img src="https://img.shields.io/badge/TMDB-API%20v3-1E293B?style=flat-square&logo=themoviedatabase" alt="TMDB">
-  <img src="https://img.shields.io/badge/idiomas-ES%20%C2%B7%20EN-1E293B?style=flat-square" alt="Español e inglés">
 </p>
 
 <h3 align="center">🍿 Elegir peli con amigos ya no es una discusión: es un juego.</h3>
@@ -65,8 +64,8 @@
 ### ✨ Además
 - **Entra con Google** o con tu correo.
 - **Notificaciones** de mensajes, retos y nuevas versiones.
-- **Comparte** películas y actores con un enlace que abre la app directamente.
-- En **español e inglés**.
+- **Comparte** películas y actores con un enlace.
+- En **español**.
 
 ---
 

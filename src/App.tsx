@@ -12,9 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Linking, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
-import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import Constants from 'expo-constants';
-import { getAuth } from 'firebase/auth';
 import { BlurView } from 'expo-blur';
 
 import { AuthProvider } from './context/AuthContext';
@@ -23,6 +21,8 @@ import { LanguageProvider } from './context/LanguageContext';
 import { RootNavigator } from './navigation/RootNavigator';
 import { COLORS } from './theme/colors';
 import { getFirestoreDb } from './services/firebase';
+import { observarConfiguracionApp } from './services/repositorioConfiguracion';
+import { guardarPushToken } from './services/repositorioUsuarios';
 import { ensureNotificationChannelConfigured } from './services/notificationService';
 import { IOSInstallPrompt } from './components/IOSInstallPrompt';
 import { InAppNotificationBanner } from './components/InAppNotificationBanner';
@@ -93,50 +93,41 @@ function VersionShield() {
   const isTest = Constants.expoConfig?.name?.includes('Test') ?? false;
 
   React.useEffect(() => {
-    if (Platform.OS === 'web') return undefined;
-    const db = getFirestoreDb();
-    if (!db) return;
+    if (Platform.OS === 'web' || !getFirestoreDb()) return undefined;
 
-    // Escuchamos el documento de configuración global en Firebase 'configuracion/app'
-    // Sincronizado automáticamente con el script push-version.mjs
-    return onSnapshot(doc(db, 'configuracion', 'app'), (snap: any) => {
-      if (snap.exists()) {
-         const data = snap.data();
-         const findValue = (prefix: string) => {
-           const key = Object.keys(data).find((k) => k.trim() === prefix);
-           return key ? data[key] : null;
-         };
+    // Configuración global 'configuracion/app', que actualiza el script push-version.mjs
+    return observarConfiguracionApp((data) => {
+      const findValue = (prefix: string) => {
+        const key = Object.keys(data).find((k) => k.trim() === prefix);
+        return key ? data[key] : null;
+      };
 
-         // Elegimos el campo de versión mínima según si es build de test o producción
-         const minVersionName = findValue(isTest ? 'min_version_test' : 'min_version');
-         const nextDownloadUrl = findValue(isTest ? 'download_url_test' : 'download_url');
-         const rTitle = findValue('release_title');
-         const rBody = findValue('release_body');
-         if (rTitle) setReleaseTitle(String(rTitle));
-         if (rBody) setReleaseBody(String(rBody));
-         
-         // Si la versión actual es inferior a la requerida, activamos el escudo
-         const updateNeeded =
-           minVersionName && compareVersions(currentVersion, String(minVersionName).trim()) === -1;
+      // Campo de versión mínima según si es build de test o producción
+      const minVersionName = findValue(isTest ? 'min_version_test' : 'min_version');
+      const nextDownloadUrl = findValue(isTest ? 'download_url_test' : 'download_url');
+      const rTitle = findValue('release_title');
+      const rBody = findValue('release_body');
+      if (rTitle) setReleaseTitle(String(rTitle));
+      if (rBody) setReleaseBody(String(rBody));
 
-         setNeedsUpdate(Boolean(updateNeeded));
+      // Si la versión instalada es inferior a la requerida, se activa el escudo
+      const updateNeeded =
+        minVersionName && compareVersions(currentVersion, String(minVersionName).trim()) === -1;
+      setNeedsUpdate(Boolean(updateNeeded));
 
-         if (nextDownloadUrl) {
-           setDownloadUrl(String(nextDownloadUrl).trim());
-         }
+      if (nextDownloadUrl) setDownloadUrl(String(nextDownloadUrl).trim());
 
-         if (updateNeeded && lastNotifiedVersion.current !== String(minVersionName).trim()) {
-           lastNotifiedVersion.current = String(minVersionName).trim();
-           void Notifications.scheduleNotificationAsync({
-             content: {
-               title: 'Nueva actualización disponible',
-               body: `VeoVeo ${String(minVersionName).trim()} ya está lista para descargar.`,
-                sound: 'default',
-                data: { url: nextDownloadUrl || downloadUrl },
-             },
-             trigger: null,
-           });
-         }
+      if (updateNeeded && lastNotifiedVersion.current !== String(minVersionName).trim()) {
+        lastNotifiedVersion.current = String(minVersionName).trim();
+        void Notifications.scheduleNotificationAsync({
+          content: {
+            title: 'Nueva actualización disponible',
+            body: `VeoVeo ${String(minVersionName).trim()} ya está lista para descargar.`,
+            sound: 'default',
+            data: { url: nextDownloadUrl || downloadUrl },
+          },
+          trigger: null,
+        });
       }
     });
   }, [currentVersion, downloadUrl, isTest]);
@@ -170,14 +161,8 @@ export default function App() {
   const [fontsLoaded] = useFonts({ ...Ionicons.font });
   const [inAppNotif, setInAppNotif] = React.useState<{ title: string; body: string; url?: string } | null>(null);
 
-  const handleTokenRegistered = React.useCallback(async (token: string) => {
-    try {
-      const db = getFirestoreDb();
-      const uid = getAuth().currentUser?.uid;
-      if (db && uid) {
-        await updateDoc(doc(db, 'usuarios', uid), { pushToken: token });
-      }
-    } catch {}
+  const handleTokenRegistered = React.useCallback((token: string) => {
+    void guardarPushToken(token).catch(() => {});
   }, []);
 
   // EFECTO: Configuración Visual específica para WEB
@@ -317,26 +302,6 @@ export default function App() {
 
 // ESTILOS: Configuración visual global
 const styles = StyleSheet.create({
-  debugScreen: {
-    flex: 1,
-    backgroundColor: '#020617',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 30,
-  },
-  debugTitle: {
-    color: '#ef4444',
-    fontSize: 24,
-    fontWeight: '900',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  debugText: {
-    color: '#cbd5e1',
-    fontSize: 16,
-    textAlign: 'center',
-    lineHeight: 24,
-  },
   // Estilos visuales del escudo de actualización
   updateContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
   updateEmoji: { fontSize: 60, marginBottom: 20 },

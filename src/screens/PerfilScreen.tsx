@@ -26,8 +26,8 @@ import { BlurView } from 'expo-blur';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { doc, getDoc } from 'firebase/firestore';
 import { getFirestoreDb } from '../services/firebase';
+import { obtenerConfiguracionApp } from '../services/repositorioConfiguracion';
 import { useAuth } from '../context/AuthContext';
 import { useMontserrat } from '../theme/useMontserrat';
 import { useLanguage } from '../context/LanguageContext';
@@ -73,10 +73,9 @@ export function PerfilScreen() {
   // En web: leer la versión publicada desde Firestore para mostrarla en el botón de descarga
   useEffect(() => {
     if (Platform.OS !== 'web') return;
-    const db = getFirestoreDb();
-    if (!db) return;
-    void getDoc(doc(db, 'configuracion', 'app')).then(snap => {
-      if (snap.exists()) setLatestVersion(snap.data().min_version ?? '');
+    if (!getFirestoreDb()) return;
+    void obtenerConfiguracionApp().then((config) => {
+      if (config) setLatestVersion(String(config.min_version ?? ''));
     });
   }, []);
 

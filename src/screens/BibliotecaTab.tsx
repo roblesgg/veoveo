@@ -30,7 +30,8 @@ import { obtenerPlataformasES } from '../hooks/useDescubrir';
 import type { PeliculaUsuario } from '../types';
 
 const UNA_SEMANA = 1000 * 60 * 60 * 24 * 7;
-import { tmdbApi, posterUrl } from '../services/tmdbClient';
+import { posterUrl } from '../services/tmdbClient';
+import { usePlataformasRegion } from '../hooks/usePlataformasRegion';
 import * as preferences from '../storage/preferences';
 import { COLORS, CardSurface } from '../theme/colors';
 import { SHADOWS } from '../theme/theme';
@@ -65,8 +66,16 @@ export function BibliotecaTab({
   const [buscar, setBuscar] = useState(false);
   const [textoBuscar, setTextoBuscar] = useState('');
 
-  // Lista de plataformas que el usuario tiene contratadas
-  const [userPlats, setUserPlats] = useState<{ name: string, ids: number[] }[]>([]);
+  // Plataformas que el usuario tiene contratadas (ids guardados en Ajustes), agrupadas por marca
+  const [misPlatsIds, setMisPlatsIds] = useState<number[]>([]);
+  const { data: plataformasRegion = [] } = usePlataformasRegion();
+  const userPlats = useMemo(
+    () =>
+      plataformasRegion
+        .map((g) => ({ name: g.name, ids: g.ids.filter((id) => misPlatsIds.includes(id)) }))
+        .filter((g) => g.ids.length > 0),
+    [plataformasRegion, misPlatsIds],
+  );
 
   const searchInputRef = useRef<TextInput>(null);
   const scrollerRef = useRef<ScrollView>(null);
@@ -85,34 +94,7 @@ export function BibliotecaTab({
   // Carga inicial de preferencias y plataformas disponibles
   useFocusEffect(
     useCallback(() => {
-      void (async () => {
-        const misPlatsIds = await preferences.cargarPlataformas();
-        const ids = misPlatsIds.map(Number);
-        try {
-          // Consultamos TMDB para agrupar proveedores (Netflix, Disney+, etc)
-          const res = await tmdbApi.obtenerProveedoresRegion('ES');
-          const all = res.results;
-          const grupos: { [n: string]: number[] } = {};
-          all.forEach((p: any) => {
-            if (ids.includes(p.provider_id)) {
-              let name = p.provider_name;
-              // Normalización de nombres
-              if (name.includes('Amazon') || name.includes('Prime Video')) name = 'Prime Video';
-              else if (name.includes('Apple TV')) name = 'Apple TV';
-              else if (name.includes('Disney')) name = 'Disney+';
-              else if (name.includes('HBO')) name = 'HBO Max';
-              else if (name.includes('Netflix')) name = 'Netflix';
-              else if (name.includes('SkyShowtime')) name = 'SkyShowtime';
-              else if (name.includes('Movistar')) name = 'Movistar Plus+';
-              if (!grupos[name]) grupos[name] = [];
-              grupos[name].push(p.provider_id);
-            }
-          });
-          setUserPlats(Object.keys(grupos).map(k => ({ name: k, ids: grupos[k] })));
-        } catch (e) {
-          console.error(e);
-        }
-      })();
+      void preferences.cargarPlataformas().then((ids) => setMisPlatsIds(ids.map(Number)));
       void preferences.cargarOrdenBiblioteca(seccion === 0 ? 'por_ver' : 'vistas').then(s => s && setOrden(s as any));
     }, [seccion])
   );

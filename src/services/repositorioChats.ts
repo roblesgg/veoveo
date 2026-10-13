@@ -128,6 +128,18 @@ export async function enviarMensaje(chatId: string, msg: Partial<Message>) {
   }
 }
 
+/** Escucha un chat (participantes, nombre, match activo). Devuelve la función para dejar de escuchar. */
+export function observarChat(chatId: string, onCambio: (chat: Chat) => void): () => void {
+  return onSnapshot(doc(dbOrThrow(), 'chats', chatId), (snap) => {
+    if (snap.exists()) onCambio({ id: snap.id, ...snap.data() } as Chat);
+  });
+}
+
+/** Cambia el nombre de un grupo. */
+export async function renombrarChat(chatId: string, nombre: string): Promise<void> {
+  await updateDoc(doc(dbOrThrow(), 'chats', chatId), { name: nombre });
+}
+
 /**
  * Elimina permanentemente un chat.
  */

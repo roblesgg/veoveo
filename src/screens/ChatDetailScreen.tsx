@@ -28,13 +28,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 
 import { useAuth } from '../context/AuthContext';
-import { 
-  getFirestore, 
-  doc, 
-  onSnapshot, 
-  updateDoc 
-} from 'firebase/firestore';
-import { enviarMensaje, obtenerMensajesChat } from '../services/repositorioChats';
+import {
+  enviarMensaje,
+  obtenerMensajesChat,
+  observarChat,
+  renombrarChat,
+} from '../services/repositorioChats';
+import { observarUsuario } from '../services/repositorioUsuarios';
+import { posterUrl } from '../services/tmdbClient';
 import { observarMatch } from '../services/repositorioMatches';
 import { Message, MovieMatch, UsuarioPerfil } from '../types';
 import { COLORS } from '../theme/colors';
@@ -129,7 +130,7 @@ const MessageBubble = memo(({
           onPress={() => navigation.navigate('Pelicula', { movieId: movieData.id })}
         >
           <ExpoImage 
-            source={{ uri: `https://image.tmdb.org/t/p/w300${movieData.posterPath}` }} 
+            source={{ uri: posterUrl(movieData.posterPath, 'w342') ?? undefined }}
             style={styles.movieSharePoster} 
             contentFit="cover"
             transition={300}
@@ -189,18 +190,13 @@ export function ChatDetailScreen() {
   // SUSCRIPCIÓN: Escuchar mensajes y metapropiedades del chat
   useEffect(() => {
     const unsub = obtenerMensajesChat(chatId, (msgs) => {
-      setMensajes(msgs); 
+      setMensajes(msgs);
     });
-    
-    const db = getFirestore();
-    const chatRef = doc(db, 'chats', chatId);
-    const unsubChat = onSnapshot(chatRef, (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
-        setChatInfo(data);
-        setParticipants(data.participants || []);
-        setNewGroupName(data.name || '');
-      }
+
+    const unsubChat = observarChat(chatId, (data) => {
+      setChatInfo(data);
+      setParticipants(data.participants || []);
+      setNewGroupName(data.name || '');
     });
 
     return () => { unsub(); unsubChat(); };
@@ -275,18 +271,14 @@ export function ChatDetailScreen() {
 
   useEffect(() => {
     if (!otherUid || isGroup) return;
-    const db = getFirestore();
-    return onSnapshot(doc(db, 'usuarios', otherUid), (snap) => {
-      if (snap.exists()) setAmigoPerfil(snap.data() as UsuarioPerfil);
-    });
+    return observarUsuario(otherUid, setAmigoPerfil);
   }, [otherUid, isGroup]);
 
   /** Actualiza el nombre del grupo */
   const handleSaveGroupName = async () => {
     if (!newGroupName.trim()) return;
     try {
-      const db = getFirestore();
-      await updateDoc(doc(db, 'chats', chatId), { name: newGroupName.trim() });
+      await renombrarChat(chatId, newGroupName.trim());
       setEditGroupName(false);
     } catch (e) {
       console.error(e);

@@ -4,7 +4,7 @@
  * Incluye gestión de nombres de usuario, fotos de perfil, bloqueos y estado de conexión.
  */
 
-import { doc, getDoc, setDoc, updateDoc, arrayRemove, type Firestore } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot, setDoc, updateDoc, arrayRemove } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
@@ -139,6 +139,18 @@ export async function actualizarEstadoConexion(
   await updateDoc(doc(db, 'usuarios', uid), {
     estado,
     ultimoAcceso: ahora,
+  });
+}
+
+/** Guarda el token de notificaciones del usuario actual (tras aceptar el permiso). */
+export async function guardarPushToken(token: string): Promise<void> {
+  await updateDoc(doc(dbOrThrow(), 'usuarios', uidOrThrow()), { pushToken: token });
+}
+
+/** Escucha el perfil de un usuario en tiempo real. Devuelve la función para dejar de escuchar. */
+export function observarUsuario(uid: string, onCambio: (perfil: UsuarioPerfil) => void): () => void {
+  return onSnapshot(doc(dbOrThrow(), 'usuarios', uid), (snap) => {
+    if (snap.exists()) onCambio(snap.data() as UsuarioPerfil);
   });
 }
 

@@ -170,7 +170,7 @@ Además:
 
 ### 2.8 Encontrado durante la Fase B
 
-- 🔴 **El APK publicado está firmado con la clave de depuración pública.**
+- 🟠 **El APK publicado está firmado con la clave de depuración pública.** Era 🔴; baja a 🟠 porque las cuentas actuales son de prueba de Álvaro (13-10-2026) y aún no hay público. Se arregla en la Fase E con EAS y Google Play, cerrando el canal APK.
   - `apksigner verify --print-certs` sobre `veoveo-latest.apk` (v2.0.4) devuelve `CN=Android Debug`, SHA-1 `5e8f1606…cabf625`.
   - Es el `debug.keystore` que trae la plantilla de React Native y Expo, igual en todos los proyectos, así que su clave privada es pública.
   - `android/app/build.gradle` firma la release con `signingConfigs.debug`.

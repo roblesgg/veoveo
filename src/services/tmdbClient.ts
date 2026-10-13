@@ -250,6 +250,12 @@ export function posterUrl(
   return `https://image.tmdb.org/t/p/${width}${posterPath}`;
 }
 
+/** URL del logo de una plataforma (tamaño pequeño, para listas). */
+export function logoUrl(path: string | null | undefined): string | null {
+  if (!path) return null;
+  return `https://image.tmdb.org/t/p/w92${path}`;
+}
+
 /**
  * HELPER: Construye la URL completa de una imagen de perfil de actor.
  */

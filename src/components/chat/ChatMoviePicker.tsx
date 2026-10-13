@@ -13,7 +13,7 @@ import { BlurView } from 'expo-blur';
 import { Image as ExpoImage } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { listarPeliculasPorEstado } from '../../services/repositorioPeliculasUsuario';
-import { tmdbApi } from '../../services/tmdbClient';
+import { posterUrl, tmdbApi } from '../../services/tmdbClient';
 import { PeliculaUsuario, Movie } from '../../types';
 import { COLORS } from '../../theme/colors';
 import { SHADOWS } from '../../theme/theme';
@@ -76,7 +76,7 @@ export const ChatMoviePicker = ({ visible, mode, onClose, onSelect, fontFamily }
   const renderItem = ({ item }: { item: any }) => (
     <Pressable style={styles.movieItem} onPress={() => onSelect(item)}>
       <ExpoImage 
-        source={{ uri: `https://image.tmdb.org/t/p/w200${item.posterPath}` }} 
+        source={{ uri: posterUrl(item.posterPath, 'w185') ?? undefined }}
         style={styles.poster} 
         contentFit="cover"
         transition={200}

@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState, useEffect, useMemo } from 'react';
@@ -22,7 +23,8 @@ import { Ionicons } from '@expo/vector-icons';
 import type { RootStackParamList } from '../navigation/types';
 import { useMontserrat } from '../theme/useMontserrat';
 import * as preferences from '../storage/preferences';
-import { tmdbApi } from '../services/tmdbClient';
+import { logoUrl } from '../services/tmdbClient';
+import { usePlataformasRegion } from '../hooks/usePlataformasRegion';
 import { COLORS } from '../theme/colors';
 
 export function AjustesScreen() {
@@ -34,25 +36,12 @@ export function AjustesScreen() {
 
   const [adulto, setAdulto] = useState(false);
   const [misPlataformas, setMisPlataformas] = useState<number[]>([]);
-  const [allPlataformas, setAllPlataformas] = useState<any[]>([]);
   const [busquedaPlataforma, setBusquedaPlataforma] = useState('');
-  const [cargandoPlats, setCargandoPlats] = useState(false);
+  const { data: allPlataformas = [], isLoading: cargandoPlats } = usePlataformasRegion();
 
   useEffect(() => {
     void preferences.cargarPreferenciaAdulto().then(setAdulto);
     void preferences.cargarPlataformas().then(res => setMisPlataformas(res.map(Number)));
-
-    void (async () => {
-      setCargandoPlats(true);
-      try {
-        const res = await tmdbApi.obtenerProveedoresRegion('ES');
-        setAllPlataformas(agruparPlataformas(res.results));
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setCargandoPlats(false);
-      }
-    })();
   }, []);
 
   const handleToggleAdulto = async (val: boolean) => {
@@ -145,7 +134,7 @@ export function AjustesScreen() {
                   onPress={() => handleTogglePlataforma(p.ids)} 
                   style={[styles.platItem, p.ids.some((id: number) => misPlataformas.includes(id)) && styles.platItemActive]}
                 >
-                  <Image source={{ uri: `https://image.tmdb.org/t/p/original${p.logo}` }} style={styles.platLogo} />
+                  <Image source={{ uri: logoUrl(p.logo) ?? undefined }} style={styles.platLogo} />
                   <Text style={[styles.platName, { fontFamily }]} numberOfLines={1}>{p.name}</Text>
                   {p.ids.some((id: number) => misPlataformas.includes(id)) && <Ionicons name="checkmark-circle" size={16} color="#000" style={styles.check} />}
                 </Pressable>
@@ -157,12 +146,16 @@ export function AjustesScreen() {
           <Text style={[styles.sectionTitle, { fontFamily }]}>Información Legal</Text>
           <View style={[styles.card, SHADOWS.macLight, { flexDirection: 'column', alignItems: 'center', paddingVertical: 24 }]}>
              <Text style={[styles.legalText, { fontFamily, textAlign: 'center' }]}>
-               This product uses the TMDB API but is not endorsed or certified by TMDB.
+               Esta aplicación usa TMDB y sus API, pero TMDB no la respalda, certifica ni aprueba.
+             </Text>
+             <Text style={[styles.legalText, { fontFamily, textAlign: 'center', marginTop: 8 }]}>
+               Datos de plataformas: JustWatch.
              </Text>
           </View>
 
-
-          <Text style={[styles.versionText, { fontFamily }]}>VeoVeo v1.9.1 | Developed by Drip Dev</Text>
+          <Text style={[styles.versionText, { fontFamily }]}>
+            VeoVeo {Constants.expoConfig?.version} · Un producto de DripDev · hecho por Álvaro Robles
+          </Text>
         </View>
       </ScrollView>
     </GradientBackground>
@@ -170,26 +163,6 @@ export function AjustesScreen() {
 }
 
 // 🍿 IDs Oficiales de TMDB para España (Logic unchanged)
-function agruparPlataformas(lista: any[]) {
-  const grupos: { [nombre: string]: { ids: number[], name: string, logo: string, searchTerms: string } } = {};
-  lista.forEach(p => {
-    let name = p.provider_name;
-    let alias = name.toLowerCase();
-    if (name.includes('Amazon') || name.includes('Prime Video')) { name = 'Prime Video'; alias += ' amazon prime amz'; }
-    else if (name.includes('Apple TV')) { name = 'Apple TV+'; alias += ' itunes apple+'; }
-    else if (name.includes('Disney')) { name = 'Disney+'; alias += ' dsn disneyplus'; }
-    else if (name.includes('HBO')) { name = 'HBO Max'; alias += ' hbomax max'; }
-    else if (name.includes('Netflix')) { name = 'Netflix'; alias += ' nflx netf'; }
-    else if (name.includes('SkyShowtime')) { name = 'SkyShowtime'; alias += ' sky showtime'; }
-    else if (name.includes('Movistar')) { name = 'Movistar Plus+'; alias += ' m+ movstar movistar+'; }
-
-    if (!grupos[name]) { grupos[name] = { ids: [], name, logo: p.logo_path, searchTerms: alias }; }
-    grupos[name].ids.push(p.provider_id);
-    grupos[name].searchTerms += ` ${alias}`;
-  });
-  return Object.values(grupos).sort((a, b) => a.name.localeCompare(b.name));
-}
-
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   header: { 
