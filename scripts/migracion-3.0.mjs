@@ -173,9 +173,11 @@ export async function migrar(db, FieldValue, { ejecutar, partes = PARTES, regist
       }
       if (!c.createdBy && Array.isArray(c.participants) && c.participants.length > 0) cambios.createdBy = c.participants[0];
       if (c.type === 'group' && !c.emoji) cambios.emoji = '🍿';
+      // Todos los Match de antes se cancelan (paso 4): el botón del chat queda libre
+      if (c.activeMatchId) cambios.activeMatchId = null;
       if (Object.keys(cambios).length > 0) {
         cuenta.chats += 1;
-        await escribir('update', doc.ref, cambios, {});
+        await escribir('update', doc.ref, cambios, c.activeMatchId ? { activeMatchId: c.activeMatchId } : {});
       }
     }
   }

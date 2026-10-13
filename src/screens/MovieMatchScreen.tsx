@@ -1,715 +1,762 @@
 /**
  * ARCHIVO: screens/MovieMatchScreen.tsx
- * DESCRIPCIÓN: Pantalla principal del juego 'Movie Match'.
- * Swipe derecha = SÍ (verde), izquierda = NO (rojo).
- * Algoritmo multi-fuente: watchlists + recomendaciones paralelas + trending/popular.
- * Contador de matches abre panel con resultados parciales en tiempo real.
+ * DESCRIPCIÓN: El juego del Movie Match. Todos ven el mismo mazo (lo generó quien creó el Match);
+ * cada uno desliza en su móvil: derecha = me apetece, izquierda = paso.
+ * Cuando a todos les apetece la misma peli, es una coincidencia. Al llegar al objetivo (o si
+ * alguien lo termina antes) se enseñan todas las coincidencias.
  */
-
-import { Ionicons } from '@expo/vector-icons';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import { useState, useEffect, useCallback, useRef } from 'react';
-import {
-  ActivityIndicator,
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  useWindowDimensions,
-  Modal,
-} from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BlurView } from 'expo-blur';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  runOnJS,
+  Extrapolation,
+  FadeIn,
+  FadeOut,
   interpolate,
-  Extrapolate,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
 } from 'react-native-reanimated';
-import { PanGestureHandler } from 'react-native-gesture-handler';
-import { doc, getDoc, getFirestore } from 'firebase/firestore';
-
+import {
+  IconArrowBackUp,
+  IconCards,
+  IconChevronLeft,
+  IconHeart,
+  IconInfoCircle,
+  IconX,
+} from '@tabler/icons-react-native';
 import { useAuth } from '../context/AuthContext';
-import { observarMatch, votarPelicula } from '../services/repositorioMatches';
-import { tmdbApi, posterUrl } from '../services/tmdbClient';
-import { MovieMatch, MovieDetails } from '../types';
-import { COLORS } from '../theme/colors';
+import { nombreDe, usePerfiles } from '../hooks/usePerfiles';
+import {
+  calcularCoincidencias,
+  deshacerVoto,
+  esMatchAntiguo,
+  observarMatch,
+  observarVotos,
+  registrarCoincidencias,
+  terminarMatch,
+  votar,
+} from '../services/repositorioMatches';
+import { enlazarMatch } from '../services/repositorioChats';
+import { posterUrl } from '../services/tmdbClient';
+import { Avatar } from '../components/common/Avatar';
+import { ConfirmModal } from '../components/common/ConfirmModal';
 import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
-import { SHADOWS } from '../theme/theme';
+import type { CartaMazo, MovieMatch, UsuarioPerfil, VotosMatch } from '../types';
+import { COLORS } from '../theme/colors';
+import { FUENTES } from '../theme/useMontserrat';
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+type VotoLocal = 'si' | 'no' | 'deshecho';
 
-function shuffle<T>(arr: T[]): T[] {
-  return [...arr].sort(() => Math.random() - 0.5);
+/** "En el Por ver de Ana y Beto", "Recomendada para el grupo"… */
+function motivoCarta(
+  c: CartaMazo,
+  yo: string,
+  perfiles: Record<string, UsuarioPerfil | undefined>,
+) {
+  const nombres = (uids: string[]) => {
+    const n = uids.map((u) => (u === yo ? 'ti' : nombreDe(perfiles[u], true)));
+    return n.length <= 2 ? n.join(' y ') : `${n.slice(0, -1).join(', ')} y ${n[n.length - 1]}`;
+  };
+  if (c.pv?.length) return `En el Por ver de ${nombres(c.pv)}`;
+  if (c.r) return 'Recomendada para el grupo';
+  if (c.v?.length)
+    return `${c.v.length === 1 && c.v[0] === yo ? 'Ya la viste' : `Ya la vio ${nombres(c.v)}`}`;
+  return 'Popular estos días';
 }
 
-// ─── Component ──────────────────────────────────────────────────────────────
-
 export function MovieMatchScreen() {
-  const route = useRoute<any>();
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const { matchId } = route.params as { matchId: string };
   const insets = useSafeAreaInsets();
-  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const { user } = useAuth();
+  const yo = user?.uid ?? '';
 
-  const SCREEN_WIDTH = windowWidth;
-  const BAR_WIDTH = Math.min(windowWidth * 0.85, 420);
-  const SWIPE_THRESHOLD = BAR_WIDTH * 0.25;
+  const [match, setMatch] = useState<MovieMatch | null | undefined>(undefined);
+  const [votos, setVotos] = useState<Record<string, VotosMatch>>({});
+  const [local, setLocal] = useState<Record<number, VotoLocal>>({});
+  const [historial, setHistorial] = useState<number[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
+  const [confirmarFin, setConfirmarFin] = useState(false);
+  const [verCoincidencias, setVerCoincidencias] = useState(false);
+  const [celebrando, setCelebrando] = useState<CartaMazo | null>(null);
+  const vistas = useRef<Set<number> | null>(null);
 
-  const { matchId } = route.params;
+  useEffect(
+    () =>
+      observarMatch(matchId, setMatch, () => {
+        setMatch(null);
+        setError('No puedes ver este Match.');
+      }),
+    [matchId],
+  );
+  useEffect(() => observarVotos(matchId, setVotos, () => undefined), [matchId]);
 
-  // ── State ──
-  const [match, setMatch] = useState<MovieMatch | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [queue, setQueue] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [retryKey, setRetryKey] = useState(0);
-  const [showInfo, setShowInfo] = useState(false);
-  const [showMatchesPanel, setShowMatchesPanel] = useState(false);
-  const [currentDetails, setCurrentDetails] = useState<MovieDetails | null>(null);
-  const [partialMatchDetails, setPartialMatchDetails] = useState<MovieDetails[]>([]);
+  const perfiles = usePerfiles(match?.participants ?? []);
+  const jugable = !!match && !esMatchAntiguo(match);
+  const mazo = useMemo(() => (jugable ? match!.mazo : []), [jugable, match]);
 
-  // Refs
-  const hasFetched = useRef(false);
-  const loadedMatchIds = useRef<Set<number>>(new Set());
-
-  // ── Reanimated ──
-  const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
-
-  // ── Suscripción al match ──
-  useEffect(() => {
-    return observarMatch(matchId, setMatch);
-  }, [matchId]);
-
-  // ── Carga incremental de detalles de películas que hacen match ──
-  useEffect(() => {
-    if (!match?.matchedMovies.length) return;
-    const newIds = match.matchedMovies.filter((id) => !loadedMatchIds.current.has(id));
-    if (!newIds.length) return;
-    newIds.forEach((id) => loadedMatchIds.current.add(id));
-    void Promise.all(newIds.map((id) => tmdbApi.obtenerDetallesPelicula(id))).then((results) => {
-      setPartialMatchDetails((prev) => {
-        const existing = new Set(prev.map((d) => d.id));
-        return [...prev, ...results.filter((d) => !existing.has(d.id))];
-      });
-    });
-  }, [match?.matchedMovies]);
-
-  // ── Algoritmo de películas ──
-  useEffect(() => {
-    if (!match || !user || hasFetched.current) return;
-    hasFetched.current = true;
-    setLoading(true);
-
-    void (async () => {
-      try {
-        const db = getFirestore();
-
-        // 1. Leer por_ver de cada participante por separado
-        const watchlistsPerUser = new Map<string, Set<number>>();
-        const moviesById = new Map<number, any>();
-
-        for (const uid of match.participants) {
-          const snap = await getDoc(doc(db, 'usuarios', uid, 'biblioteca', 'por_ver'));
-          const userSet = new Set<number>();
-          if (snap.exists()) {
-            const data = snap.data() as { peliculas: any[] };
-            for (const p of data.peliculas ?? []) {
-              userSet.add(p.idPelicula);
-              if (!moviesById.has(p.idPelicula)) {
-                moviesById.set(p.idPelicula, {
-                  id: p.idPelicula,
-                  title: p.titulo,
-                  poster_path: p.rutaPoster,
-                  release_date: '',
-                });
-              }
-            }
-          }
-          watchlistsPerUser.set(uid, userSet);
-        }
-
-        // 2. IDs ya votados por el usuario actual
-        const votedIds = new Set<string>();
-        const currentVotes = (match.votes || {}) as Record<string, string[]>;
-        const currentNoVotes = (match.noVotes || {}) as Record<string, string[]>;
-        Object.keys(currentVotes).forEach((mid) => {
-          if (currentVotes[mid]?.includes(user.uid)) votedIds.add(mid);
-        });
-        Object.keys(currentNoVotes).forEach((mid) => {
-          if (currentNoVotes[mid]?.includes(user.uid)) votedIds.add(mid);
-        });
-
-        const seenIds = new Set<string>(votedIds);
-
-        // 3. Coincidencias: películas en TODAS las listas
-        const allSets = [...watchlistsPerUser.values()];
-        const coincidenceIds =
-          allSets.length > 0 ? [...allSets[0]].filter((id) => allSets.every((s) => s.has(id))) : [];
-        const coincidenceSet = new Set(coincidenceIds);
-
-        // 4. Individuales: en alguna lista pero no en todas
-        const individualIds = [...moviesById.keys()].filter((id) => !coincidenceSet.has(id));
-
-        const toQueueItem = (id: number) => moviesById.get(id)!;
-        const filterUnseen = (ids: number[]) =>
-          ids
-            .filter((id) => !seenIds.has(String(id)))
-            .map((id) => {
-              seenIds.add(String(id));
-              return toQueueItem(id);
-            });
-
-        const coincidencePart = filterUnseen(shuffle(coincidenceIds));
-        const individualPart = filterUnseen(shuffle(individualIds));
-
-        // 5. Fallback variado: tendencias + populares con páginas aleatorias
-        const fallbackPart: any[] = [];
-        const mapTmdb = (p: any) => ({
-          id: p.id,
-          title: p.title,
-          poster_path: p.poster_path,
-          release_date: p.release_date?.split('-')[0] || '',
-        });
-        const addFallback = (items: any[]) => {
-          for (const m of items) {
-            if (m.poster_path && !seenIds.has(String(m.id))) {
-              seenIds.add(String(m.id));
-              fallbackPart.push(mapTmdb(m));
-            }
-          }
-        };
-
-        const [trending, popular1, popular2] = await Promise.all([
-          tmdbApi.obtenerTendencias('es-ES', 'week').catch(() => null),
-          tmdbApi.obtenerPopulares('es-ES', Math.floor(Math.random() * 10) + 1).catch(() => null),
-          tmdbApi.obtenerPopulares('es-ES', Math.floor(Math.random() * 10) + 1).catch(() => null),
-        ]);
-
-        const fallbackRaw = shuffle([
-          ...(trending?.results ?? []),
-          ...(popular1?.results ?? []),
-          ...(popular2?.results ?? []),
-        ]);
-        addFallback(fallbackRaw);
-
-        setQueue([...coincidencePart, ...individualPart, ...fallbackPart]);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [match, user, retryKey]);
-
-  const handleBuscarMas = useCallback(() => {
-    hasFetched.current = false;
-    setQueue([]);
-    setCurrentIndex(0);
-    setLoading(true);
-    setRetryKey((k) => k + 1);
-  }, []);
-
-  // Precarga detalles de la carta actual para el modal info
-  useEffect(() => {
-    if (queue[currentIndex]) {
-      void tmdbApi
-        .obtenerDetallesPelicula(Number(queue[currentIndex].id))
-        .then(setCurrentDetails)
-        .catch(() => {});
-    }
-  }, [currentIndex, queue]);
-
-  // ── Swipe logic ──
-  const onSwipeComplete = useCallback(
-    (direction: 'right' | 'left') => {
-      if (!user || !match || !queue[currentIndex]) return;
-      const movieId = queue[currentIndex].id;
-      void votarPelicula(matchId, user.uid, movieId, direction === 'right' ? 'yes' : 'no');
-      translateX.value = 0;
-      translateY.value = 0;
-      setCurrentIndex((prev) => prev + 1);
+  // Mis votos: los del servidor más los que acabo de hacer (o deshacer) aquí
+  const votada = useCallback(
+    (id: number) => {
+      const l = local[id];
+      if (l === 'deshecho') return false;
+      if (l) return true;
+      const mios = votos[yo];
+      return !!mios && (mios.si.includes(id) || mios.no.includes(id));
     },
-    [currentIndex, matchId, queue, user, match],
+    [local, votos, yo],
+  );
+  const pendientes = useMemo(() => mazo.filter((c) => !votada(c.id)), [mazo, votada]);
+  const actual = pendientes[0];
+  const siguiente = pendientes[1];
+
+  // Precarga de los pósters que vienen
+  useEffect(() => {
+    const urls = pendientes
+      .slice(0, 3)
+      .map((c) => posterUrl(c.p, 'w500'))
+      .filter((u): u is string => !!u);
+    if (urls.length) void Image.prefetch(urls);
+  }, [pendientes]);
+
+  // Coincidencias: las calcula este móvil y las registra (una transacción evita duplicados)
+  useEffect(() => {
+    if (!match || !jugable || match.estado !== 'active') return;
+    const calculadas = calcularCoincidencias(match, votos);
+    if (calculadas.some((id) => !match.coincidencias.includes(id))) {
+      void registrarCoincidencias(match, calculadas).catch(() => undefined);
+    }
+  }, [match, votos, jugable]);
+
+  // Celebración cuando aparece una coincidencia nueva (no las que ya había al entrar)
+  useEffect(() => {
+    if (!match || !jugable) return;
+    if (!vistas.current) {
+      vistas.current = new Set(match.coincidencias);
+      return;
+    }
+    const nueva = match.coincidencias.find((id) => !vistas.current!.has(id));
+    match.coincidencias.forEach((id) => vistas.current!.add(id));
+    if (nueva) {
+      setCelebrando(mazo.find((c) => c.id === nueva) ?? null);
+      const t = setTimeout(() => setCelebrando(null), 2400);
+      return () => clearTimeout(t);
+    }
+  }, [match, jugable, mazo]);
+
+  // ── Gesto ──
+  const anchoCarta = Math.min(width - 40, 420);
+  const altoCarta = Math.min(anchoCarta * 1.5, height * 0.58);
+  const UMBRAL = anchoCarta * 0.28;
+  const x = useSharedValue(0);
+  const y = useSharedValue(0);
+
+  useEffect(() => {
+    x.value = 0;
+    y.value = 0;
+  }, [actual?.id, x, y]);
+
+  const alVotar = useCallback(
+    (si: boolean) => {
+      const carta = pendientes[0];
+      if (!carta) return;
+      setLocal((prev) => ({ ...prev, [carta.id]: si ? 'si' : 'no' }));
+      setHistorial((prev) => [...prev, carta.id]);
+      votar(matchId, carta.id, si).catch(() => {
+        setLocal((prev) => ({ ...prev, [carta.id]: 'deshecho' }));
+        setAviso('No se ha guardado tu voto. Revisa la conexión.');
+      });
+    },
+    [matchId, pendientes],
   );
 
-  const onGestureEvent = (event: any) => {
-    translateX.value = event.nativeEvent.translationX;
-    translateY.value = event.nativeEvent.translationY;
+  const lanzar = (si: boolean) => {
+    x.value = withTiming((si ? 1 : -1) * width * 1.3, { duration: 220 }, (fin) => {
+      if (fin) runOnJS(alVotar)(si);
+    });
   };
 
-  const onHandlerStateChange = (event: any) => {
-    if (event.nativeEvent.state === 5) {
-      if (Math.abs(event.nativeEvent.translationX) > SWIPE_THRESHOLD) {
-        const direction = event.nativeEvent.translationX > 0 ? 'right' : 'left';
-        translateX.value = withSpring(
-          direction === 'right' ? SCREEN_WIDTH + 100 : -SCREEN_WIDTH - 100,
-        );
-        runOnJS(onSwipeComplete)(direction);
+  const deshacer = () => {
+    const id = historial[historial.length - 1];
+    if (id === undefined || match?.coincidencias.includes(id)) return;
+    setHistorial((prev) => prev.slice(0, -1));
+    setLocal((prev) => ({ ...prev, [id]: 'deshecho' }));
+    deshacerVoto(matchId, id).catch(() => setAviso('No hemos podido deshacer el voto.'));
+  };
+
+  const pan = Gesture.Pan()
+    .enabled(!!actual)
+    .onUpdate((e) => {
+      x.value = e.translationX;
+      y.value = e.translationY * 0.4;
+    })
+    .onEnd((e) => {
+      if (Math.abs(e.translationX) > UMBRAL || Math.abs(e.velocityX) > 900) {
+        const si = e.translationX > 0;
+        x.value = withTiming((si ? 1 : -1) * width * 1.3, { duration: 200 }, (fin) => {
+          if (fin) runOnJS(alVotar)(si);
+        });
       } else {
-        translateX.value = withSpring(0);
-        translateY.value = withSpring(0);
+        x.value = withSpring(0, { damping: 18 });
+        y.value = withSpring(0, { damping: 18 });
       }
-    }
-  };
+    });
 
-  // ── Animated styles ──
-  const cardStyle = useAnimatedStyle(() => {
-    const rotate = interpolate(
-      translateX.value,
-      [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
-      [-12, 0, 12],
-      Extrapolate.CLAMP,
-    );
-    return {
-      transform: [
-        { translateX: translateX.value },
-        { translateY: translateY.value },
-        { rotate: `${rotate}deg` },
-      ],
-    };
-  });
+  const estiloCarta = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: x.value },
+      { translateY: y.value },
+      {
+        rotate: `${interpolate(x.value, [-width, 0, width], [-14, 0, 14], Extrapolation.CLAMP)}deg`,
+      },
+    ],
+  }));
+  const estiloSi = useAnimatedStyle(() => ({
+    opacity: interpolate(x.value, [0, UMBRAL], [0, 1], Extrapolation.CLAMP),
+  }));
+  const estiloNo = useAnimatedStyle(() => ({
+    opacity: interpolate(x.value, [-UMBRAL, 0], [1, 0], Extrapolation.CLAMP),
+  }));
+  const estiloDetras = useAnimatedStyle(() => ({
+    transform: [
+      { scale: interpolate(Math.abs(x.value), [0, UMBRAL], [0.94, 1], Extrapolation.CLAMP) },
+    ],
+    opacity: interpolate(Math.abs(x.value), [0, UMBRAL], [0.6, 1], Extrapolation.CLAMP),
+  }));
 
-  // Overlay de color sobre la carta: verde a la derecha, rojo a la izquierda
-  const cardOverlayStyle = useAnimatedStyle(() => {
-    const rightOpacity = interpolate(
-      translateX.value,
-      [0, SWIPE_THRESHOLD * 1.5],
-      [0, 0.5],
-      Extrapolate.CLAMP,
-    );
-    const leftOpacity = interpolate(
-      translateX.value,
-      [-SWIPE_THRESHOLD * 1.5, 0],
-      [0.5, 0],
-      Extrapolate.CLAMP,
-    );
-    if (translateX.value >= 0) {
-      return {
-        position: 'absolute' as const,
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: '#2ecc71',
-        opacity: rightOpacity,
-        borderRadius: 24,
-      };
-    }
-    return {
-      position: 'absolute' as const,
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: '#ff5050',
-      opacity: leftOpacity,
-      borderRadius: 24,
-    };
-  });
-
-  // ── Render ──
-  if (loading || !match) {
+  // ── Estados de carga y error ──
+  if (match === undefined) {
     return (
-      <View style={[styles.container, { justifyContent: 'center' }]}>
-        <LoaderClaqueta texto="Preparando las pelis…" />
+      <View style={[styles.flex, styles.centro]}>
+        <LoaderClaqueta texto="Abriendo el Match…" />
       </View>
     );
   }
 
-  const currentMovie = queue[currentIndex];
-  const matchCount = match.matchedMovies.length;
+  const cabecera = (titulo: string, derecha?: React.ReactNode) => (
+    <View style={[styles.cabecera, { paddingTop: insets.top + 8 }]}>
+      <Pressable onPress={() => navigation.goBack()} hitSlop={12} accessibilityLabel="Volver">
+        <IconChevronLeft size={28} color={COLORS.text} strokeWidth={2} />
+      </Pressable>
+      <Text style={styles.titulo} numberOfLines={1}>
+        {titulo}
+      </Text>
+      {derecha}
+    </View>
+  );
 
-  return (
-    <View style={styles.container}>
-      {/* ── CABECERA ── */}
-      <BlurView
-        intensity={80}
-        tint="dark"
-        style={[styles.header, { paddingTop: insets.top + 10, paddingBottom: 15 }]}
-      >
-        <View style={styles.headerRow}>
-          <Pressable onPress={() => navigation.goBack()} style={styles.backBtn} hitSlop={12}>
-            <Ionicons name="chevron-back" size={24} color="#fff" />
-          </Pressable>
-          <Text style={styles.headerTitle}>Movie Match</Text>
-          <Pressable
-            style={styles.matchCounter}
-            onPress={() => matchCount > 0 && setShowMatchesPanel(true)}
-            hitSlop={8}
-          >
-            <Ionicons name="flame" size={16} color="#69DFD9" />
-            <Text style={styles.countText}>
-              {matchCount} {matchCount === 1 ? 'Match' : 'Matches'}
-            </Text>
-            {matchCount > 0 && <Ionicons name="chevron-forward" size={12} color="#69DFD9" />}
-          </Pressable>
-        </View>
-      </BlurView>
-
-      {/* ── DECK ── */}
-      <View style={styles.deck}>
-        {match.status === 'finished' ? (
-          /* A: Juego terminado */
-          <ScrollView
-            contentContainerStyle={styles.resultsScroll}
-            showsVerticalScrollIndicator={false}
-          >
-            <View style={styles.resultsHeader}>
-              <Ionicons name="trophy" size={80} color="#f1c40f" />
-              <Text style={styles.matchFinishedTitle}>¡Objetivo conseguido!</Text>
-              <Text style={styles.matchFinishedSub}>
-                {matchCount}{' '}
-                {matchCount === 1
-                  ? 'película que os ha gustado a todos'
-                  : 'películas que os han gustado a todos'}
-                :
-              </Text>
-            </View>
-            <View style={styles.resultsGrid}>
-              {partialMatchDetails.map((movie) => (
-                <Pressable
-                  key={movie.id}
-                  style={styles.resultCard}
-                  onPress={() => {
-                    setCurrentDetails(movie);
-                    setShowInfo(true);
-                  }}
-                >
-                  <Image
-                    source={{ uri: posterUrl(movie.poster_path, 'w342')! }}
-                    style={styles.resultPoster}
-                  />
-                  <View style={styles.resultInfo}>
-                    <Text style={styles.resultTitle} numberOfLines={2}>
-                      {movie.title}
-                    </Text>
-                  </View>
-                </Pressable>
-              ))}
-            </View>
-            <Pressable style={styles.btnCerrarFinal} onPress={() => navigation.goBack()}>
-              <Text style={styles.btnCerrarText}>Volver al chat</Text>
-            </Pressable>
-          </ScrollView>
-        ) : currentIndex < queue.length ? (
-          /* B: Carta swipable */
-          <PanGestureHandler
-            onGestureEvent={onGestureEvent}
-            onHandlerStateChange={onHandlerStateChange}
-          >
-            <Animated.View
-              style={[
-                styles.card,
-                { width: BAR_WIDTH, height: Math.min(windowHeight * 0.6, 600) },
-                cardStyle,
-                SHADOWS.macLight,
-              ]}
+  if (!match || !jugable || match.estado === 'cancelled') {
+    return (
+      <View style={styles.flex}>
+        {cabecera('Movie Match')}
+        <View style={[styles.centro, { flex: 1, paddingHorizontal: 36, gap: 12 }]}>
+          <IconCards size={56} color={COLORS.textMuted} strokeWidth={1.5} />
+          <Text style={styles.vacioTitulo}>{error ?? 'Este Match ya no se puede jugar'}</Text>
+          <Text style={styles.vacioTexto}>
+            {match && !jugable
+              ? 'Es de una versión anterior de VeoVeo. Empezad uno nuevo.'
+              : 'Puede que lo hayan cancelado o que ya no participes.'}
+          </Text>
+          {match?.chatId ? (
+            <Pressable
+              style={[styles.botonPrincipal, { alignSelf: 'stretch' }]}
+              onPress={() => {
+                const chatId = match.chatId!;
+                // Libera el botón del chat si aún apunta a este Match
+                void enlazarMatch(chatId, null)
+                  .catch(() => undefined)
+                  .finally(() => navigation.replace('MatchConfig', { chatId }));
+              }}
             >
-              <Image
-                source={{ uri: posterUrl(currentMovie.poster_path, 'w500')! }}
-                style={styles.poster}
-              />
-              <LinearGradient
-                colors={['transparent', 'rgba(0,0,0,0.92)']}
-                style={styles.cardGradient}
-              >
-                <View style={styles.movieInfo}>
-                  <Text style={styles.movieTitle}>{currentMovie.title}</Text>
-                  <Text style={styles.movieYear}>{currentMovie.release_date}</Text>
-                </View>
-                <Pressable onPress={() => setShowInfo(true)} style={styles.infoBtn}>
-                  <Ionicons name="information-circle-outline" size={34} color="#fff" />
-                </Pressable>
-              </LinearGradient>
-
-              {/* Overlay de color al deslizar */}
-              <Animated.View style={cardOverlayStyle} pointerEvents="none" />
-            </Animated.View>
-          </PanGestureHandler>
-        ) : loading ? (
-          /* C: Cargando */
-          <View style={styles.emptyDeck}>
-            <ActivityIndicator color={COLORS.primary} size="large" />
-            <Text style={styles.emptyText}>Buscando películas...</Text>
-          </View>
-        ) : (
-          /* D: Cola vacía */
-          <View style={styles.emptyDeck}>
-            <Ionicons name="film-outline" size={64} color="rgba(255,255,255,0.15)" />
-            <Text style={styles.emptyTitle}>¡Has votado todo!</Text>
-            <Text style={styles.emptyText}>No quedan más películas en tu cola.</Text>
-            <Pressable style={styles.recargarBtn} onPress={handleBuscarMas}>
-              <Text style={styles.recargarBtnText}>Buscar más películas</Text>
+              <Text style={styles.botonPrincipalTexto}>Nuevo Match</Text>
             </Pressable>
+          ) : null}
+        </View>
+      </View>
+    );
+  }
+
+  const coincidencias = match.coincidencias
+    .map((id) => mazo.find((c) => c.id === id))
+    .filter((c): c is CartaMazo => !!c);
+  const terminado = match.estado === 'finished';
+  const progreso = (uid: string) => {
+    const v = votos[uid];
+    return v ? new Set([...v.si, ...v.no].filter((id) => mazo.some((c) => c.id === id))).size : 0;
+  };
+
+  const rejilla = (
+    <View style={styles.rejilla}>
+      {coincidencias.map((c) => (
+        <Pressable
+          key={c.id}
+          style={styles.resultado}
+          onPress={() => navigation.navigate('Pelicula', { movieId: c.id })}
+          accessibilityLabel={c.t}
+        >
+          <Image
+            source={{ uri: posterUrl(c.p, 'w342') ?? undefined }}
+            style={styles.resultadoPoster}
+            cachePolicy="memory-disk"
+            transition={150}
+          />
+          <Text style={styles.resultadoTitulo} numberOfLines={2}>
+            {c.t}
+          </Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+
+  // ── Terminado: todas las coincidencias ──
+  if (terminado) {
+    const quien = match.terminadoPor ? nombreDe(perfiles[match.terminadoPor], true) : null;
+    return (
+      <View style={styles.flex}>
+        {cabecera('Movie Match')}
+        <ScrollView
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 40 }}
+        >
+          <View style={styles.resultadoCabecera}>
+            <IconCards size={56} color={COLORS.accent} strokeWidth={1.5} />
+            <Text style={styles.resultadoTitular}>
+              {coincidencias.length > 0 ? '¡Tenéis plan!' : 'Esta vez no ha habido suerte'}
+            </Text>
+            <Text style={styles.vacioTexto}>
+              {coincidencias.length > 0
+                ? `${coincidencias.length} ${coincidencias.length === 1 ? 'peli os apetece' : 'pelis os apetecen'} a todos. Elegid cuál ver ahora.`
+                : 'Ninguna peli os ha apetecido a todos. Probad con otro mazo.'}
+            </Text>
+            {quien && (
+              <Text style={styles.ayuda}>
+                {match.terminadoPor === yo ? 'Lo terminaste tú' : `Lo terminó ${quien}`} antes de
+                llegar a {match.objetivo}.
+              </Text>
+            )}
+          </View>
+          {rejilla}
+          <Pressable
+            style={styles.botonPrincipal}
+            onPress={() =>
+              navigation.replace('MatchConfig', match.chatId ? { chatId: match.chatId } : undefined)
+            }
+          >
+            <Text style={styles.botonPrincipalTexto}>Nuevo Match</Text>
+          </Pressable>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  // ── Jugando ──
+  return (
+    <View style={styles.flex}>
+      {cabecera(
+        'Movie Match',
+        <Pressable
+          style={styles.contador}
+          onPress={() => setVerCoincidencias(true)}
+          accessibilityLabel={`${coincidencias.length} de ${match.objetivo} coincidencias. Ver`}
+        >
+          <IconCards size={16} color={COLORS.accent} strokeWidth={2} />
+          <Text style={styles.contadorTexto}>
+            {coincidencias.length}/{match.objetivo}
+          </Text>
+        </Pressable>,
+      )}
+
+      <View style={styles.participantes}>
+        {match.participants.map((uid) => (
+          <View key={uid} style={styles.participante}>
+            <Avatar uri={perfiles[uid]?.fotoPerfil} nombre={perfiles[uid]?.username} tamano={28} />
+            <Text style={styles.participanteTexto}>
+              {uid === yo ? 'Tú' : nombreDe(perfiles[uid], true)} · {progreso(uid)}/{mazo.length}
+            </Text>
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.mesa}>
+        {actual ? (
+          <>
+            {siguiente && (
+              <Animated.View
+                style={[
+                  styles.carta,
+                  { width: anchoCarta, height: altoCarta },
+                  styles.cartaDetras,
+                  estiloDetras,
+                ]}
+              >
+                <Image
+                  source={{ uri: posterUrl(siguiente.p, 'w500') ?? undefined }}
+                  style={StyleSheet.absoluteFill}
+                  cachePolicy="memory-disk"
+                />
+              </Animated.View>
+            )}
+            <GestureDetector gesture={pan}>
+              <Animated.View
+                key={actual.id}
+                style={[styles.carta, { width: anchoCarta, height: altoCarta }, estiloCarta]}
+              >
+                <Image
+                  source={{ uri: posterUrl(actual.p, 'w500') ?? undefined }}
+                  placeholder={{ uri: posterUrl(actual.p, 'w185') ?? undefined }}
+                  style={StyleSheet.absoluteFill}
+                  cachePolicy="memory-disk"
+                  transition={120}
+                />
+                <LinearGradient
+                  colors={['transparent', 'rgba(2,6,23,0.95)']}
+                  style={styles.degradado}
+                >
+                  <Text style={styles.motivo}>{motivoCarta(actual, yo, perfiles)}</Text>
+                  <View style={styles.filaTitulo}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.peliTitulo} numberOfLines={2}>
+                        {actual.t}
+                      </Text>
+                      {actual.a ? <Text style={styles.peliAnio}>{actual.a}</Text> : null}
+                    </View>
+                    <Pressable
+                      onPress={() => navigation.navigate('Pelicula', { movieId: actual.id })}
+                      hitSlop={10}
+                      accessibilityLabel={`Ver la ficha de ${actual.t}`}
+                    >
+                      <IconInfoCircle size={30} color={COLORS.text} strokeWidth={1.8} />
+                    </Pressable>
+                  </View>
+                </LinearGradient>
+                <Animated.View
+                  style={[styles.sello, styles.selloSi, estiloSi]}
+                  pointerEvents="none"
+                >
+                  <Text style={[styles.selloTexto, { color: COLORS.accent }]}>ME APETECE</Text>
+                </Animated.View>
+                <Animated.View
+                  style={[styles.sello, styles.selloNo, estiloNo]}
+                  pointerEvents="none"
+                >
+                  <Text style={[styles.selloTexto, { color: COLORS.error }]}>PASO</Text>
+                </Animated.View>
+              </Animated.View>
+            </GestureDetector>
+          </>
+        ) : (
+          <View style={[styles.centro, { paddingHorizontal: 32, gap: 12 }]}>
+            <IconCards size={56} color={COLORS.accent} strokeWidth={1.5} />
+            <Text style={styles.vacioTitulo}>Ya has votado todo el mazo</Text>
+            <Text style={styles.vacioTexto}>
+              {coincidencias.length > 0
+                ? `Lleváis ${coincidencias.length} ${coincidencias.length === 1 ? 'coincidencia' : 'coincidencias'}. Cuando voten los demás pueden salir más.`
+                : 'Cuando voten los demás veréis si coincidís.'}
+            </Text>
+            {coincidencias.length > 0 && rejilla}
           </View>
         )}
       </View>
 
-      {/* ── BOTONES RÁPIDOS ── */}
-      {match.status !== 'finished' && currentIndex < queue.length && (
-        <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 20) + 20 }]}>
-          <Pressable
-            style={[styles.roundBtn, styles.roundBtnNo]}
-            onPress={() => {
-              translateX.value = withSpring(-SCREEN_WIDTH - 100);
-              runOnJS(onSwipeComplete)('left');
-            }}
-          >
-            <Ionicons name="close" size={32} color="#ff5050" />
-          </Pressable>
-          <Pressable
-            style={[styles.roundBtn, styles.roundBtnYes]}
-            onPress={() => {
-              translateX.value = withSpring(SCREEN_WIDTH + 100);
-              runOnJS(onSwipeComplete)('right');
-            }}
-          >
-            <Ionicons name="heart" size={32} color="#2ecc71" />
-          </Pressable>
-        </View>
+      <View style={[styles.botonera, { paddingBottom: insets.bottom + 16 }]}>
+        {actual ? (
+          <>
+            <Pressable
+              style={[styles.redondo, styles.redondoNo]}
+              onPress={() => lanzar(false)}
+              accessibilityLabel="Paso"
+            >
+              <IconX size={32} color={COLORS.error} strokeWidth={2.4} />
+            </Pressable>
+            <Pressable
+              style={[styles.redondoPeque, historial.length === 0 && { opacity: 0.35 }]}
+              onPress={deshacer}
+              disabled={historial.length === 0}
+              accessibilityLabel="Deshacer el último voto"
+            >
+              <IconArrowBackUp size={22} color={COLORS.text} strokeWidth={2} />
+            </Pressable>
+            <Pressable
+              style={[styles.redondo, styles.redondoSi]}
+              onPress={() => lanzar(true)}
+              accessibilityLabel="Me apetece"
+            >
+              <IconHeart size={32} color={COLORS.accent} strokeWidth={2.4} />
+            </Pressable>
+          </>
+        ) : null}
+      </View>
+      <Pressable
+        onPress={() => setConfirmarFin(true)}
+        style={[styles.terminar, { bottom: insets.bottom + (actual ? 112 : 24) }]}
+        hitSlop={8}
+      >
+        <Text style={styles.terminarTexto}>Terminar el Match</Text>
+      </Pressable>
+
+      {aviso && (
+        <Pressable onPress={() => setAviso(null)} style={[styles.aviso, { top: insets.top + 60 }]}>
+          <Text style={styles.avisoTexto}>{aviso}</Text>
+        </Pressable>
       )}
 
-      {/* ── MODAL INFO PELÍCULA ── */}
-      {showInfo && currentDetails && (
-        <View style={StyleSheet.absoluteFillObject}>
-          <Pressable onPress={() => setShowInfo(false)} style={StyleSheet.absoluteFillObject}>
-            <BlurView intensity={90} tint="dark" style={StyleSheet.absoluteFill} />
-          </Pressable>
-          <View style={[styles.infoModal, { bottom: insets.bottom + 100 }]}>
-            <Text style={styles.modalTitle}>{currentDetails.title}</Text>
-            <ScrollView style={styles.modalScroll}>
-              <Text style={styles.modalOverview}>{currentDetails.overview}</Text>
-              <View style={styles.modalDetails}>
-                <Text style={styles.modalMeta}>⭐ {currentDetails.vote_average?.toFixed(1)}</Text>
-                <Text style={styles.modalMeta}>📅 {currentDetails.release_date}</Text>
-              </View>
+      {celebrando && (
+        <Animated.View
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(250)}
+          style={styles.celebracion}
+          pointerEvents="none"
+        >
+          <Text style={styles.celebracionTitulo}>¡Coincidencia!</Text>
+          <Image
+            source={{ uri: posterUrl(celebrando.p, 'w342') ?? undefined }}
+            style={styles.celebracionPoster}
+            cachePolicy="memory-disk"
+          />
+          <Text style={styles.celebracionTexto}>A todos os apetece ver {celebrando.t}</Text>
+        </Animated.View>
+      )}
+
+      {verCoincidencias && (
+        <Animated.View
+          entering={FadeIn.duration(160)}
+          exiting={FadeOut.duration(160)}
+          style={styles.panelFondo}
+        >
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setVerCoincidencias(false)}
+            accessibilityLabel="Cerrar"
+          />
+          <View style={[styles.panel, { paddingBottom: insets.bottom + 20 }]}>
+            <Text style={styles.panelTitulo}>
+              {coincidencias.length === 0
+                ? 'Aún no hay coincidencias'
+                : `${coincidencias.length} de ${match.objetivo} coincidencias`}
+            </Text>
+            <ScrollView style={{ maxHeight: height * 0.55 }}>
+              {coincidencias.length > 0 ? (
+                rejilla
+              ) : (
+                <Text style={styles.vacioTexto}>Seguid deslizando.</Text>
+              )}
             </ScrollView>
           </View>
-        </View>
+        </Animated.View>
       )}
 
-      {/* ── PANEL DE MATCHES PARCIALES ── */}
-      <Modal
-        visible={showMatchesPanel}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowMatchesPanel(false)}
-      >
-        <Pressable style={styles.panelBackdrop} onPress={() => setShowMatchesPanel(false)}>
-          <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFill} />
-        </Pressable>
-        <View style={[styles.panel, { paddingBottom: insets.bottom + 16 }]}>
-          <View style={styles.panelHandle} />
-          <Text style={styles.panelTitle}>
-            {matchCount} {matchCount === 1 ? 'Match hasta ahora' : 'Matches hasta ahora'}
-          </Text>
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.panelScroll}
-          >
-            {partialMatchDetails.length === 0 ? (
-              <ActivityIndicator color="#fff" style={{ marginTop: 20 }} />
-            ) : (
-              <View style={styles.resultsGrid}>
-                {partialMatchDetails.map((movie) => (
-                  <Pressable
-                    key={movie.id}
-                    style={styles.resultCard}
-                    onPress={() => {
-                      setCurrentDetails(movie);
-                      setShowMatchesPanel(false);
-                      setShowInfo(true);
-                    }}
-                  >
-                    <Image
-                      source={{ uri: posterUrl(movie.poster_path, 'w342')! }}
-                      style={styles.resultPoster}
-                    />
-                    <View style={styles.resultInfo}>
-                      <Text style={styles.resultTitle} numberOfLines={2}>
-                        {movie.title}
-                      </Text>
-                    </View>
-                    <View style={styles.matchBadge}>
-                      <Ionicons name="flame" size={12} color="#69DFD9" />
-                      <Text style={styles.matchBadgeText}>Match</Text>
-                    </View>
-                  </Pressable>
-                ))}
-              </View>
-            )}
-          </ScrollView>
-        </View>
-      </Modal>
+      <ConfirmModal
+        visible={confirmarFin}
+        onClose={() => setConfirmarFin(false)}
+        onConfirm={() => {
+          setConfirmarFin(false);
+          terminarMatch(match, nombreDe(perfiles[yo], true)).catch(() =>
+            setAviso('No hemos podido terminar el Match.'),
+          );
+        }}
+        title="Terminar el Match"
+        message={`Se termina para todos y se quedan las ${coincidencias.length} coincidencias que llevéis.`}
+        confirmText="Terminar"
+        iconName="flag-outline"
+        iconColor={COLORS.accent}
+        confirmColor={COLORS.accent}
+        fontFamily={FUENTES.texto}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#020617' },
-  header: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 100,
-    borderBottomWidth: 0.5,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
-  headerRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 },
-  backBtn: { padding: 8 },
-  headerTitle: { flex: 1, color: '#fff', fontSize: 17, fontWeight: '700', textAlign: 'center' },
-  matchCounter: {
+  flex: { flex: 1, backgroundColor: COLORS.background },
+  centro: { alignItems: 'center', justifyContent: 'center' },
+  cabecera: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(105,223,217,0.12)',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
-    gap: 5,
-    borderWidth: 1,
-    borderColor: 'rgba(105,223,217,0.25)',
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingBottom: 8,
   },
-  countText: { color: '#69DFD9', fontSize: 12, fontWeight: '900' },
-  deck: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 100 },
-  card: { borderRadius: 24, overflow: 'hidden', backgroundColor: '#1e293b' },
-  poster: { width: '100%', height: '100%' },
-  cardGradient: {
+  titulo: { flex: 1, color: COLORS.text, fontSize: 20, fontFamily: FUENTES.titulo },
+  contador: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    height: 34,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    backgroundColor: 'rgba(105,223,217,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(105,223,217,0.35)',
+  },
+  contadorTexto: { color: COLORS.accent, fontSize: 14, fontFamily: FUENTES.titulo },
+  participantes: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+  },
+  participante: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingRight: 10,
+    borderRadius: 999,
+    backgroundColor: COLORS.surface,
+  },
+  participanteTexto: { color: COLORS.textMuted, fontSize: 12, fontFamily: FUENTES.texto },
+  mesa: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  carta: {
     position: 'absolute',
-    bottom: 0,
+    borderRadius: 24,
+    overflow: 'hidden',
+    backgroundColor: COLORS.card,
+  },
+  cartaDetras: {},
+  degradado: {
+    position: 'absolute',
     left: 0,
     right: 0,
-    height: 180,
-    padding: 20,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
+    bottom: 0,
+    paddingTop: 90,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    gap: 6,
   },
-  movieInfo: { flex: 1 },
-  movieTitle: { color: '#fff', fontSize: 24, fontWeight: '800' },
-  movieYear: { color: 'rgba(255,255,255,0.4)', fontSize: 16, marginTop: 4 },
-  infoBtn: { width: 50, height: 50, alignItems: 'center', justifyContent: 'center' },
-  footer: { flexDirection: 'row', justifyContent: 'center', gap: 48 },
-  roundBtn: {
+  motivo: { color: COLORS.accent, fontSize: 13, fontFamily: FUENTES.seminegrita },
+  filaTitulo: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },
+  peliTitulo: { color: COLORS.text, fontSize: 24, lineHeight: 29, fontFamily: FUENTES.titulo },
+  peliAnio: { color: COLORS.textMuted, fontSize: 15, fontFamily: FUENTES.texto, marginTop: 2 },
+  sello: {
+    position: 'absolute',
+    top: 28,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 3,
+    backgroundColor: 'rgba(2,6,23,0.55)',
+  },
+  selloSi: { left: 22, borderColor: COLORS.accent, transform: [{ rotate: '-12deg' }] },
+  selloNo: { right: 22, borderColor: COLORS.error, transform: [{ rotate: '12deg' }] },
+  selloTexto: { fontSize: 22, fontFamily: FUENTES.portada, letterSpacing: 1 },
+  botonera: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 28,
+    paddingTop: 12,
+    minHeight: 100,
+  },
+  redondo: {
     width: 72,
     height: 72,
     borderRadius: 36,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  roundBtnNo: {
-    backgroundColor: 'rgba(255,80,80,0.12)',
     borderWidth: 1.5,
-    borderColor: 'rgba(255,80,80,0.3)',
   },
-  roundBtnYes: {
-    backgroundColor: 'rgba(46,204,113,0.12)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(46,204,113,0.3)',
-  },
-  emptyDeck: { alignItems: 'center', gap: 16, paddingHorizontal: 40 },
-  emptyTitle: { color: '#fff', fontSize: 22, fontWeight: '800', textAlign: 'center' },
-  emptyText: { color: 'rgba(255,255,255,0.4)', fontSize: 15, textAlign: 'center' },
-  recargarBtn: {
-    marginTop: 8,
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 28,
-    paddingVertical: 14,
-    borderRadius: 20,
-  },
-  recargarBtnText: { color: '#fff', fontSize: 15, fontWeight: '800' },
-  matchFinishedTitle: {
-    color: '#fff',
-    fontSize: 28,
-    fontWeight: '900',
-    textAlign: 'center',
-    marginTop: 10,
-  },
-  matchFinishedSub: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-  btnCerrarText: { color: '#000', fontWeight: '800', fontSize: 16 },
-  btnCerrarFinal: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: 16,
-    borderRadius: 20,
-    alignItems: 'center',
-    marginTop: 30,
-  },
-  infoModal: {
-    position: 'absolute',
-    left: 24,
-    right: 24,
-    backgroundColor: '#1e293b',
+  redondoNo: { backgroundColor: 'rgba(239,68,68,0.1)', borderColor: 'rgba(239,68,68,0.4)' },
+  redondoSi: { backgroundColor: 'rgba(105,223,217,0.1)', borderColor: 'rgba(105,223,217,0.45)' },
+  redondoPeque: {
+    width: 48,
+    height: 48,
     borderRadius: 24,
-    padding: 24,
-    maxHeight: 300,
-  },
-  modalTitle: { color: '#fff', fontSize: 22, fontWeight: '800', marginBottom: 12 },
-  modalScroll: { flex: 1 },
-  modalOverview: { color: 'rgba(255,255,255,0.7)', fontSize: 15, lineHeight: 22 },
-  modalDetails: { flexDirection: 'row', gap: 20, marginTop: 20 },
-  modalMeta: { color: COLORS.primary, fontWeight: '800' },
-  resultsScroll: { paddingHorizontal: 24, paddingTop: 20, paddingBottom: 100 },
-  resultsHeader: { alignItems: 'center', marginBottom: 30 },
-  resultsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center' },
-  resultCard: {
-    width: 150,
-    borderRadius: 20,
-    backgroundColor: '#1e293b',
-    overflow: 'hidden',
-    ...SHADOWS.macLight,
-    marginBottom: 12,
-  },
-  resultPoster: { width: '100%', aspectRatio: 2 / 3 },
-  resultInfo: { padding: 10 },
-  resultTitle: { color: '#fff', fontSize: 13, fontWeight: '700' },
-  matchBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
-    backgroundColor: 'rgba(105,223,217,0.85)',
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 8,
+    justifyContent: 'center',
+    backgroundColor: COLORS.surface,
   },
-  matchBadgeText: { color: '#020617', fontSize: 10, fontWeight: '800' },
-  panelBackdrop: { ...StyleSheet.absoluteFillObject, zIndex: 0 },
-  panel: {
+  terminar: { position: 'absolute', alignSelf: 'center' },
+  terminarTexto: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    fontFamily: FUENTES.seminegrita,
+    textDecorationLine: 'underline',
+  },
+  vacioTitulo: {
+    color: COLORS.text,
+    fontSize: 20,
+    fontFamily: FUENTES.titulo,
+    textAlign: 'center',
+  },
+  vacioTexto: {
+    color: COLORS.textMuted,
+    fontSize: 15,
+    lineHeight: 21,
+    fontFamily: FUENTES.texto,
+    textAlign: 'center',
+  },
+  ayuda: { color: COLORS.textMuted, fontSize: 13, fontFamily: FUENTES.texto, textAlign: 'center' },
+  rejilla: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: 16,
+  },
+  resultado: { width: 104, gap: 6 },
+  resultadoPoster: { width: 104, height: 156, borderRadius: 14, backgroundColor: COLORS.card },
+  resultadoTitulo: { color: COLORS.text, fontSize: 12, fontFamily: FUENTES.seminegrita },
+  resultadoCabecera: { alignItems: 'center', gap: 10, paddingTop: 16 },
+  resultadoTitular: {
+    color: COLORS.text,
+    fontSize: 26,
+    fontFamily: FUENTES.portada,
+    textAlign: 'center',
+  },
+  botonPrincipal: {
+    marginTop: 28,
+    height: 52,
+    borderRadius: 999,
+    backgroundColor: COLORS.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  botonPrincipalTexto: { color: COLORS.onAccent, fontSize: 16, fontFamily: FUENTES.titulo },
+  aviso: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#0f172a',
+    left: 20,
+    right: 20,
+    padding: 14,
+    borderRadius: 16,
+    backgroundColor: COLORS.card,
+  },
+  avisoTexto: { color: COLORS.text, fontSize: 14, fontFamily: FUENTES.texto, textAlign: 'center' },
+  celebracion: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(2,6,23,0.88)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 16,
+    padding: 32,
+  },
+  celebracionTitulo: { color: COLORS.accent, fontSize: 34, fontFamily: FUENTES.portada },
+  celebracionPoster: { width: 180, height: 270, borderRadius: 18 },
+  celebracionTexto: {
+    color: COLORS.text,
+    fontSize: 17,
+    fontFamily: FUENTES.seminegrita,
+    textAlign: 'center',
+  },
+  panelFondo: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(2,6,23,0.7)',
+    justifyContent: 'flex-end',
+  },
+  panel: {
+    backgroundColor: COLORS.surface,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    maxHeight: '75%',
     paddingHorizontal: 20,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    paddingTop: 20,
   },
-  panelHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    alignSelf: 'center',
-    marginBottom: 16,
-  },
-  panelTitle: { color: '#fff', fontSize: 20, fontWeight: '900', marginBottom: 16 },
-  panelScroll: { paddingBottom: 20 },
+  panelTitulo: { color: COLORS.text, fontSize: 18, fontFamily: FUENTES.titulo, marginBottom: 4 },
 });

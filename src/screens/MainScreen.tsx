@@ -138,6 +138,8 @@ export function MainScreen() {
               navigation.navigate('BibliotecaAmigo', { amigoUid: uid });
             }}
             onSolicitudesClick={() => navigation.navigate('Solicitudes')}
+            onNuevoMatch={() => navigation.navigate('MatchConfig')}
+            onAbrirMatch={(matchId) => navigation.navigate('MovieMatch', { matchId })}
             onPerfilClick={() => navigation.navigate('Perfil')}
             userFoto={userFoto}
           />

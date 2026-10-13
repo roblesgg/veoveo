@@ -16,7 +16,7 @@ export type RootStackParamList = {
   NuevoChat: undefined;
   InfoGrupo: { chatId: string };
   MovieMatch: { matchId: string };
-  MatchConfig: { chatId: string; participants: string[] };
+  MatchConfig: { chatId?: string } | undefined; // sin chat: se eligen amigos
 };
 
 export type AppNavigation = NativeStackNavigationProp<RootStackParamList>;

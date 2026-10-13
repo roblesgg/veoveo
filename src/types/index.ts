@@ -116,22 +116,33 @@ export type MiembroChat = {
 // --- MODELOS DE LÓGICA DE MATCH ---
 export type MatchStatus = 'active' | 'finished' | 'cancelled';
 
+/** Una carta del mazo (nombres cortos: el mazo va entero en el documento del Match). */
+export type CartaMazo = {
+  id: number; // TMDB
+  t: string; // título
+  p: string | null; // póster
+  a?: string; // año
+  pv?: string[]; // participantes que la tienen en Por ver
+  v?: string[]; // participantes que la han visto (si lo permiten)
+  r?: 1; // recomendada para el grupo
+};
+
 export type MovieMatch = {
   id: string;
-  chatId: string;
+  chatId?: string | null; // sin chat: amigos elegidos a mano
   creatorId: string;
   participants: string[];
-  status: MatchStatus;
-  settings: {
-    targetMatches: number; // Cuántas coincidencias detienen el juego
-    excludeSeen: boolean; // Ignorar películas ya vistas por los participantes
-  };
-  matchedMovies: number[]; // IDs de TMDB que han sido aceptadas por todos
-  votes: { [movieId: number]: string[] }; // mapa peliId -> lista de UIDs que votaron SÍ
-  noVotes: { [movieId: number]: string[] }; // mapa peliId -> lista de UIDs que votaron NO
+  objetivo: number; // coincidencias para terminar
+  estado: MatchStatus;
+  mazo: CartaMazo[]; // generado una vez por quien crea el Match
+  coincidencias: number[]; // ids en los que todos han dicho que sí
+  terminadoPor?: string; // si alguien lo terminó antes
   createdAt: number;
   finishedAt?: number;
 };
+
+/** `matches/{id}/votos/{uid}`: solo lo escribe su dueño. */
+export type VotosMatch = { si: number[]; no: number[]; actualizadoEn?: number };
 
 // --- MODELOS DE PELÍCULAS DEL USUARIO (BIBLIOTECA) ---
 export type PeliculaUsuario = {

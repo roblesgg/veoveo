@@ -32,7 +32,7 @@ before(async () => {
   lote.set(db.doc('solicitudes_amistad/aleatoria2'), { deUid: 'luis', paraUid: 'ana', estado: 'aceptada' });
   lote.set(db.doc('solicitudes_amistad/aleatoria3'), { deUid: 'eva', paraUid: 'ana', estado: 'rechazada' });
   lote.set(db.doc('chats/g'), { type: 'group', participants: ['ana', 'luis'], createdAt: 1 });
-  lote.set(db.doc('chats/i'), { type: 'individual', participants: ['luis', 'ana'], createdAt: 1 });
+  lote.set(db.doc('chats/i'), { type: 'individual', participants: ['luis', 'ana'], createdAt: 1, activeMatchId: 'viejo' });
   lote.set(db.doc('matches/viejo'), { participants: ['ana', 'luis'], status: 'active', votes: {}, noVotes: {}, matchedMovies: [603] });
   await lote.commit();
 });
@@ -84,6 +84,7 @@ test('el resto: no se borra ninguna solicitud; se copian y se marcan', async () 
 
   assert.deepEqual((await db.doc('chats/g').get()).data().admins, ['ana']);
   assert.equal((await db.doc('chats/g').get()).data().emoji, '🍿');
+  assert.equal((await db.doc('chats/i').get()).data().activeMatchId, null);
   const m = (await db.doc('matches/viejo').get()).data();
   assert.equal(m.estado, 'cancelled');
   assert.deepEqual(m.coincidencias, [603]);

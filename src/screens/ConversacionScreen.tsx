@@ -226,7 +226,7 @@ export function ConversacionScreen() {
   const abrirMatch = () => {
     if (!chat) return;
     if (chat.activeMatchId) navigation.navigate('MovieMatch', { matchId: chat.activeMatchId });
-    else navigation.navigate('MatchConfig', { chatId: chat.id, participants: chat.participants });
+    else navigation.navigate('MatchConfig', { chatId: chat.id });
   };
 
   const accionesMensaje = (m: Message): Accion[] => {
@@ -311,17 +311,18 @@ export function ConversacionScreen() {
       </View>
     );
 
-    if (m.type === 'match_invite' && m.matchId) {
+    if ((m.type === 'match_invite' || m.type === 'match_result') && m.matchId) {
+      const enCurso = m.type === 'match_invite' && chat?.activeMatchId === m.matchId;
       return (
         <View style={styles.tarjetaMatch}>
-          {remitente}
+          {m.type === 'match_invite' ? remitente : null}
           <View style={styles.matchFila}>
             <IconCards size={18} color={COLORS.accent} strokeWidth={2} />
-            <Text style={styles.matchTitulo}>Movie Match</Text>
+            <Text style={styles.matchTitulo}>{m.type === 'match_result' ? 'Resultado del Movie Match' : 'Movie Match'}</Text>
           </View>
           <Text style={styles.matchTexto}>{m.text}</Text>
-          <Pressable style={styles.matchBoton} onPress={() => navigation.navigate('MovieMatch', { matchId: m.matchId })}>
-            <Text style={styles.matchBotonTexto}>Jugar</Text>
+          <Pressable style={styles.matchBoton} onPress={() => navigation.navigate('MovieMatch', { matchId: m.matchId! })}>
+            <Text style={styles.matchBotonTexto}>{enCurso ? 'Jugar' : 'Ver coincidencias'}</Text>
           </Pressable>
         </View>
       );

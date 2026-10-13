@@ -239,9 +239,15 @@ service cloud.firestore {
       allow read: if participa();
 
       // Desde un chat: con la gente de ese chat. Sin chat: con mis amigos.
+      // El mazo lo genera una sola vez quien crea el Match; después nadie lo cambia.
       allow create: if conSesion()
+        && nuevo().keys().hasOnly(['chatId', 'creatorId', 'participants', 'objetivo', 'estado',
+                                   'mazo', 'coincidencias', 'createdAt'])
         && nuevo().creatorId == yo()
         && yo() in nuevo().participants
+        && nuevo().participants.size() >= 2 && nuevo().participants.size() <= 12
+        && nuevo().objetivo is int && nuevo().objetivo >= 1 && nuevo().objetivo <= 10
+        && nuevo().mazo is list && nuevo().mazo.size() <= 80
         && nuevo().estado == 'active'
         && nuevo().coincidencias == []
         && (
@@ -253,10 +259,15 @@ service cloud.firestore {
                  get(/databases/$(database)/documents/chats/$(nuevo().chatId)).data.participants))
         );
 
-      // Durante la partida solo cambian las coincidencias y el final (terminar antes incluido)
+      // Durante la partida solo cambian las coincidencias (que solo crecen) y el final
+      // (terminar antes incluido, firmado por quien lo termina). Un Match terminado ya no cambia.
       allow update: if participa()
+        && resource.data.estado == 'active'
         && cambiaSolo(['coincidencias', 'estado', 'terminadoPor', 'finishedAt'])
-        && nuevo().estado in ['active', 'finished', 'cancelled'];
+        && nuevo().estado in ['active', 'finished', 'cancelled']
+        && nuevo().coincidencias.hasAll(resource.data.coincidencias)
+        && (nuevo().get('terminadoPor', null) == resource.data.get('terminadoPor', null)
+            || nuevo().terminadoPor == yo());
 
       // Cada uno escribe solo sus votos; los participantes leen todos para calcular coincidencias
       match /votos/{uid} {

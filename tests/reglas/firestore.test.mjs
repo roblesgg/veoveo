@@ -324,6 +324,22 @@ describe('movie match', () => {
     await assertFails(como(CARLA).doc('matches/x1').get());
     await assertFails(como(CARLA).doc(`matches/x1/votos/${CARLA}`).set({ si: [], no: [] }));
   });
+  test('❌ crear con campos de más, objetivo fuera de rango o mazo enorme', async () => {
+    const m = matchNuevo(ALICIA, [ALICIA, BETO]);
+    await assertFails(como(ALICIA).collection('matches').add({ ...m, votes: {} }));
+    await assertFails(como(ALICIA).collection('matches').add({ ...m, objetivo: 0 }));
+    await assertFails(como(ALICIA).collection('matches').add({ ...m, objetivo: 11 }));
+    await assertFails(como(ALICIA).collection('matches').add({ ...m, mazo: Array.from({ length: 81 }, (_, i) => i) }));
+    await assertFails(como(ALICIA).collection('matches').add({ ...m, participants: [ALICIA] }));
+  });
+  test('❌ borrar coincidencias, firmar el final por otro o tocar un Match terminado', async () => {
+    await env.withSecurityRulesDisabled((ctx) => ctx.firestore().doc('matches/x1').update({ coincidencias: [603] }));
+    await assertFails(como(BETO).doc('matches/x1').update({ coincidencias: [] }));
+    await assertFails(como(BETO).doc('matches/x1').update({ estado: 'finished', terminadoPor: ALICIA, finishedAt: 4 }));
+    await env.withSecurityRulesDisabled((ctx) => ctx.firestore().doc('matches/x1').update({ estado: 'finished' }));
+    await assertFails(como(BETO).doc('matches/x1').update({ coincidencias: arrayUnion(604) }));
+    await assertFails(como(BETO).doc('matches/x1').update({ estado: 'active' }));
+  });
 });
 
 describe('denuncias y configuración', () => {

@@ -227,7 +227,7 @@ async function avisarParticipantes(chat: Chat, yo: string, nombre: string, texto
     await Promise.all(
       chat.participants
         .filter((uid) => uid !== yo && !silenciados.has(uid))
-        .map((uid) => notificarAUsuario(uid, titulo, cuerpo.slice(0, 160), { chatId: chat.id, type: 'message' }).catch(() => undefined)),
+        .map((uid) => notificarAUsuario(uid, titulo, cuerpo.slice(0, 160), { chatId: chat.id, type: 'message', url: `veoveo://chat/${chat.id}` }).catch(() => undefined)),
     );
   } catch {
     // Sin avisos no se pierde el mensaje

@@ -46,6 +46,10 @@ const linking = {
       Actor: 'actor/:actorId',
       Ajustes: 'ajustes',
       Perfil: 'perfil',
+      // Al tocar un aviso: chat, Movie Match o solicitudes
+      Conversacion: 'chat/:chatId',
+      MovieMatch: 'match/:matchId',
+      Solicitudes: 'solicitudes',
     },
   },
 };

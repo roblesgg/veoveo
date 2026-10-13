@@ -15,6 +15,8 @@
 - **Qué pasa:** cada participante solo puede escribir **sus** votos (`matches/{id}/votos/{uid}`), y eso sí lo garantizan las reglas. Pero quien registra una coincidencia en la partida es el móvil que la detecta, y las reglas no pueden comprobar que de verdad todos votaron que sí.
 - **Riesgo:** un participante con conocimientos técnicos podría añadir una coincidencia falsa a una partida en la que juega. Impacto: una peli de más en el resultado del juego.
 - **Arreglo con presupuesto:** calcular las coincidencias en una Cloud Function al escribir cada voto.
+- **Lo que sí limitan las reglas:** las coincidencias solo pueden crecer (nadie borra las de otros), un Match terminado ya no cambia y quien lo termina antes firma con su uid.
+- **Relacionado (no es de seguridad):** el mazo lo genera una vez quien crea el Match, con lo que **él** puede leer. En un grupo, la biblioteca de un miembro que no es su amigo (o que no la comparte) no entra en el mazo; ese miembro juega igual con el resto de cartas.
 
 ## 3. Bloquear no te oculta del buscador de quien bloqueaste
 
