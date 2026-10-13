@@ -168,6 +168,17 @@ Además:
 - **i18n:** `LanguageContext` existe, pero los textos están escritos a mano en español. "ES · EN" del README no es cierto hoy.
 - **Colores:** el índigo y el morado (`#6366F1`, `#6C63FF`) aparecen sueltos en componentes (`FilterSortMenu.tsx`), y hay naranjas heredados (`rgba(255,107,0,…)` en `BibliotecaTab.tsx:321-322`). **Decisión de Álvaro (13-10-2026): pasan al turquesa `#69DFD9`**, con el celeste `#38BDF8` como principal.
 
+### 2.1 bis · Medición tras la Fase B (13-10-2026)
+
+Galaxy S23, build release de VeoVeo Test. Medido con el medidor del commit `d961182`.
+
+| | Antes (`d961182`) | Después, sin caché (`3e76d40`) | Después, con caché |
+|---|---|---|---|
+| Primera carátula pintada | 2.766 ms | 1.236 ms (−55 %) | ~760 ms (−73 %) |
+| Peticiones a TMDB hasta la primera carátula | ~438 (no 168 como se estimó leyendo el código) | 126 | 0 |
+
+Detalle y reparto entre caché y trabajo real: informe de cierre del encargo `2026-10-13-veoveo-3.md`, Fase B.
+
 ### 2.8 Encontrado durante la Fase B
 
 - 🟠 **El APK publicado está firmado con la clave de depuración pública.** Era 🔴; baja a 🟠 porque las cuentas actuales son de prueba de Álvaro (13-10-2026) y aún no hay público. Se arregla en la Fase E con EAS y Google Play, cerrando el canal APK.
