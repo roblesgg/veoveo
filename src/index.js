@@ -1,3 +1,4 @@
+import './utils/medicionArranque';
 import { registerRootComponent } from 'expo';
 import App from './App';
 

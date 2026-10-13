@@ -21,6 +21,7 @@ import Animated, {
 import { PosterItem } from './PosterItem';
 import type { Movie } from '../../types';
 import { COLORS, GLASS } from '../../theme/colors';
+import { marcarHito } from '../../utils/medicionArranque';
 
 type Props = {
   titulo: string;
@@ -57,6 +58,7 @@ export const CarruselPeliculas = memo(
     const [refreshing, setRefreshing] = useState(false);
     const lastCall = useRef(0);
     const listRef = useRef<FlatList>(null);
+    if (peliculas.length > 0) marcarHito('primera fila con datos');
 
     // CARGA INICIAL: Si no hay datos, los pedimos automáticamente
     useEffect(() => {

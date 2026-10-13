@@ -16,6 +16,7 @@ import type {
 } from '../types';
 import * as preferences from '../storage/preferences';
 import { env } from '../config/env';
+import { contarPeticionTmdb } from '../utils/medicionArranque';
 
 // URL base de la API de TMDB v3
 const BASE_URL = 'https://api.themoviedb.org/3/';
@@ -52,6 +53,7 @@ function getBearer(): string {
  * Función genérica para realizar peticiones fetch a TMDB con autenticación Bearer.
  */
 async function tmdbFetch<T>(path: string): Promise<T> {
+  contarPeticionTmdb();
   const res = await fetch(`${BASE_URL}${path}`, {
     headers: {
       Authorization: `Bearer ${getBearer()}`,

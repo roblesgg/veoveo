@@ -19,6 +19,7 @@ import { useAuth } from '../context/AuthContext';
 import { obtenerPerfilUsuario } from '../services/repositorioUsuarios';
 import { useMontserrat } from '../theme/useMontserrat';
 import { SplashView } from '../components/SplashView';
+import { marcarHito } from '../utils/medicionArranque';
 import { BibliotecaTab } from './BibliotecaTab';
 import { DiscoverTab } from './DiscoverTab';
 import { SocialTab } from './SocialTab';
@@ -106,6 +107,7 @@ export function MainScreen() {
 
   // Pantalla de carga mientras se inicializa la UI Premium
   if (!appReady) return <SplashView fontFamily={ff} />;
+  marcarHito('fin del splash');
 
   // Ocultar barra de navegación si estamos editando una Tier List
   const showBottomBar = !(paginaActual === 2 && pantallaTierList !== 0);

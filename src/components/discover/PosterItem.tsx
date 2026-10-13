@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { posterUrl } from '../../services/tmdbClient';
 import type { Movie } from '../../types';
 import { RatingBadge } from '../RatingBadge';
+import { marcarHito } from '../../utils/medicionArranque';
 
 type Props = {
   item: Movie;
@@ -24,7 +25,11 @@ export const PosterItem = memo(({ item, onPeliculaClick, misPlataformas = [], li
         style={({ pressed }) => [styles.posterCard, { transform: [{ scale: pressed ? 0.96 : 1 }] }]}
       >
         {posterUrl(item.poster_path, 'w342') ? (
-          <Image source={{ uri: posterUrl(item.poster_path, 'w342')! }} style={styles.posterImg} />
+          <Image
+            source={{ uri: posterUrl(item.poster_path, 'w342')! }}
+            style={styles.posterImg}
+            onLoad={() => marcarHito('primera carátula pintada')}
+          />
         ) : (
           <View style={[styles.posterImg, styles.posterFallback]}>
             <Ionicons name="film-outline" size={32} color="rgba(255,255,255,0.1)" />
