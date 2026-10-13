@@ -29,6 +29,7 @@ import { COLORS } from '../theme/colors';
 import { SHADOWS } from '../theme/theme';
 import { useMontserrat } from '../theme/useMontserrat';
 import { AlertModal } from '../components/common/AlertModal';
+import { AvisoLegal } from '../components/common/AvisoLegal';
 
 export function LoginScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -164,6 +165,7 @@ export function LoginScreen() {
             <Text style={[styles.btnTextDark, { fontFamily: ff }]}>Continuar con Google</Text>
           </View>
         </Pressable>
+        <AvisoLegal fontFamily={ff} inicio="Al continuar" />
 
         {/* NAVEGACIÓN A REGISTRO */}
         <Pressable onPress={() => navigation.navigate('Register')} style={{ marginTop: 16 }}>

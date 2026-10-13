@@ -31,6 +31,7 @@ import {
   IconChevronLeft,
   IconCopy,
   IconEyeOff,
+  IconFlag,
   IconPencil,
   IconPlus,
   IconSend,
@@ -55,6 +56,8 @@ import { desbloquearUsuario, observarBloqueados } from '../services/repositorioU
 import { posterUrl } from '../services/tmdbClient';
 import { Avatar } from '../components/common/Avatar';
 import { HojaAcciones, type Accion } from '../components/common/HojaAcciones';
+import { HojaDenuncia } from '../components/common/HojaDenuncia';
+import type { ObjetoDenuncia } from '../services/repositorioDenuncias';
 import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
 import { ChatPlusMenu } from '../components/chat/ChatPlusMenu';
 import { ChatMoviePicker } from '../components/chat/ChatMoviePicker';
@@ -105,6 +108,7 @@ export function ConversacionScreen() {
   const [menuMas, setMenuMas] = useState(false);
   const [selectorPelis, setSelectorPelis] = useState<'vista' | 'por_ver' | 'explorar' | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
+  const [denuncia, setDenuncia] = useState<ObjetoDenuncia | null>(null);
   const inputRef = useRef<TextInput>(null);
 
   useEffect(() => observarChat(chatId, setChat), [chatId]);
@@ -291,6 +295,20 @@ export function ConversacionScreen() {
       icono: (c) => <IconEyeOff size={22} color={c} />,
       onPress: () => void borrarMensajeParaMi(chat.id, m.id),
     });
+    if (!mio) {
+      lista.push({
+        texto: 'Denunciar',
+        icono: (c) => <IconFlag size={22} color={c} />,
+        peligro: true,
+        onPress: () =>
+          setDenuncia({
+            tipo: 'mensaje',
+            contra: m.senderId,
+            ref: `${chat.id}/${m.id}`,
+            extracto: m.type === 'movie' ? `Peli: ${m.movieData?.title ?? m.text}` : m.text,
+          }),
+      });
+    }
     return lista;
   };
 
@@ -579,6 +597,12 @@ export function ConversacionScreen() {
         onClose={() => setSelectorPelis(null)}
         onSelect={(p) => void compartirPeli(p)}
         fontFamily={FUENTES.texto}
+      />
+      <HojaDenuncia
+        objeto={denuncia}
+        titulo="Denunciar el mensaje"
+        nombreBloqueo={denuncia ? nombreDe(perfiles[denuncia.contra]) : undefined}
+        onCerrar={() => setDenuncia(null)}
       />
       <HojaAcciones
         visible={Boolean(seleccionado)}

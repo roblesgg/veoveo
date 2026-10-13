@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { IconChevronLeft, IconUsers } from '@tabler/icons-react-native';
+import { IconChevronLeft, IconFlag, IconUsers } from '@tabler/icons-react-native';
 import {
   aceptarSolicitud,
   cancelarSolicitud,
@@ -17,6 +17,7 @@ import {
 } from '../services/repositorioSocial';
 import { nombreDe, usePerfiles } from '../hooks/usePerfiles';
 import { Avatar } from '../components/common/Avatar';
+import { HojaDenuncia } from '../components/common/HojaDenuncia';
 import type { SolicitudAmistad } from '../types';
 import { COLORS } from '../theme/colors';
 import { FUENTES } from '../theme/useMontserrat';
@@ -29,6 +30,7 @@ export function SolicitudesScreen() {
   const [cargando, setCargando] = useState(true);
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [denunciado, setDenunciado] = useState<SolicitudAmistad | null>(null);
   const perfiles = usePerfiles([...recibidas.map((s) => s.deUid), ...enviadas]);
 
   const cargar = useCallback(async () => {
@@ -131,6 +133,13 @@ export function SolicitudesScreen() {
             >
               <Text style={styles.botonTexto}>Rechazar</Text>
             </Pressable>
+            <Pressable
+              onPress={() => setDenunciado(s)}
+              hitSlop={8}
+              accessibilityLabel={`Denunciar a ${s.deUsername}`}
+            >
+              <IconFlag size={20} color={COLORS.textMuted} strokeWidth={2} />
+            </Pressable>
           </View>
         ))}
 
@@ -160,6 +169,15 @@ export function SolicitudesScreen() {
           </View>
         ))}
       </ScrollView>
+      <HojaDenuncia
+        objeto={
+          denunciado ? { tipo: 'usuario', contra: denunciado.deUid, ref: denunciado.id } : null
+        }
+        titulo={`Denunciar a ${denunciado?.deUsername ?? ''}`}
+        nombreBloqueo={denunciado?.deUsername}
+        onCerrar={() => setDenunciado(null)}
+        onBloqueado={() => void cargar()}
+      />
     </View>
   );
 }

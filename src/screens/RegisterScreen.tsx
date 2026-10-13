@@ -12,6 +12,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { GradientBackground } from '../components/GradientBackground';
+import { AvisoLegal } from '../components/common/AvisoLegal';
 import type { RootStackParamList } from '../navigation/types';
 import { COLORS } from '../theme/colors';
 import { SHADOWS } from '../theme/theme';
@@ -106,6 +107,7 @@ export function RegisterScreen() {
         >
           <Text style={[styles.btnText, { fontFamily: ff }]}>REGISTRARSE</Text>
         </Pressable>
+        <AvisoLegal fontFamily={ff} />
 
         {/* LINK VOLVER A LOGIN */}
         <Pressable onPress={() => navigation.navigate('Login')} style={{ marginTop: 16 }}>

@@ -293,10 +293,20 @@ service cloud.firestore {
 
     // ── Denuncias: solo crear; nadie las lee desde la app ───────
     match /denuncias/{denunciaId} {
+      // Mismos motivos que services/repositorioDenuncias.ts. Textos acotados (no es un buzón).
       allow create: if conSesion()
         && request.resource.data.de == yo()
-        && request.resource.data.keys().hasOnly(['de', 'contra', 'tipo', 'ref', 'motivo', 'detalle', 'fecha'])
-        && request.resource.data.tipo in ['usuario', 'mensaje', 'chat'];
+        && request.resource.data.keys().hasAll(['de', 'contra', 'tipo', 'ref', 'motivo', 'fecha'])
+        && request.resource.data.keys().hasOnly(['de', 'contra', 'tipo', 'ref', 'motivo', 'detalle', 'extracto', 'fecha'])
+        && request.resource.data.tipo in ['usuario', 'mensaje', 'chat']
+        && request.resource.data.motivo in ['spam', 'acoso', 'odio', 'sexual', 'suplantacion', 'otro']
+        && request.resource.data.contra is string
+        && request.resource.data.contra.size() > 0 && request.resource.data.contra.size() <= 128
+        && request.resource.data.contra != yo()
+        && request.resource.data.ref is string && request.resource.data.ref.size() <= 300
+        && (!('detalle' in request.resource.data) || (request.resource.data.detalle is string && request.resource.data.detalle.size() <= 500))
+        && (!('extracto' in request.resource.data) || (request.resource.data.extracto is string && request.resource.data.extracto.size() <= 500))
+        && request.resource.data.fecha is int;
     }
 
     // ── Configuración pública (aviso de versión mínima) ────────

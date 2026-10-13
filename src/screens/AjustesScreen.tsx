@@ -25,6 +25,7 @@ import type { RootStackParamList } from '../navigation/types';
 import { useMontserrat } from '../theme/useMontserrat';
 import * as preferences from '../storage/preferences';
 import { logoUrl } from '../services/tmdbClient';
+import { URL_NORMAS, URL_PRIVACIDAD } from '../components/common/AvisoLegal';
 import { usePlataformasRegion } from '../hooks/usePlataformasRegion';
 import { COLORS } from '../theme/colors';
 
@@ -221,6 +222,29 @@ export function AjustesScreen() {
               Datos de plataformas: JustWatch.
             </Text>
           </View>
+          <Pressable
+            style={[styles.card, SHADOWS.macLight, { marginTop: 12 }]}
+            onPress={() => void Linking.openURL(URL_NORMAS)}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.cardTitle, { fontFamily }]}>Normas de la comunidad</Text>
+              <Text style={[styles.cardDesc, { fontFamily }]}>
+                Qué no está permitido y cómo denunciar
+              </Text>
+            </View>
+            <Ionicons name="open-outline" size={20} color="rgba(255,255,255,0.5)" />
+          </Pressable>
+
+          <Pressable
+            style={[styles.card, SHADOWS.macLight, { marginTop: 12 }]}
+            onPress={() => void Linking.openURL(URL_PRIVACIDAD)}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.cardTitle, { fontFamily }]}>Política de privacidad</Text>
+              <Text style={[styles.cardDesc, { fontFamily }]}>Qué datos guardamos y para qué</Text>
+            </View>
+            <Ionicons name="open-outline" size={20} color="rgba(255,255,255,0.5)" />
+          </Pressable>
 
           <Pressable
             style={[styles.card, SHADOWS.macLight, { marginTop: 12 }]}

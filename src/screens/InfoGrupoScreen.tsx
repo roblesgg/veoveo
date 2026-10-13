@@ -21,6 +21,7 @@ import {
   IconCheck,
   IconChevronLeft,
   IconDots,
+  IconFlag,
   IconLogout,
   IconPencil,
   IconShieldCheck,
@@ -46,6 +47,8 @@ import { Avatar } from '../components/common/Avatar';
 import { HojaAcciones } from '../components/common/HojaAcciones';
 import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
 import { ConfirmModal } from '../components/common/ConfirmModal';
+import { HojaDenuncia } from '../components/common/HojaDenuncia';
+import type { ObjetoDenuncia } from '../services/repositorioDenuncias';
 import { SelectorEmoji } from '../components/chat/SelectorEmoji';
 import { COLORS } from '../theme/colors';
 import { FUENTES } from '../theme/useMontserrat';
@@ -68,6 +71,7 @@ export function InfoGrupoScreen() {
   const [anadiendo, setAnadiendo] = useState(false);
   const [nuevos, setNuevos] = useState<string[]>([]);
   const [confirmarSalir, setConfirmarSalir] = useState(false);
+  const [denuncia, setDenuncia] = useState<ObjetoDenuncia | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => observarChat(chatId, setChat), [chatId]);
@@ -206,19 +210,26 @@ export function InfoGrupoScreen() {
               <Pressable
                 key={uid}
                 style={styles.ajuste}
-                disabled={!soyAdmin || uid === yo}
+                disabled={uid === yo}
                 onPress={() => setMiembroSel(uid)}
               >
                 <Avatar uri={p?.fotoPerfil} nombre={p?.username} tamano={40} />
                 <Text style={styles.ajusteTexto}>{uid === yo ? 'Tú' : nombreDe(p, !p)}</Text>
                 {esAdmin && <Text style={styles.admin}>Admin</Text>}
-                {soyAdmin && uid !== yo && <IconDots size={20} color={COLORS.textMuted} />}
+                {uid !== yo && <IconDots size={20} color={COLORS.textMuted} />}
               </Pressable>
             );
           })}
         </View>
 
         <View style={[styles.tarjeta, { marginTop: 16 }]}>
+          <Pressable
+            style={styles.ajuste}
+            onPress={() => setDenuncia({ tipo: 'chat', contra: chat.id, ref: chat.id })}
+          >
+            <IconFlag size={22} color={COLORS.error} strokeWidth={2} />
+            <Text style={[styles.ajusteTexto, { color: COLORS.error }]}>Denunciar el grupo</Text>
+          </Pressable>
           <Pressable style={styles.ajuste} onPress={() => setConfirmarSalir(true)}>
             <IconLogout size={22} color={COLORS.error} strokeWidth={2} />
             <Text style={[styles.ajusteTexto, { color: COLORS.error }]}>Salir del grupo</Text>
@@ -233,7 +244,7 @@ export function InfoGrupoScreen() {
         acciones={
           miembroSel
             ? [
-                ...(chat.admins?.includes(miembroSel)
+                ...(!soyAdmin || chat.admins?.includes(miembroSel)
                   ? []
                   : [
                       {
@@ -246,21 +257,49 @@ export function InfoGrupoScreen() {
                           ),
                       },
                     ]),
+                ...(!soyAdmin
+                  ? []
+                  : [
+                      {
+                        texto: 'Quitar del grupo',
+                        icono: (c: string) => <IconUserMinus size={22} color={c} />,
+                        peligro: true,
+                        onPress: () =>
+                          void conError(async () => {
+                            await quitarMiembro(chat, miembroSel);
+                            await avisarEnElChat(
+                              `${nombreDe(perfiles[yo], true)} ha sacado a ${nombreDe(perfiles[miembroSel])} del grupo`,
+                            );
+                          }, 'No hemos podido quitarlo del grupo.'),
+                      },
+                    ]),
                 {
-                  texto: 'Quitar del grupo',
-                  icono: (c: string) => <IconUserMinus size={22} color={c} />,
+                  texto: 'Denunciar',
+                  icono: (c: string) => <IconFlag size={22} color={c} />,
                   peligro: true,
                   onPress: () =>
-                    void conError(async () => {
-                      await quitarMiembro(chat, miembroSel);
-                      await avisarEnElChat(
-                        `${nombreDe(perfiles[yo], true)} ha sacado a ${nombreDe(perfiles[miembroSel])} del grupo`,
-                      );
-                    }, 'No hemos podido quitarlo del grupo.'),
+                    setDenuncia({
+                      tipo: 'usuario',
+                      contra: miembroSel,
+                      ref: `${chat.id}/${miembroSel}`,
+                    }),
                 },
               ]
             : []
         }
+      />
+
+      <HojaDenuncia
+        objeto={denuncia}
+        titulo={
+          denuncia?.tipo === 'chat'
+            ? 'Denunciar el grupo'
+            : `Denunciar a ${nombreDe(perfiles[denuncia?.contra ?? ''])}`
+        }
+        nombreBloqueo={
+          denuncia?.tipo === 'usuario' ? nombreDe(perfiles[denuncia.contra]) : undefined
+        }
+        onCerrar={() => setDenuncia(null)}
       />
 
       <Modal

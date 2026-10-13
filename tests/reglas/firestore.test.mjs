@@ -389,6 +389,19 @@ describe('denuncias y configuración', () => {
     await assertFails(como(CARLA).collection('denuncias').get());
     await assertFails(como(CARLA).collection('denuncias').add({ de: BETO, contra: ALICIA, tipo: 'usuario', motivo: 'x', fecha: 1 }));
   });
+  test('✅ denuncia de un mensaje con extracto y detalle; ❌ motivo raro, textos largos o a uno mismo', async () => {
+    const d = { de: CARLA, contra: ALICIA, tipo: 'mensaje', ref: 'chat1/msg1', motivo: 'acoso', fecha: 1 };
+    const denuncias = como(CARLA).collection('denuncias');
+    await assertSucceeds(denuncias.add({ ...d, extracto: 'hola', detalle: 'me insulta' }));
+    await assertSucceeds(denuncias.add({ ...d, tipo: 'chat', contra: 'chat1', ref: 'chat1', motivo: 'otro' }));
+    await assertFails(denuncias.add({ ...d, motivo: 'me cae mal' }));
+    await assertFails(denuncias.add({ ...d, detalle: 'x'.repeat(501) }));
+    await assertFails(denuncias.add({ ...d, extracto: 'x'.repeat(501) }));
+    await assertFails(denuncias.add({ ...d, contra: CARLA }));
+    await assertFails(denuncias.add({ ...d, fecha: 'ayer' }));
+    const { motivo, ...sinMotivo } = d;
+    await assertFails(denuncias.add(sinMotivo));
+  });
   test('✅ configuración pública; ❌ escribirla', async () => {
     await assertSucceeds(anonimo().doc('configuracion/app').get());
     await assertFails(como(ALICIA).doc('configuracion/app').set({ min_version: '9' }));

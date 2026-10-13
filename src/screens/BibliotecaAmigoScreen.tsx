@@ -38,6 +38,7 @@ import { GradientBackground } from '../components/GradientBackground';
 import { FilterSortMenu } from '../components/FilterSortMenu';
 import { RatingBadge } from '../components/RatingBadge';
 import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { HojaDenuncia } from '../components/common/HojaDenuncia';
 import { RootStackParamList } from '../navigation/types';
 
 const Container = Platform.OS === 'ios' ? BlurView : View;
@@ -64,6 +65,7 @@ export function BibliotecaAmigoScreen() {
   );
   const [mostrarMenu, setMostrarMenu] = useState(false);
   const [mostrarSocialMenu, setMostrarSocialMenu] = useState(false);
+  const [denunciando, setDenunciando] = useState(false);
 
   useEffect(() => {
     void (async () => {
@@ -246,6 +248,19 @@ export function BibliotecaAmigoScreen() {
           <View style={styles.menuDivider} />
           <Pressable
             style={styles.menuSocialBtn}
+            onPress={() => {
+              setMostrarSocialMenu(false);
+              setDenunciando(true);
+            }}
+          >
+            <Ionicons name="flag-outline" size={20} color="#ff4444" />
+            <Text style={[styles.menuSocialText, { fontFamily: ff, color: '#ff4444' }]}>
+              Denunciar
+            </Text>
+          </Pressable>
+          <View style={styles.menuDivider} />
+          <Pressable
+            style={styles.menuSocialBtn}
             onPress={async () => {
               try {
                 await bloquearSocial(amigoUid);
@@ -263,6 +278,14 @@ export function BibliotecaAmigoScreen() {
           </Pressable>
         </View>
       </FilterSortMenu>
+
+      <HojaDenuncia
+        objeto={denunciando ? { tipo: 'usuario', contra: amigoUid, ref: amigoUid } : null}
+        titulo={`Denunciar a ${usuario?.username ?? 'este usuario'}`}
+        nombreBloqueo={usuario?.username ?? 'este usuario'}
+        onCerrar={() => setDenunciando(false)}
+        onBloqueado={() => navigation.goBack()}
+      />
 
       <ScrollView
         contentContainerStyle={[
