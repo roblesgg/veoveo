@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>VeoVeo 3.0 · maquetas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="pelis.js"></script>
+<style>
+  :root{
+    --noche:#020617; --indigo:#1E1B4B; --sup:#0F172A; --tarjeta:#1E293B; --texto:#F8FAFC; --suave:#94A3B8;
+    --celeste:#38BDF8; --turquesa:#69DFD9; --azul:#013A85; --si:#22C55E; --no:#EF4444; --aviso:#F59E0B;
+    --borde:rgba(255,255,255,.14); --sombra:0 10px 30px rgba(56,189,248,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0a0f1d;font-family:Montserrat,system-ui,sans-serif;font-weight:500;color:var(--texto);padding:32px;display:flex;flex-wrap:wrap;gap:32px}
+  .telefono{width:390px;height:844px;border-radius:44px;overflow:hidden;position:relative;background:linear-gradient(180deg,var(--noche) 0%,var(--indigo) 100%);box-shadow:0 0 0 10px #111827,0 30px 60px rgba(0,0,0,.5);flex:none}
+  .estado{height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 26px;font-size:13px;font-weight:700}
+  .cab{display:flex;align-items:center;gap:12px;padding:6px 20px 14px}
+  .cab h1{font-size:28px;font-weight:700;letter-spacing:-.01em;flex:1}
+  .avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;background:var(--tarjeta);display:grid;place-items:center;font-weight:700;flex:none}
+  .ib{width:40px;height:40px;border-radius:999px;display:grid;place-items:center;color:var(--texto);font-size:22px;position:relative}
+  .punto{position:absolute;top:6px;right:6px;min-width:16px;height:16px;border-radius:999px;background:var(--celeste);color:var(--noche);font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 4px}
+  .scroll{position:absolute;top:110px;bottom:0;left:0;right:0;overflow:hidden;padding-bottom:110px}
+  h2{font-size:20px;font-weight:700;padding:0 20px;margin:18px 0 10px}
+  .sub{color:var(--suave);font-size:13px;padding:0 20px;margin:-6px 0 12px}
+  .fila{display:flex;gap:12px;padding:0 20px;overflow:hidden}
+  .poster{width:116px;flex:none}
+  .poster img{width:116px;aspect-ratio:2/3;border-radius:16px;object-fit:cover;display:block;background:var(--tarjeta)}
+  .poster .t{font-size:13px;margin-top:6px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .poster .m{font-size:12px;color:var(--suave);line-height:1.35;margin-top:2px}
+  .barra{position:absolute;left:20px;right:20px;bottom:24px;height:66px;border-radius:999px;background:rgba(15,23,42,.82);backdrop-filter:blur(18px);border:1px solid var(--borde);display:grid;grid-template-columns:repeat(4,1fr);align-items:center}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--suave)}
+  .tab i{font-size:24px}
+  .tab.on{color:var(--celeste)}
+  .tab.on::before{content:"";position:absolute}
+  .tab .ico-svg{width:24px;height:24px}
+  .chip{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:999px;border:1px solid var(--borde);font-size:13px;color:var(--texto);background:rgba(255,255,255,.04);white-space:nowrap}
+  .chip.on{background:var(--celeste);border-color:var(--celeste);color:var(--noche);font-weight:700}
+  .btn{height:52px;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:16px}
+  .btn.pri{background:var(--celeste);color:var(--noche)}
+  .btn.match{background:var(--turquesa);color:var(--noche)}
+  .btn.sec{background:rgba(255,255,255,.06);border:1px solid var(--borde);color:var(--texto)}
+  .tarjeta{background:var(--sup);border:1px solid var(--borde);border-radius:20px}
+  .estrellas{color:#FACC15;font-size:12px;letter-spacing:1px}
+  .lista-chat .fila-chat{display:flex;gap:12px;align-items:center;padding:12px 20px}
+  .fila-chat .cuerpo{flex:1;min-width:0}
+  .fila-chat .n{font-weight:700;font-size:16px;display:flex;align-items:center;gap:6px}
+  .fila-chat .u{color:var(--suave);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fila-chat .lado{display:flex;flex-direction:column;align-items:flex-end;gap:6px;font-size:12px;color:var(--suave)}
+  .badge{min-width:20px;height:20px;border-radius:999px;background:var(--celeste);color:var(--noche);font-size:11px;font-weight:700;display:grid;place-items:center;padding:0 6px}
+  .pill-match{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--turquesa);background:rgba(105,223,217,.12);border:1px solid rgba(105,223,217,.3);border-radius:999px;padding:2px 8px;margin-top:4px}
+  .burbuja{max-width:76%;padding:10px 14px;border-radius:20px;font-size:16px;line-height:1.4}
+  .yo{align-self:flex-end;background:var(--celeste);color:var(--noche);border-bottom-right-radius:6px}
+  .el{align-self:flex-start;background:var(--tarjeta);border-bottom-left-radius:6px}
+  .hora{font-size:11px;opacity:.7;margin-left:8px;white-space:nowrap}
+  .msgs{display:flex;flex-direction:column;gap:8px;padding:0 16px}
+  .dia{align-self:center;font-size:12px;color:var(--suave);background:rgba(255,255,255,.05);padding:4px 12px;border-radius:999px;margin:6px 0}
+  .cita{border-left:3px solid var(--turquesa);padding:4px 8px;margin-bottom:6px;font-size:13px;border-radius:6px;background:rgba(2,6,23,.15)}
+  .el .cita{background:rgba(255,255,255,.05)}
+  .borrado{align-self:flex-start;color:var(--suave);font-size:14px;display:flex;gap:6px;align-items:center;border:1px dashed var(--borde);border-radius:20px;padding:8px 14px}
+  .input{position:absolute;left:12px;right:12px;bottom:24px;display:flex;gap:8px;align-items:center}
+  .campo{flex:1;height:48px;border-radius:999px;background:var(--sup);border:1px solid var(--borde);display:flex;align-items:center;padding:0 16px;color:var(--suave);font-size:15px}
+  .redondo{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-size:22px;flex:none}
+  .ajuste{display:flex;align-items:center;gap:14px;padding:14px 20px;font-size:16px}
+  .ajuste i{font-size:22px;color:var(--suave)}
+  .ajuste .d{flex:1}
+  .toggle{width:46px;height:28px;border-radius:999px;background:rgba(255,255,255,.15);position:relative}
+  .toggle::after{content:"";position:absolute;width:22px;height:22px;border-radius:50%;background:#fff;top:3px;left:3px}
+  .toggle.on{background:var(--celeste)}.toggle.on::after{left:21px}
+  .seg{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:0 20px}
+  .seg div{height:52px;border-radius:16px;display:grid;place-items:center;font-weight:700;font-size:18px;background:var(--sup);border:1px solid var(--borde)}
+  .seg .on{background:var(--turquesa);color:var(--noche);border-color:var(--turquesa)}
+  .carta{position:absolute;left:28px;right:28px;top:150px;height:470px;border-radius:24px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+  .carta img{width:100%;height:100%;object-fit:cover}
+  .carta .velo{position:absolute;left:0;right:0;bottom:0;padding:70px 20px 18px;background:linear-gradient(180deg,transparent,rgba(2,6,23,.95))}
+  .carta .velo .tt{font-size:24px;font-weight:700;line-height:1.15}
+  .carta .velo .mm{color:var(--suave);font-size:13px;margin-top:4px}
+  .esqueleto{background:linear-gradient(90deg,#1E293B 0%,#273449 50%,#1E293B 100%);background-size:200% 100%;border-radius:16px}
+  .vacio{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 36px;gap:14px}
+  .vacio .ilu{width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(105,223,217,.25),rgba(1,58,133,.25));display:grid;place-items:center;border:1px solid var(--borde)}
+  .vacio h3{font-size:20px;font-weight:700}
+  .vacio p{color:var(--suave);font-size:15px;line-height:1.45}
+  .etiqueta{position:absolute;top:-26px;left:0;font-size:13px;color:#94A3B8;font-weight:700}
+  .marco{position:relative}
+</style>
+</head>
+<body>
+<script>
+  const P = window.PELIS;
+  const img = (p, t = 'w342') => `https://image.tmdb.org/t/p/${t}${p}`;
+  const AMIGOS = [
+    { n: 'Laura', c: '#F59E0B' }, { n: 'Dani', c: '#22C55E' }, { n: 'Marta', c: '#EC4899' },
+    { n: 'Iker', c: '#38BDF8' }, { n: 'Nerea', c: '#A3E635' }, { n: 'Hugo', c: '#69DFD9' },
+  ];
+  const av = (a, s = 40) => `<div class="avatar" style="width:${s}px;height:${s}px;background:${a.c}22;color:${a.c};border:2px solid ${a.c}66;font-size:${s/2.6}px">${a.n[0]}</div>`;
+  const claqueta = `<svg class="ico-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="18" height="10" rx="2"/><path d="M3.6 9.2 18.2 4.6a1 1 0 0 1 1.25.66l.6 1.9"/><path d="M8 7.6 9.6 5.9"/><path d="M12.6 6.2 14.2 4.5"/><path d="M3 14h18"/></svg>`;
+  const palomitas = (s = 24) => `<svg style="width:${s}px;height:${s}px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.2 11.5a2.8 2.8 0 0 1 1.3-5.3 3.4 3.4 0 0 1 6.5-1.4 2.9 2.9 0 0 1 3.9 4.1 2.6 2.6 0 0 1-.1 2.6"/><path d="M10.6 8.6a2.4 2.4 0 0 1 3.3 0"/><path d="M5.5 11.5h13l-1.7 8.7a1 1 0 0 1-1 .8H8.2a1 1 0 0 1-1-.8z"/><path d="M10.2 12v9"/><path d="M13.8 12v9"/></svg>`;
+  const barra = (on) => `<nav class="barra">
+    <div class="tab ${on===0?'on':''}"><i class="ti ti-compass"></i>Descubrir</div>
+    <div class="tab ${on===1?'on':''}">${claqueta}Biblioteca</div>
+    <div class="tab ${on===2?'on':''}" style="position:relative"><i class="ti ti-message-circle"></i>Chats<span class="punto" style="top:-4px;right:18px">3</span></div>
+    <div class="tab ${on===3?'on':''}"><i class="ti ti-users"></i>Social</div>
+  </nav>`;
+  const estado = `<div class="estado"><span>21:34</span><span><i class="ti ti-wifi"></i> <i class="ti ti-battery-3"></i></span></div>`;
+  const yo = `<div class="avatar" style="background:#38BDF822;color:#38BDF8;border:2px solid #38BDF866">Á</div>`;
+  const marco = (id, titulo, html) => document.write(`<div class="marco" id="${id}"><div class="etiqueta">${titulo}</div><div class="telefono">${estado}${html}</div></div>`);
+
+  // 1 · DESCUBRIR con la barra nueva
+  marco('descubrir', 'Descubrir · barra nueva', `
+    <div class="cab"><h1>Descubrir</h1><div class="ib"><i class="ti ti-search"></i></div>${yo}</div>
+    <div class="scroll" style="top:104px">
+      <h2 style="margin-top:4px">Recomendado para ti</h2>
+      <div class="fila">${P.mejores.slice(0,4).map((m,i)=>`<div class="poster"><img src="${img(m.poster)}"><div class="m">${['Porque te gustó Dune','A 3 amigos les encanta','Porque te gusta Villeneuve','A Laura le encantó'][i]}</div></div>`).join('')}</div>
+      <h2>En cines</h2>
+      <div class="fila">${P.cines.slice(0,4).map(m=>`<div class="poster"><img src="${img(m.poster)}"><div class="t">${m.titulo}</div><div class="m">${m.anio}</div></div>`).join('')}</div>
+    </div>${barra(0)}`);
+
+  // 2 · SOCIAL: muro de amigos
+  marco('social', 'Social · muro de amigos', `
+    <div class="cab"><h1>Social</h1><div class="ib"><i class="ti ti-user-plus"></i><span class="punto">2</span></div>${yo}</div>
+    <div class="scroll" style="top:104px">
+      <div class="fila" style="gap:16px">${AMIGOS.map(a=>`<div style="text-align:center;font-size:12px;color:var(--suave)">${av(a,58)}<div style="margin-top:6px">${a.n}</div></div>`).join('')}</div>
+      <h2>Visto últimamente</h2>
+      <div class="fila">${P.cines.slice(4,7).map((m,i)=>`<div class="tarjeta" style="width:250px;flex:none;display:flex;gap:10px;padding:10px">
+          <img src="${img(m.poster,'w185')}" style="width:62px;aspect-ratio:2/3;border-radius:10px;object-fit:cover">
+          <div style="min-width:0"><div style="display:flex;gap:6px;align-items:center">${av(AMIGOS[i],24)}<span style="font-size:13px;color:var(--suave)">${AMIGOS[i].n} · hace ${[2,3,5][i]} días</span></div>
+          <div style="font-weight:700;font-size:15px;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.titulo}</div>
+          <div class="estrellas" style="margin-top:4px">★★★★${i===1?'☆':'★'}</div></div></div>`).join('')}</div>
+      <h2>Lo de miedo de tus amigos</h2>
+      <div class="fila" style="margin-bottom:12px"><span class="chip on">Terror</span><span class="chip">Comedia</span><span class="chip">Acción</span><span class="chip">Drama</span></div>
+      <div class="fila">${P.terror.slice(0,4).map((m,i)=>`<div class="poster"><img src="${img(m.poster)}"><div class="m">${['A Marta le encantó','A 2 amigos les encanta','A Iker le encantó','A Hugo le encantó'][i]}</div></div>`).join('')}</div>
+    </div>${barra(3)}`);
+
+  // 3 · CHATS: lista
+  marco('chats', 'Chats · lista', `
+    <div class="cab"><h1>Chats</h1><div class="ib"><i class="ti ti-edit"></i></div>${yo}</div>
+    <div style="padding:0 20px 8px"><div class="campo" style="height:44px"><i class="ti ti-search" style="margin-right:8px"></i>Buscar chats o amigos</div></div>
+    <div class="lista-chat">
+      <div class="fila-chat"><div class="avatar" style="width:52px;height:52px;font-size:24px;background:rgba(105,223,217,.15);border:2px solid rgba(105,223,217,.5)">🍿</div>
+        <div class="cuerpo"><div class="n">Cine de los viernes</div><div class="u">Dani: ¿Y si vemos la de Villeneuve?</div><span class="pill-match"><i class="ti ti-cards" style="font-size:14px"></i> Match en curso · 2 de 3</span></div>
+        <div class="lado">21:30<span class="badge">5</span></div></div>
+      <div class="fila-chat">${av(AMIGOS[0],52)}<div class="cuerpo"><div class="n">Laura</div><div class="u">Te he mandado una peli 🎬</div></div><div class="lado">20:12<span class="badge">1</span></div></div>
+      <div class="fila-chat">${av(AMIGOS[2],52)}<div class="cuerpo"><div class="n">Marta <i class="ti ti-bell-off" style="color:var(--suave);font-size:16px"></i></div><div class="u">Tú: Mañana te cuento qué tal</div></div><div class="lado">Ayer<i class="ti ti-checks" style="color:var(--celeste);font-size:16px"></i></div></div>
+      <div class="fila-chat">${av(AMIGOS[3],52)}<div class="cuerpo"><div class="n">Iker</div><div class="u" style="font-style:italic">Mensaje eliminado</div></div><div class="lado">Lun</div></div>
+      <div class="fila-chat">${av(AMIGOS[5],52)}<div class="cuerpo"><div class="n">Hugo</div><div class="u">¡Match! A los dos os apetece «Aniquilación».</div></div><div class="lado">12 oct</div></div>
+    </div>${barra(2)}`);
+
+  // 4 · CONVERSACIÓN
+  marco('conversacion', 'Chats · conversación', `
+    <div class="cab" style="padding-bottom:10px;border-bottom:1px solid var(--borde)"><i class="ti ti-chevron-left" style="font-size:26px"></i>
+      <div class="avatar" style="font-size:20px;background:rgba(105,223,217,.15);border:2px solid rgba(105,223,217,.5)">🍿</div>
+      <div style="flex:1"><div style="font-weight:700">Cine de los viernes</div><div style="font-size:12px;color:var(--suave)">Laura, Dani, Marta y tú</div></div>
+      <div class="redondo" style="background:var(--turquesa);color:var(--noche);width:40px;height:40px"><i class="ti ti-cards" style="font-size:22px"></i></div></div>
+    <div class="msgs" style="padding-top:10px">
+      <div class="dia">Hoy</div>
+      <div style="font-size:12px;color:#F59E0B;margin-left:6px">Laura</div>
+      <div class="burbuja el">¿Qué vemos el viernes? <span class="hora">21:02</span></div>
+      <div class="tarjeta" style="align-self:flex-start;width:220px;overflow:hidden">
+        <img src="${img(P.populares[1].fondo,'w500')}" style="width:100%;height:110px;object-fit:cover;display:block">
+        <div style="padding:10px 12px"><div style="font-weight:700">${P.populares[1].titulo}</div><div style="font-size:12px;color:var(--suave)">${P.populares[1].anio} · Toca para ver la ficha</div></div></div>
+      <div class="borrado"><i class="ti ti-ban"></i>Mensaje eliminado</div>
+      <div class="burbuja yo"><div class="cita"><b>Laura</b><br>¿Qué vemos el viernes?</div>Propongo Movie Match y salimos de dudas <span class="hora">21:20 <i class="ti ti-checks"></i></span></div>
+      <div class="tarjeta" style="align-self:center;width:280px;padding:14px;border-color:rgba(105,223,217,.4);background:rgba(105,223,217,.08)">
+        <div style="display:flex;gap:8px;align-items:center;color:var(--turquesa);font-weight:700"><i class="ti ti-cards" style="font-size:20px"></i> Movie Match en curso</div>
+        <div style="font-size:14px;color:var(--suave);margin:6px 0 10px">Lleváis 2 de 3 coincidencias</div>
+        <div class="btn match" style="height:40px;font-size:14px">Seguir deslizando</div></div>
+      <div style="font-size:12px;color:#22C55E;margin-left:6px">Dani</div>
+      <div class="burbuja el">Hecho, ya he votado <span class="hora">21:30 · editado</span></div>
+    </div>
+    <div class="input"><div class="redondo" style="background:var(--sup);border:1px solid var(--borde)"><i class="ti ti-plus"></i></div><div class="campo">Escribe un mensaje</div><div class="redondo" style="background:var(--celeste);color:var(--noche)"><i class="ti ti-send"></i></div></div>`);
+
+  // 5 · ACCIONES DE MENSAJE (pulsación larga)
+  marco('acciones', 'Chats · acciones de un mensaje', `
+    <div style="position:absolute;inset:0;background:rgba(2,6,23,.6)"></div>
+    <div class="msgs" style="position:absolute;top:300px;left:0;right:0"><div class="burbuja yo" style="box-shadow:var(--sombra)">Propongo Movie Match y salimos de dudas <span class="hora">21:20</span></div>
+      <div style="align-self:flex-end;display:flex;gap:6px;background:var(--sup);border:1px solid var(--borde);border-radius:999px;padding:6px 10px;font-size:20px">❤️ 😂 🍿 👎 🔥</div></div>
+    <div class="tarjeta" style="position:absolute;left:12px;right:12px;bottom:24px;padding:8px 0;border-radius:24px">
+      ${[['ti-arrow-back-up','Responder'],['ti-pencil','Editar'],['ti-copy','Copiar'],['ti-trash','Borrar para todos','var(--no)'],['ti-eye-off','Borrar solo para mí'],['ti-flag','Denunciar']].map(([i,t,c])=>`<div class="ajuste" style="color:${c||'var(--texto)'}"><i class="ti ${i}" style="color:${c||'var(--suave)'}"></i><div class="d">${t}</div></div>`).join('')}
+    </div>`);
+
+  // 6 · GRUPO
+  marco('grupo', 'Chats · información del grupo', `
+    <div class="cab"><i class="ti ti-chevron-left" style="font-size:26px"></i><h1 style="font-size:20px">Grupo</h1></div>
+    <div style="text-align:center;padding:4px 20px 16px"><div class="avatar" style="width:96px;height:96px;font-size:46px;margin:0 auto;background:rgba(105,223,217,.15);border:2px solid rgba(105,223,217,.5)">🍿</div>
+      <div style="font-size:22px;font-weight:700;margin-top:12px">Cine de los viernes <i class="ti ti-pencil" style="font-size:18px;color:var(--suave)"></i></div>
+      <div style="color:var(--suave);font-size:14px;margin-top:4px">4 miembros · creado por ti</div></div>
+    <div class="tarjeta" style="margin:0 16px;padding:6px 0">
+      <div class="ajuste"><i class="ti ti-bell-off"></i><div class="d">Silenciar</div><div class="toggle"></div></div>
+      <div class="ajuste"><i class="ti ti-mood-smile"></i><div class="d">Cambiar emoji del grupo</div><i class="ti ti-chevron-right"></i></div>
+    </div>
+    <h2 style="font-size:16px">Miembros</h2>
+    <div class="tarjeta" style="margin:0 16px;padding:6px 0">
+      <div class="ajuste" style="color:var(--celeste)"><i class="ti ti-user-plus" style="color:var(--celeste)"></i><div class="d">Añadir amigos</div></div>
+      <div class="ajuste">${yo}<div class="d">Tú</div><span style="font-size:12px;color:var(--turquesa);font-weight:700">Admin</span></div>
+      ${AMIGOS.slice(0,3).map(a=>`<div class="ajuste">${av(a)}<div class="d">${a.n}</div><i class="ti ti-dots"></i></div>`).join('')}
+    </div>
+    <div class="tarjeta" style="margin:12px 16px 0;padding:6px 0">
+      <div class="ajuste" style="color:var(--no)"><i class="ti ti-logout" style="color:var(--no)"></i><div class="d">Salir del grupo</div></div>
+      <div class="ajuste"><i class="ti ti-flag"></i><div class="d">Denunciar grupo</div></div>
+    </div>`);
+
+  // 7 · MATCH: configuración
+  marco('match-config', 'Movie Match · configurar', `
+    <div class="cab"><i class="ti ti-x" style="font-size:24px"></i><h1 style="font-size:20px">Nuevo Movie Match</h1></div>
+    <h2 style="font-size:16px;margin-top:6px">Con quién</h2>
+    <div class="fila" style="flex-wrap:wrap;gap:8px">
+      ${AMIGOS.slice(0,3).map(a=>`<span class="chip on">${a.n} <i class="ti ti-x"></i></span>`).join('')}<span class="chip"><i class="ti ti-plus"></i> Añadir</span></div>
+    <p class="sub" style="margin-top:10px">Desde «Cine de los viernes». También puedes elegir amigos sueltos.</p>
+    <h2 style="font-size:16px">¿Cuántas pelis queréis encontrar?</h2>
+    <div class="seg"><div>1</div><div>2</div><div class="on">3</div><div>4</div><div>5</div></div>
+    <p class="sub" style="margin-top:10px">El juego acaba al llegar a 3 coincidencias, o antes si alguien lo cierra.</p>
+    <h2 style="font-size:16px">Qué pelis salen</h2>
+    <div class="tarjeta" style="margin:0 16px;padding:6px 0">
+      <div class="ajuste"><i class="ti ti-eye"></i><div class="d">El Por ver de todos<div style="font-size:12px;color:var(--suave)">Siempre</div></div><i class="ti ti-check" style="color:var(--celeste)"></i></div>
+      <div class="ajuste"><i class="ti ti-player-play"></i><div class="d">Mis Vistas<div style="font-size:12px;color:var(--suave)">Cada uno decide en sus ajustes</div></div><div class="toggle on"></div></div>
+      <div class="ajuste"><i class="ti ti-sparkles"></i><div class="d">Recomendaciones para el grupo</div><div class="toggle on"></div></div>
+    </div>
+    <div style="position:absolute;left:20px;right:20px;bottom:32px"><div class="btn match"><i class="ti ti-cards" style="font-size:22px"></i> Empezar</div></div>`);
+
+  // 8 · MATCH: mazo
+  const pm = P.populares[3];
+  marco('match-mazo', 'Movie Match · deslizar', `
+    <div class="cab"><i class="ti ti-chevron-left" style="font-size:26px"></i><h1 style="font-size:18px">Cine de los viernes</h1><span style="color:var(--suave);font-size:14px">Terminar</span></div>
+    <div style="padding:0 20px"><div style="display:flex;justify-content:space-between;font-size:13px;color:var(--suave)"><span>Coincidencias</span><span style="color:var(--turquesa);font-weight:700">2 de 3</span></div>
+      <div style="display:flex;gap:6px;margin-top:8px">${[1,1,0].map(x=>`<div style="flex:1;height:6px;border-radius:999px;background:${x?'var(--turquesa)':'rgba(255,255,255,.12)'}"></div>`).join('')}</div></div>
+    <div class="carta" style="transform:rotate(-2deg) translateX(-6px)"><img src="${img(pm.poster,'w500')}"><div class="velo"><div class="tt">${pm.titulo}</div><div class="mm">${pm.anio} · ⭐ ${pm.nota.toFixed(1).replace('.',',')}</div></div></div>
+    <div style="position:absolute;top:640px;left:0;right:0;text-align:center;font-size:13px;color:var(--suave)">En el Por ver de Laura y Dani</div>
+    <div style="position:absolute;bottom:40px;left:0;right:0;display:flex;justify-content:center;gap:28px">
+      <div class="redondo" style="width:68px;height:68px;font-size:30px;border:2px solid var(--no);color:var(--no)"><i class="ti ti-x"></i></div>
+      <div class="redondo" style="width:52px;height:52px;margin-top:8px;background:var(--sup);border:1px solid var(--borde);color:var(--suave)"><i class="ti ti-info-circle"></i></div>
+      <div class="redondo" style="width:68px;height:68px;font-size:30px;border:2px solid var(--si);color:var(--si)"><i class="ti ti-heart"></i></div></div>`);
+
+  // 9 · MATCH: resultado
+  marco('match-resultado', 'Movie Match · resultado', `
+    <div style="text-align:center;padding:24px 20px 8px"><div style="color:var(--turquesa);display:flex;justify-content:center">${palomitas(40)}</div>
+      <div style="font-size:40px;font-weight:800;letter-spacing:-.02em;margin-top:8px">¡Es un match!</div>
+      <div style="color:var(--suave);font-size:15px;margin-top:6px">Os apetecen estas 3. ¿Cuál ponéis?</div></div>
+    <div style="display:flex;flex-direction:column;gap:12px;padding:12px 20px">
+      ${P.populares.slice(3,6).map((m,i)=>`<div class="tarjeta" style="display:flex;gap:14px;padding:12px;align-items:center;${i===0?'border-color:rgba(105,223,217,.5);background:rgba(105,223,217,.08)':''}">
+        <img src="${img(m.poster,'w185')}" style="width:70px;aspect-ratio:2/3;border-radius:12px;object-fit:cover">
+        <div style="flex:1;min-width:0"><div style="font-weight:800;font-size:16px">${m.titulo}</div><div style="font-size:13px;color:var(--suave);margin-top:4px">${m.anio}</div></div>
+        <i class="ti ti-chevron-right" style="color:var(--suave)"></i></div>`).join('')}
+    </div>
+    <div style="position:absolute;left:20px;right:20px;bottom:32px;display:flex;flex-direction:column;gap:10px"><div class="btn match">Elegir «${P.populares[3].titulo}»</div><div class="btn sec">Volver al chat</div></div>`);
+
+  // 10 · VACÍO, CARGA Y ERROR
+  marco('estados', 'Estados · vacío, carga y error', `
+    <div class="cab"><h1>Chats</h1>${yo}</div>
+    <div class="vacio" style="margin-top:18px"><div class="ilu" style="color:var(--turquesa)">${palomitas(56)}</div>
+      <h3>Aún no tienes chats</h3><p>Escribe a un amigo y elegid peli juntos.</p><div class="btn pri" style="width:220px">Nuevo chat</div></div>
+    <h2 style="margin-top:34px">Cargando…</h2>
+    <div class="fila">${[0,1,2].map(()=>`<div class="esqueleto" style="width:116px;aspect-ratio:2/3;flex:none"></div>`).join('')}</div>
+    <div class="tarjeta" style="margin:20px 16px 0;padding:16px;display:flex;gap:12px;align-items:center"><i class="ti ti-wifi-off" style="font-size:24px;color:var(--aviso)"></i>
+      <div style="flex:1;font-size:14px;line-height:1.4">No hemos podido cargar las pelis. Revisa la conexión.</div><span style="color:var(--celeste);font-weight:700;font-size:14px">Reintentar</span></div>
+    ${barra(2)}`);
+</script>
+</body>
+</html>

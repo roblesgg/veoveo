@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>VeoVeo · marca</title>
+<style>
+  :root { --noche:#020617; --sup:#0F172A; --tarjeta:#1E293B; --texto:#F8FAFC; --suave:#94A3B8; --celeste:#38BDF8; --turquesa:#69DFD9; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--noche); color:var(--texto); font-family: Montserrat, system-ui, sans-serif; padding:40px; }
+  h1 { font-size:28px; font-weight:700; margin:0 0 6px; letter-spacing:-.01em; }
+  p.sub { color:var(--suave); margin:0 0 32px; font-size:14px; }
+  .fila { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:24px; margin-bottom:40px; }
+  .caja { background:var(--sup); border:1px solid rgba(255,255,255,.14); border-radius:20px; padding:20px; }
+  .caja h2 { font-size:15px; font-weight:700; margin:0 0 4px; }
+  .caja .nota { color:var(--suave); font-size:12px; margin:0 0 14px; line-height:1.4; }
+  .etq { display:inline-block; font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; margin-bottom:10px; }
+  .obs { background:rgba(56,189,248,.15); color:var(--celeste); }
+  .prop { background:rgba(105,223,217,.15); color:var(--turquesa); }
+  img.icono { width:100%; aspect-ratio:1; border-radius:22%; display:block; }
+  .adapt { position:relative; width:100%; aspect-ratio:1; border-radius:50%; overflow:hidden; }
+  .adapt img { position:absolute; inset:0; width:100%; height:100%; }
+  .logo { color:var(--texto); width:100%; }
+  .noti { display:flex; gap:16px; align-items:center; }
+  .noti .pastilla { background:#1E293B; border-radius:12px; padding:10px 14px; display:flex; align-items:center; gap:10px; font-size:13px; }
+  .noti img { width:24px; height:24px; }
+  .iconos { display:flex; gap:28px; align-items:center; flex-wrap:wrap; }
+  .iconos figure { margin:0; text-align:center; font-size:12px; color:var(--suave); }
+  .iconos img { display:block; margin:0 auto 6px; }
+  .activo { filter: invert(73%) sepia(39%) saturate(2000%) hue-rotate(166deg) brightness(101%); }
+  .suave { filter: invert(66%) sepia(9%) saturate(500%) hue-rotate(176deg); }
+</style>
+</head>
+<body>
+  <h1>VeoVeo · marca para la 3.0</h1>
+  <p class="sub">Observado = sacado del icono actual o del manual. Propuesta = nuevo, pendiente de que lo apruebe Álvaro.</p>
+
+  <div class="fila">
+    <div class="caja">
+      <span class="etq obs">Actual</span>
+      <h2>Icono de hoy</h2>
+      <p class="nota">Lleva la marca de agua «Contenido generado por IA» abajo a la izquierda.</p>
+      <img class="icono" src="../../../../assets/icon.png" alt="Icono actual">
+    </div>
+    <div class="caja">
+      <span class="etq prop">Propuesta</span>
+      <h2>Reconstrucción vectorial</h2>
+      <p class="nota">Mismo degradado del manual (#69DFD9 → #013A85 → #00025A), grano suave y «VeoVeo» en Montserrat Medium. Sin marca de agua.</p>
+      <img class="icono" src="veoveo-icono.svg" alt="Icono reconstruido">
+    </div>
+    <div class="caja">
+      <span class="etq prop">Propuesta</span>
+      <h2>Icono adaptativo (Android)</h2>
+      <p class="nota">Fondo y primer plano separados; el logotipo cabe en la zona segura aunque el móvil recorte en círculo.</p>
+      <div class="adapt">
+        <img src="veoveo-icono-fondo.svg" alt="">
+        <img src="veoveo-icono-primer-plano.svg" alt="Icono adaptativo">
+      </div>
+    </div>
+  </div>
+
+  <div class="fila">
+    <div class="caja">
+      <span class="etq obs">Observado</span>
+      <h2>Logotipo en vector</h2>
+      <p class="nota">Pendiente del manual: «VeoVeo» en SVG con la letra del icono. Trazos, sin depender de la fuente.</p>
+      <img class="logo" src="veoveo-logotipo.svg" alt="VeoVeo" style="filter:invert(1)">
+    </div>
+    <div class="caja">
+      <span class="etq prop">Propuesta</span>
+      <h2>Monocromo para notificaciones</h2>
+      <p class="nota">Android pinta este icono en blanco y pequeño. La marca no tiene símbolo: propongo la «V» del logotipo.</p>
+      <div class="noti">
+        <div class="pastilla"><img src="veoveo-notificacion.svg" alt=""> Laura te ha retado a un Movie Match 🍿</div>
+      </div>
+    </div>
+    <div class="caja">
+      <span class="etq obs">Observado</span>
+      <h2>Iconos propios del manual</h2>
+      <p class="nota">Claqueta y palomitas. Trazo de 2 px redondeado; en texto suave y en celeste si están activos.</p>
+      <div class="iconos">
+        <figure><img class="suave" src="icono-claqueta.svg" width="48" height="48" alt="">Claqueta</figure>
+        <figure><img class="activo" src="icono-claqueta.svg" width="48" height="48" alt="">Activa</figure>
+        <figure><img class="suave" src="icono-palomitas.svg" width="48" height="48" alt="">Palomitas</figure>
+        <figure><img class="activo" src="icono-palomitas.svg" width="48" height="48" alt="">Activa</figure>
+        <figure><img class="suave" src="icono-palomitas.svg" width="24" height="24" alt="">24 px</figure>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
