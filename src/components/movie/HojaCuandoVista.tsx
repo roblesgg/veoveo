@@ -3,7 +3,7 @@
  * opciones que al marcarla como vista, con la actual marcada: una sola forma de hacerlo en la app.
  * Si se elige la opción que ya tenía, no se toca la fecha exacta guardada.
  */
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { actualizarFechaVisto, fechaDeVista } from '../../services/repositorioPeliculasUsuario';
 import type { PeliculaUsuario } from '../../types';
@@ -11,6 +11,7 @@ import { COLORS } from '../../theme/colors';
 import { FUENTES } from '../../theme/useMontserrat';
 import { SelectorFechaVista, cuandoDeFecha, fechaDeCuando } from './SelectorFechaVista';
 import { FondoCristal } from '../common/FondoCristal';
+import { HojaBase } from '../common/HojaBase';
 
 type Props = {
   pelicula: PeliculaUsuario | null;
@@ -22,14 +23,7 @@ export function HojaCuandoVista({ pelicula, onCerrar }: Props) {
   const actual = pelicula ? cuandoDeFecha(fechaDeVista(pelicula) || null) : 'semana';
 
   return (
-    <Modal
-      visible={Boolean(pelicula)}
-      transparent
-      animationType="slide"
-      onRequestClose={onCerrar}
-      statusBarTranslucent
-    >
-      <Pressable style={styles.fondo} onPress={onCerrar} accessibilityLabel="Cerrar" />
+    <HojaBase visible={Boolean(pelicula)} onCerrar={onCerrar}>
       <View style={[styles.hoja, { paddingBottom: insets.bottom + 20 }]}>
         <FondoCristal />
         <Text style={styles.titulo} numberOfLines={2}>
@@ -46,17 +40,12 @@ export function HojaCuandoVista({ pelicula, onCerrar }: Props) {
           }}
         />
       </View>
-    </Modal>
+    </HojaBase>
   );
 }
 
 const styles = StyleSheet.create({
-  fondo: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(2,6,23,0.65)' },
   hoja: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
     overflow: 'hidden',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,

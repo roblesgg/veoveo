@@ -3,11 +3,12 @@
  * Las peligrosas (borrar, salir) en rojo.
  */
 import type { ReactNode } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '../../theme/colors';
 import { FUENTES } from '../../theme/useMontserrat';
 import { FondoCristal } from './FondoCristal';
+import { HojaBase } from './HojaBase';
 
 export type Accion = {
   texto: string;
@@ -27,15 +28,8 @@ type Props = {
 export function HojaAcciones({ visible, onCerrar, acciones, cabecera }: Props) {
   const insets = useSafeAreaInsets();
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onCerrar}
-      statusBarTranslucent
-    >
-      <Pressable style={styles.fondo} onPress={onCerrar} accessibilityLabel="Cerrar" />
-      <View style={[styles.zona, { paddingBottom: insets.bottom + 16 }]} pointerEvents="box-none">
+    <HojaBase visible={visible} onCerrar={onCerrar}>
+      <View style={[styles.zona, { paddingBottom: insets.bottom + 16 }]}>
         {cabecera}
         <View style={styles.hoja}>
           <FondoCristal />
@@ -58,13 +52,12 @@ export function HojaAcciones({ visible, onCerrar, acciones, cabecera }: Props) {
           })}
         </View>
       </View>
-    </Modal>
+    </HojaBase>
   );
 }
 
 const styles = StyleSheet.create({
-  fondo: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(2,6,23,0.65)' },
-  zona: { position: 'absolute', left: 12, right: 12, bottom: 0, gap: 12 },
+  zona: { paddingHorizontal: 12, gap: 12 },
   hoja: {
     overflow: 'hidden',
     borderRadius: 24,

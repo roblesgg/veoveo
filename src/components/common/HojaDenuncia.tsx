@@ -3,17 +3,7 @@
  * si se denuncia a una persona, la opción de bloquearla a la vez.
  */
 import { useEffect, useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconCheck, IconFlag } from '@tabler/icons-react-native';
 import {
@@ -28,6 +18,7 @@ import { COLORS } from '../../theme/colors';
 import { FUENTES } from '../../theme/useMontserrat';
 import { LoaderClaqueta } from './LoaderClaqueta';
 import { FondoCristal } from './FondoCristal';
+import { HojaBase } from './HojaBase';
 import { Pulsable } from './Pulsable';
 
 type Props = {
@@ -86,103 +77,86 @@ export function HojaDenuncia({ objeto, titulo, nombreBloqueo, onCerrar, onBloque
   };
 
   return (
-    <Modal
-      visible={Boolean(objeto)}
-      transparent
-      animationType="slide"
-      onRequestClose={cerrar}
-      statusBarTranslucent
-    >
-      <Pressable style={styles.fondo} onPress={cerrar} accessibilityLabel="Cerrar" />
-      <KeyboardAvoidingView
-        // Android con pantalla completa (edge-to-edge) ya no encoge la ventana con el teclado:
-        // hay que apartarse también ahí
-        behavior="padding"
-        style={styles.zona}
-        pointerEvents="box-none"
-      >
-        <View style={[styles.hoja, { paddingBottom: insets.bottom + 20 }]}>
-          <FondoCristal />
-          {enviada ? (
-            <View style={styles.gracias}>
-              <IconFlag size={44} color={COLORS.primary} strokeWidth={1.6} />
-              <Text style={styles.titulo}>Gracias por avisarnos</Text>
-              <Text style={styles.texto}>
-                Revisaremos la denuncia y actuaremos si incumple las normas de VeoVeo. Quien has
-                denunciado no sabrá que has sido tú.
-                {bloquear && puedeBloquear ? `\n\nHas bloqueado a ${nombreBloqueo}.` : ''}
-              </Text>
-              <Pulsable style={styles.boton} onPress={cerrar} accessibilityRole="button">
-                <Text style={styles.botonTexto}>Cerrar</Text>
-              </Pulsable>
+    <HojaBase visible={Boolean(objeto)} onCerrar={cerrar}>
+      <View style={[styles.hoja, { paddingBottom: insets.bottom + 20 }]}>
+        <FondoCristal />
+        {enviada ? (
+          <View style={styles.gracias}>
+            <IconFlag size={44} color={COLORS.primary} strokeWidth={1.6} />
+            <Text style={styles.titulo}>Gracias por avisarnos</Text>
+            <Text style={styles.texto}>
+              Revisaremos la denuncia y actuaremos si incumple las normas de VeoVeo. Quien has
+              denunciado no sabrá que has sido tú.
+              {bloquear && puedeBloquear ? `\n\nHas bloqueado a ${nombreBloqueo}.` : ''}
+            </Text>
+            <Pulsable style={styles.boton} onPress={cerrar} accessibilityRole="button">
+              <Text style={styles.botonTexto}>Cerrar</Text>
+            </Pulsable>
+          </View>
+        ) : (
+          <ScrollView keyboardShouldPersistTaps="handled" bounces={false}>
+            <Text style={styles.titulo}>{titulo}</Text>
+            <Text style={styles.texto}>¿Qué pasa? No se lo diremos a nadie.</Text>
+            <View style={styles.motivos}>
+              {MOTIVOS_DENUNCIA.map((m) => {
+                const marcado = motivo === m.id;
+                return (
+                  <Pulsable
+                    key={m.id}
+                    style={[styles.motivo, marcado && styles.motivoOn]}
+                    onPress={() => setMotivo(m.id)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: marcado }}
+                  >
+                    <View style={[styles.radio, marcado && styles.radioOn]} />
+                    <Text style={styles.motivoTexto}>{m.texto}</Text>
+                  </Pulsable>
+                );
+              })}
             </View>
-          ) : (
-            <ScrollView keyboardShouldPersistTaps="handled" bounces={false}>
-              <Text style={styles.titulo}>{titulo}</Text>
-              <Text style={styles.texto}>¿Qué pasa? No se lo diremos a nadie.</Text>
-              <View style={styles.motivos}>
-                {MOTIVOS_DENUNCIA.map((m) => {
-                  const marcado = motivo === m.id;
-                  return (
-                    <Pulsable
-                      key={m.id}
-                      style={[styles.motivo, marcado && styles.motivoOn]}
-                      onPress={() => setMotivo(m.id)}
-                      accessibilityRole="radio"
-                      accessibilityState={{ checked: marcado }}
-                    >
-                      <View style={[styles.radio, marcado && styles.radioOn]} />
-                      <Text style={styles.motivoTexto}>{m.texto}</Text>
-                    </Pulsable>
-                  );
-                })}
-              </View>
-              <TextInput
-                value={detalle}
-                onChangeText={setDetalle}
-                placeholder="Cuéntanos más (opcional)"
-                placeholderTextColor={COLORS.textMuted}
-                style={styles.campo}
-                multiline
-                maxLength={MAX_DETALLE_DENUNCIA}
-              />
-              {puedeBloquear && (
-                <Pulsable
-                  style={styles.filaBloqueo}
-                  onPress={() => setBloquear((v) => !v)}
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked: bloquear }}
-                >
-                  <View style={[styles.casilla, bloquear && styles.casillaOn]}>
-                    {bloquear && <IconCheck size={16} color={COLORS.onAccent} strokeWidth={3} />}
-                  </View>
-                  <Text style={styles.motivoTexto}>Bloquear también a {nombreBloqueo}</Text>
-                </Pulsable>
-              )}
-              {error && <Text style={styles.error}>{error}</Text>}
+            <TextInput
+              value={detalle}
+              onChangeText={setDetalle}
+              placeholder="Cuéntanos más (opcional)"
+              placeholderTextColor={COLORS.textMuted}
+              style={styles.campo}
+              multiline
+              maxLength={MAX_DETALLE_DENUNCIA}
+            />
+            {puedeBloquear && (
               <Pulsable
-                style={[styles.boton, (!motivo || enviando) && { opacity: 0.4 }]}
-                disabled={!motivo || enviando}
-                onPress={() => void enviar()}
-                accessibilityRole="button"
+                style={styles.filaBloqueo}
+                onPress={() => setBloquear((v) => !v)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: bloquear }}
               >
-                {enviando ? (
-                  <LoaderClaqueta tamano="pequeno" color={COLORS.onAccent} />
-                ) : (
-                  <Text style={styles.botonTexto}>Enviar denuncia</Text>
-                )}
+                <View style={[styles.casilla, bloquear && styles.casillaOn]}>
+                  {bloquear && <IconCheck size={16} color={COLORS.onAccent} strokeWidth={3} />}
+                </View>
+                <Text style={styles.motivoTexto}>Bloquear también a {nombreBloqueo}</Text>
               </Pulsable>
-            </ScrollView>
-          )}
-        </View>
-      </KeyboardAvoidingView>
-    </Modal>
+            )}
+            {error && <Text style={styles.error}>{error}</Text>}
+            <Pulsable
+              style={[styles.boton, (!motivo || enviando) && { opacity: 0.4 }]}
+              disabled={!motivo || enviando}
+              onPress={() => void enviar()}
+              accessibilityRole="button"
+            >
+              {enviando ? (
+                <LoaderClaqueta tamano="pequeno" color={COLORS.onAccent} />
+              ) : (
+                <Text style={styles.botonTexto}>Enviar denuncia</Text>
+              )}
+            </Pulsable>
+          </ScrollView>
+        )}
+      </View>
+    </HojaBase>
   );
 }
 
 const styles = StyleSheet.create({
-  fondo: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(2,6,23,0.65)' },
-  zona: { flex: 1, justifyContent: 'flex-end' },
   hoja: {
     maxHeight: '90%',
     overflow: 'hidden',
