@@ -5,6 +5,8 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
+import Animated, { FadeOut, LinearTransition, useReducedMotion } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconChevronLeft, IconFlag, IconUsers } from '@tabler/icons-react-native';
@@ -23,7 +25,11 @@ import { COLORS } from '../theme/colors';
 import { FUENTES } from '../theme/useMontserrat';
 import { Pulsable } from '../components/common/Pulsable';
 
+const recolocar = LinearTransition.springify().damping(22).stiffness(220);
+
 export function SolicitudesScreen() {
+  // La fila que se va sale con un fundido y las demás suben (en vez de saltar)
+  const reducir = useReducedMotion();
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
   const [recibidas, setRecibidas] = useState<SolicitudAmistad[]>([]);
@@ -103,7 +109,12 @@ export function SolicitudesScreen() {
 
         {recibidas.length > 0 && <Text style={styles.seccion}>Te han enviado</Text>}
         {recibidas.map((s) => (
-          <View key={s.id} style={styles.fila}>
+          <Animated.View
+            key={s.id}
+            style={styles.fila}
+            exiting={FadeOut.duration(180)}
+            layout={reducir ? undefined : recolocar}
+          >
             <Avatar uri={perfiles[s.deUid]?.fotoPerfil} nombre={s.deUsername} tamano={44} />
             <Text style={styles.nombre} numberOfLines={1}>
               {perfiles[s.deUid]?.username ?? s.deUsername}
@@ -114,7 +125,10 @@ export function SolicitudesScreen() {
               onPress={() =>
                 void accion(
                   s.id,
-                  () => aceptarSolicitud(s.id),
+                  async () => {
+                    await aceptarSolicitud(s.id);
+                    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                  },
                   'No hemos podido aceptar la solicitud.',
                 )
               }
@@ -141,12 +155,17 @@ export function SolicitudesScreen() {
             >
               <IconFlag size={20} color={COLORS.textMuted} strokeWidth={2} />
             </Pulsable>
-          </View>
+          </Animated.View>
         ))}
 
         {enviadas.length > 0 && <Text style={styles.seccion}>Has enviado</Text>}
         {enviadas.map((uid) => (
-          <View key={uid} style={styles.fila}>
+          <Animated.View
+            key={uid}
+            style={styles.fila}
+            exiting={FadeOut.duration(180)}
+            layout={reducir ? undefined : recolocar}
+          >
             <Avatar uri={perfiles[uid]?.fotoPerfil} nombre={perfiles[uid]?.username} tamano={44} />
             <View style={{ flex: 1 }}>
               <Text style={styles.nombre} numberOfLines={1}>
@@ -167,7 +186,7 @@ export function SolicitudesScreen() {
             >
               <Text style={styles.botonTexto}>Cancelar</Text>
             </Pulsable>
-          </View>
+          </Animated.View>
         ))}
       </ScrollView>
       <HojaDenuncia
