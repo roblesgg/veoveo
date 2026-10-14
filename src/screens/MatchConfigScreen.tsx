@@ -23,7 +23,7 @@ import { nombreDe, usePerfiles } from '../hooks/usePerfiles';
 import { crearMatch } from '../services/repositorioMatches';
 import { observarChat } from '../services/repositorioChats';
 import { Avatar } from '../components/common/Avatar';
-import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { Cargando } from '../components/common/Cargando';
 import { HojaAcciones } from '../components/common/HojaAcciones';
 import { usePlataformasRegion } from '../hooks/usePlataformasRegion';
 import { generarMazo, MINIMO_MAZO } from '../services/mazoMatch';
@@ -139,7 +139,7 @@ export function MatchConfigScreen() {
   if (creando) {
     return (
       <View style={[styles.flex, styles.centro]}>
-        <LoaderClaqueta texto="Barajando las pelis de todos…" />
+        <Cargando texto="Barajando las pelis de todos…" />
       </View>
     );
   }

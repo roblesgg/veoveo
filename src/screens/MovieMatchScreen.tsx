@@ -62,7 +62,7 @@ import { enlazarMatch } from '../services/repositorioChats';
 import { posterUrl } from '../services/tmdbClient';
 import { Avatar } from '../components/common/Avatar';
 import { ConfirmModal } from '../components/common/ConfirmModal';
-import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { Cargando } from '../components/common/Cargando';
 import type { CartaMazo, MovieMatch, UsuarioPerfil, VotosMatch } from '../types';
 import { COLORS } from '../theme/colors';
 import { FUENTES } from '../theme/useMontserrat';
@@ -383,7 +383,7 @@ export function MovieMatchScreen() {
   if (match === undefined) {
     return (
       <View style={[styles.flex, styles.centro]}>
-        <LoaderClaqueta texto="Abriendo el Match…" />
+        <Cargando texto="Abriendo el Match…" />
       </View>
     );
   }

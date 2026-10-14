@@ -1,30 +1,30 @@
 /**
- * SOLO EN EL APK DE PRUEBAS: las seis combinaciones del loader (3 formas × 2 colores), numeradas,
- * para que Álvaro elija en su móvil. Se quita en cuanto elija.
+ * SOLO EN EL APK DE PRUEBAS: el loader de estrellas en los dos colores posibles (1 morado, el del
+ * original; 2 turquesa, el de la marca), en tamaño grande y pequeño, para que Álvaro elija.
+ * Se quita en cuanto elija.
  */
 import { StyleSheet, Text, View } from 'react-native';
-import { LoaderCaida, type ColorLoader, type FormaLoader } from './LoaderCaida';
+import { LoaderCaida, type ColorLoader } from './LoaderCaida';
 import { COLORS } from '../../theme/colors';
 import { FUENTES } from '../../theme/useMontserrat';
 
-const OPCIONES: { forma: FormaLoader; color: ColorLoader; nombre: string }[] = [
-  { forma: 'peonza', color: 'morado', nombre: 'Peonza morada (el original)' },
-  { forma: 'peonza', color: 'turquesa', nombre: 'Peonza turquesa' },
-  { forma: 'palomita', color: 'morado', nombre: 'Palomita morada' },
-  { forma: 'palomita', color: 'turquesa', nombre: 'Palomita turquesa' },
-  { forma: 'claqueta', color: 'morado', nombre: 'Claqueta morada' },
-  { forma: 'claqueta', color: 'turquesa', nombre: 'Claqueta turquesa' },
+const OPCIONES: { color: ColorLoader; nombre: string }[] = [
+  { color: 'morado', nombre: 'Morado (el original)' },
+  { color: 'turquesa', nombre: 'Turquesa (VeoVeo)' },
 ];
 
 export function MuestraLoaders() {
   return (
     <View style={styles.caja}>
-      <Text style={styles.titulo}>Elige el loader (solo pruebas)</Text>
+      <Text style={styles.titulo}>Elige el color del loader (solo pruebas)</Text>
       <View style={styles.rejilla}>
         {OPCIONES.map((o, i) => (
-          <View key={o.nombre} style={styles.opcion}>
+          <View key={o.color} style={styles.opcion}>
             <View style={styles.escenario}>
-              <LoaderCaida lado={40} forma={o.forma} color={o.color} />
+              <LoaderCaida lado={50} color={o.color} />
+            </View>
+            <View style={styles.escenarioPequeno}>
+              <LoaderCaida lado={16} color={o.color} />
             </View>
             <Text style={styles.numero}>{i + 1}</Text>
             <Text style={styles.nombre}>{o.nombre}</Text>
@@ -36,12 +36,13 @@ export function MuestraLoaders() {
 }
 
 const styles = StyleSheet.create({
-  caja: { gap: 12, marginTop: 12 },
+  caja: { gap: 12, marginTop: 12, marginBottom: 12 },
   titulo: { color: COLORS.text, fontSize: 16, fontFamily: FUENTES.titulo },
-  rejilla: { flexDirection: 'row', flexWrap: 'wrap', rowGap: 18 },
-  opcion: { width: '50%', alignItems: 'center', gap: 4 },
-  // Alto de sobra: las piezas entran desde 2 lados por encima
-  escenario: { height: 130, justifyContent: 'flex-end', paddingBottom: 30, overflow: 'hidden' },
+  rejilla: { flexDirection: 'row' },
+  opcion: { width: '50%', alignItems: 'center', gap: 6 },
+  // Alto de sobra: las estrellas entran desde 2 lados por encima del sitio donde se paran
+  escenario: { height: 170, justifyContent: 'flex-end', paddingBottom: 46 },
+  escenarioPequeno: { height: 56, justifyContent: 'flex-end', paddingBottom: 14 },
   numero: { color: COLORS.accent, fontSize: 18, fontFamily: FUENTES.titulo },
   nombre: { color: COLORS.textMuted, fontSize: 12, fontFamily: FUENTES.texto, textAlign: 'center' },
 });

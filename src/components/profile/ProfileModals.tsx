@@ -4,7 +4,7 @@ import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../theme/colors';
 
-import { LoaderClaqueta } from '../common/LoaderClaqueta';
+import { Cargando } from '../common/Cargando';
 
 type UsernameModalProps = {
   visible: boolean;
@@ -69,7 +69,7 @@ export const UsernameModal = ({
             </Pressable>
             {loading ? (
               <View style={styles.btnConfirm}>
-                <LoaderClaqueta tamano="pequeno" color="#fff" />
+                <Cargando tamano="pequeno" color="#fff" />
               </View>
             ) : (
               <Pressable onPress={handleSave} style={styles.btnConfirm}>
@@ -162,7 +162,7 @@ export const AvatarModal = ({
             </Pressable>
             {loading ? (
               <View style={styles.btnConfirm}>
-                <LoaderClaqueta tamano="pequeno" color="#fff" />
+                <Cargando tamano="pequeno" color="#fff" />
               </View>
             ) : (
               <Pressable onPress={() => handleSave()} style={styles.btnConfirm}>

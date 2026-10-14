@@ -1,5 +1,5 @@
 /**
- * Loader de la app: tres piezas que caen escalonadas, con escala y giro, y se desvanecen abajo.
+ * Loader de la app: tres estrellas que caen escalonadas, con escala y giro, y se desvanecen abajo.
  * Reproduce fielmente el loader de referencia de Álvaro (Uiverse.io, andrew-manzyk), con el CSS
  * original en docs/diseno/loader-referencia.md: bucle de 1 s lineal, retrasos 0 / 0,3 / 0,6 s y los
  * mismos fotogramas clave. Las distancias, pensadas para una caja de 100 px a escala 0,5, se
@@ -21,18 +21,24 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 
-export type FormaLoader = 'peonza' | 'palomita' | 'claqueta';
-
-/** Siluetas en una caja de 100 × 100 */
-const FORMAS: Record<FormaLoader, string> = {
-  // Peonza: púa arriba, cuerpo ancho y punta abajo (aproximada: el SVG original no venía)
-  peonza: 'M46 6h8v12c18 3 34 13 34 27 0 17-24 34-38 49-14-15-38-32-38-49 0-14 16-24 34-27z',
-  // Palomita: cuatro nubes de maíz inflado sobre un grano
-  palomita:
-    'M30 38a16 16 0 0 1 22-18 16 16 0 0 1 26 8 15 15 0 0 1 6 27 16 16 0 0 1-14 25H32a16 16 0 0 1-14-25 15 15 0 0 1 12-17z',
-  // Claqueta: tapa inclinada y cuerpo
-  claqueta: 'M10 30l70-18 4 14-70 18zM10 48h80v40a6 6 0 0 1-6 6H16a6 6 0 0 1-6-6z',
-};
+/**
+ * Estrella de 5 puntas, maciza, en una caja de 100 × 100 (el símbolo de VeoVeo: valorar).
+ * Radio interior generoso (0,5 del exterior) para que a 16-22 px siga leyéndose como estrella;
+ * las esquinas se redondean con un trazo del mismo color y unión redonda.
+ */
+function caminoEstrella(): string {
+  const cx = 50;
+  const cy = 53;
+  const exterior = 44;
+  const interior = 22;
+  const puntos = Array.from({ length: 10 }, (_, i) => {
+    const r = i % 2 === 0 ? exterior : interior;
+    const a = -Math.PI / 2 + (i * Math.PI) / 5;
+    return `{(cx + r * Math.cos(a)).toFixed(2)} {(cy + r * Math.sin(a)).toFixed(2)}`;
+  });
+  return `M{puntos.join('L')}Z`;
+}
+const ESTRELLA = caminoEstrella();
 
 const COLORES = {
   turquesa: { relleno: '#69DFD9', brillo: '#69DFD933' },
@@ -68,12 +74,10 @@ const PIEZAS = [
 const OPACIDAD = [0, 1, 1, 1, 0];
 
 function Silueta({
-  forma,
   color,
   lado,
   propio,
 }: {
-  forma: FormaLoader;
   color: ColorLoader;
   lado: number;
   /** Color propio (dentro de un botón de color), en vez del de la paleta del loader */
@@ -83,9 +87,10 @@ function Silueta({
   const brillo = propio ? 'transparent' : COLORES[color].brillo;
   return (
     <Svg width={lado} height={lado} viewBox="0 0 100 100">
-      {/* Halo (el drop-shadow del original) detrás de la figura */}
-      <Path d={FORMAS[forma]} fill="none" stroke={brillo} strokeWidth={14} strokeLinejoin="round" />
-      <Path d={FORMAS[forma]} fill={relleno} />
+      {/* Halo (el drop-shadow del original) detrás de la estrella */}
+      <Path d={ESTRELLA} fill="none" stroke={brillo} strokeWidth={22} strokeLinejoin="round" />
+      {/* Relleno + trazo del mismo color con unión redonda: esquinas suaves, que no pinchen */}
+      <Path d={ESTRELLA} fill={relleno} stroke={relleno} strokeWidth={9} strokeLinejoin="round" />
     </Svg>
   );
 }
@@ -95,7 +100,6 @@ function Pieza({
   tiempo,
   arranque,
   lado,
-  forma,
   color,
   propio,
 }: {
@@ -103,7 +107,6 @@ function Pieza({
   tiempo: SharedValue<number>;
   arranque: SharedValue<number>;
   lado: number;
-  forma: FormaLoader;
   color: ColorLoader;
   propio?: string;
 }) {
@@ -125,19 +128,17 @@ function Pieza({
   });
   return (
     <Animated.View style={[StyleSheet.absoluteFill, estilo]} pointerEvents="none">
-      <Silueta forma={forma} color={color} lado={lado} propio={propio} />
+      <Silueta color={color} lado={lado} propio={propio} />
     </Animated.View>
   );
 }
 
 export function LoaderCaida({
   lado,
-  forma,
   color,
   propio,
 }: {
   lado: number;
-  forma: FormaLoader;
   color: ColorLoader;
   propio?: string;
 }) {
@@ -164,7 +165,7 @@ export function LoaderCaida({
   if (reducir) {
     return (
       <Animated.View style={[{ width: lado, height: lado }, estiloRespiro]}>
-        <Silueta forma={forma} color={color} lado={lado} propio={propio} />
+        <Silueta color={color} lado={lado} propio={propio} />
       </Animated.View>
     );
   }
@@ -177,7 +178,6 @@ export function LoaderCaida({
           tiempo={tiempo}
           arranque={arranque}
           lado={lado}
-          forma={forma}
           color={color}
           propio={propio}
         />

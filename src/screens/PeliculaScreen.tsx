@@ -34,7 +34,7 @@ import { GradientBottom } from '../theme/colors';
 import { useMovieData } from '../hooks/movie/useMovieData';
 import { useUserMovieStatus } from '../hooks/movie/useUserMovieStatus';
 import { fechaDeVista } from '../services/repositorioPeliculasUsuario';
-import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { Cargando } from '../components/common/Cargando';
 import { shareMovie } from '../utils/shareUtils';
 
 // Componentes Modulares
@@ -103,7 +103,7 @@ export function PeliculaScreen() {
   if (cargando && !detalles) {
     return (
       <View style={[styles.flex, styles.center, { backgroundColor: GradientBottom }]}>
-        <LoaderClaqueta />
+        <Cargando />
       </View>
     );
   }

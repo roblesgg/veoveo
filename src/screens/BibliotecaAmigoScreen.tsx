@@ -37,7 +37,7 @@ import { useMontserrat } from '../theme/useMontserrat';
 import { GradientBackground } from '../components/GradientBackground';
 import { FilterSortMenu } from '../components/FilterSortMenu';
 import { RatingBadge } from '../components/RatingBadge';
-import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { Cargando } from '../components/common/Cargando';
 import { HojaDenuncia } from '../components/common/HojaDenuncia';
 import { RootStackParamList } from '../navigation/types';
 
@@ -131,7 +131,7 @@ export function BibliotecaAmigoScreen() {
   if (cargando) {
     return (
       <View style={[styles.flex, styles.center, { backgroundColor: '#1A1A2E' }]}>
-        <LoaderClaqueta />
+        <Cargando />
       </View>
     );
   }

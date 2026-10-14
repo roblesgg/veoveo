@@ -45,7 +45,7 @@ import { useUserProfile } from '../hooks/profile/useUserProfile';
 import { ProfileStats } from '../components/profile/ProfileStats';
 import { ProfileOptions } from '../components/profile/ProfileOptions';
 import { UsernameModal, AvatarModal } from '../components/profile/ProfileModals';
-import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { Cargando } from '../components/common/Cargando';
 
 export function PerfilScreen() {
   const navigation = useNavigation<any>();
@@ -88,7 +88,7 @@ export function PerfilScreen() {
   if (cargando && !usuario) {
     return (
       <GradientBackground style={styles.center}>
-        <LoaderClaqueta tamano="grande" />
+        <Cargando tamano="grande" />
       </GradientBackground>
     );
   }

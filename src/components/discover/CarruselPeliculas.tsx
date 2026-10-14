@@ -17,7 +17,7 @@ import { marcarHito } from '../../utils/medicionArranque';
 import { useCarrusel, useRecomendaciones } from '../../hooks/useDescubrir';
 import { obtenerCarrusel } from '../../constants/carruseles';
 import { EsqueletoFilaPosters } from '../common/Esqueleto';
-import { LoaderClaqueta } from '../common/LoaderClaqueta';
+import { Cargando } from '../common/Cargando';
 
 /** Un póster está "quieto" si lleva medio segundo con el 60 % a la vista. */
 const VISIBILIDAD_POSTER = { itemVisiblePercentThreshold: 60, minimumViewTime: 500 };
@@ -143,7 +143,7 @@ export const CarruselPeliculas = memo(
             ListFooterComponent={
               catalogo.isFetchingNextPage ? (
                 <View style={styles.footerCargando}>
-                  <LoaderClaqueta tamano="pequeno" />
+                  <Cargando tamano="pequeno" />
                 </View>
               ) : null
             }

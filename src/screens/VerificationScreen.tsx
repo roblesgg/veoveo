@@ -16,7 +16,7 @@ import { useMontserrat } from '../theme/useMontserrat';
 import { SHADOWS } from '../theme/theme';
 import { sendEmailVerification } from 'firebase/auth';
 
-import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { Cargando } from '../components/common/Cargando';
 
 export function VerificationScreen() {
   const insets = useSafeAreaInsets();
@@ -90,7 +90,7 @@ export function VerificationScreen() {
               disabled={cargando}
             >
               {cargando ? (
-                <LoaderClaqueta tamano="pequeno" color="#fff" />
+                <Cargando tamano="pequeno" color="#fff" />
               ) : (
                 <Text style={[styles.mainBtnText, { fontFamily: ff }]}>YA LO HE VERIFICADO</Text>
               )}

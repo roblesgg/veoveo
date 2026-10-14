@@ -7,7 +7,7 @@ import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
-import { LoaderClaqueta } from '../common/LoaderClaqueta';
+import { Cargando } from '../common/Cargando';
 
 type Props = {
   movieId: number;
@@ -39,7 +39,7 @@ export function MovieSocialProof({ movieId, fontFamily }: Props) {
   if (loading)
     return (
       <View style={{ marginVertical: 20 }}>
-        <LoaderClaqueta tamano="mediano" />
+        <Cargando tamano="mediano" />
       </View>
     );
   if (actividad.length === 0) return null;

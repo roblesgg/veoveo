@@ -7,7 +7,7 @@ import { BlurView } from 'expo-blur';
 import { COLORS, GLASS } from '../../theme/colors';
 import { SHADOWS } from '../../theme/theme';
 
-import { LoaderClaqueta } from '../common/LoaderClaqueta';
+import { Cargando } from '../common/Cargando';
 import { Pulsable } from '../common/Pulsable';
 
 type Props = {
@@ -57,7 +57,7 @@ export const MovieActions = React.memo(
             <Text style={styles.aviso}>Inicia sesión para guardar en tu biblioteca.</Text>
           ) : bibCargando ? (
             <View style={{ marginVertical: 12 }}>
-              <LoaderClaqueta tamano="mediano" />
+              <Cargando tamano="mediano" />
             </View>
           ) : (
             <View style={styles.rowBotones}>

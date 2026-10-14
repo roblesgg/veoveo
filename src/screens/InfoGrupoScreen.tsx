@@ -45,7 +45,7 @@ import {
 } from '../services/repositorioChats';
 import { Avatar } from '../components/common/Avatar';
 import { HojaAcciones } from '../components/common/HojaAcciones';
-import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { Cargando } from '../components/common/Cargando';
 import { ConfirmModal } from '../components/common/ConfirmModal';
 import { HojaDenuncia } from '../components/common/HojaDenuncia';
 import type { ObjetoDenuncia } from '../services/repositorioDenuncias';
@@ -86,7 +86,7 @@ export function InfoGrupoScreen() {
   if (chat === undefined) {
     return (
       <View style={[styles.flex, styles.centro]}>
-        <LoaderClaqueta />
+        <Cargando />
       </View>
     );
   }

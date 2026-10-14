@@ -9,7 +9,7 @@ import { PeliculaUsuario, Movie } from '../../types';
 import { COLORS } from '../../theme/colors';
 import { SHADOWS } from '../../theme/theme';
 
-import { LoaderClaqueta } from '../common/LoaderClaqueta';
+import { Cargando } from '../common/Cargando';
 
 type Props = {
   visible: boolean;
@@ -125,7 +125,7 @@ export const ChatMoviePicker = ({ visible, mode, onClose, onSelect, fontFamily }
 
           {loading ? (
             <View style={{ marginTop: 40 }}>
-              <LoaderClaqueta tamano="mediano" />
+              <Cargando tamano="mediano" />
             </View>
           ) : (
             <FlatList

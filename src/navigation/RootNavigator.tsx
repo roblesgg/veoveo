@@ -9,7 +9,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
-import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { Cargando } from '../components/common/Cargando';
 
 import { useAuth } from '../context/AuthContext';
 import { ActorScreen } from '../screens/ActorScreen';
@@ -85,7 +85,7 @@ export function RootNavigator() {
             backgroundColor: COLORS.background,
           }}
         >
-          <LoaderClaqueta />
+          <Cargando />
         </View>
       ) : (
         /* NAVEGACIÓN DINÁMICA CONDICIONAL */

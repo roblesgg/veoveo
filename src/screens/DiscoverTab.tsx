@@ -46,7 +46,7 @@ import { CarruselPeliculas } from '../components/discover/CarruselPeliculas';
 import { CategoryModal } from '../components/discover/CategoryModal';
 import { EstadoError, EstadoVacio } from '../components/common/EstadoPantalla';
 import { useLanguage } from '../context/LanguageContext';
-import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { Cargando } from '../components/common/Cargando';
 
 /**
  * 🚀 [MEMO] Item de Película para la Grilla de Búsqueda.
@@ -416,7 +416,7 @@ export function DiscoverTab({
         <Animated.View entering={FadeIn} exiting={FadeOut} style={[styles.busquedaBox, { top: 0 }]}>
           {buscando ? (
             <View style={{ marginTop: insets.top + 140 }}>
-              <LoaderClaqueta tamano="mediano" />
+              <Cargando tamano="mediano" />
             </View>
           ) : errorBusqueda ? (
             <View style={{ marginTop: insets.top + 140 }}>

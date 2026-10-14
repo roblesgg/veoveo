@@ -56,7 +56,7 @@ import { Avatar } from '../components/common/Avatar';
 import { HojaAcciones, type Accion } from '../components/common/HojaAcciones';
 import { HojaDenuncia } from '../components/common/HojaDenuncia';
 import type { ObjetoDenuncia } from '../services/repositorioDenuncias';
-import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { Cargando } from '../components/common/Cargando';
 import { ChatPlusMenu } from '../components/chat/ChatPlusMenu';
 import { ChatMoviePicker } from '../components/chat/ChatMoviePicker';
 import { presentacionChat } from './ChatsTab';
@@ -189,7 +189,7 @@ export function ConversacionScreen() {
   if (chat === undefined) {
     return (
       <View style={[styles.flex, styles.centro]}>
-        <LoaderClaqueta />
+        <Cargando />
       </View>
     );
   }
@@ -518,7 +518,7 @@ export function ConversacionScreen() {
         ListFooterComponent={
           cargandoMas ? (
             <View style={{ marginVertical: 16 }}>
-              <LoaderClaqueta tamano="pequeno" />
+              <Cargando tamano="pequeno" />
             </View>
           ) : null
         }

@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconChevronLeft } from '@tabler/icons-react-native';
 import { useAuth } from '../context/AuthContext';
 import { borrarMisDatos, exportarMisDatos, type PasoBorrado } from '../services/cuentaDatos';
-import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { Cargando } from '../components/common/Cargando';
 import { COLORS } from '../theme/colors';
 import { FUENTES } from '../theme/useMontserrat';
 import { Pulsable } from '../components/common/Pulsable';
@@ -112,7 +112,7 @@ export function CuentaScreen() {
   if (ocupado) {
     return (
       <View style={[styles.flex, styles.centro]}>
-        <LoaderClaqueta texto={ocupado} />
+        <Cargando texto={ocupado} />
       </View>
     );
   }

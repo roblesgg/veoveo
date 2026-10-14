@@ -17,7 +17,7 @@ import type { RootStackParamList } from '../navigation/types';
 import { COLORS } from '../theme/colors';
 import { SHADOWS } from '../theme/theme';
 import { useMontserrat } from '../theme/useMontserrat';
-import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { Cargando } from '../components/common/Cargando';
 import { Pulsable } from '../components/common/Pulsable';
 
 export function RegisterScreen() {
@@ -79,7 +79,7 @@ export function RegisterScreen() {
         {errorMessage ? <Text style={[styles.err, { fontFamily: ff }]}>{errorMessage}</Text> : null}
         {loading ? (
           <View style={{ marginBottom: 16 }}>
-            <LoaderClaqueta tamano="mediano" />
+            <Cargando tamano="mediano" />
           </View>
         ) : null}
 

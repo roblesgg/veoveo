@@ -29,7 +29,7 @@ import { FilterSortMenu, type FilterSortOption } from '../components/FilterSortM
 import { posterUrl } from '../services/tmdbClient';
 import { SHADOWS } from '../theme/theme';
 import { shareActor } from '../utils/shareUtils';
-import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { Cargando } from '../components/common/Cargando';
 import { EstadoError, EstadoVacio } from '../components/common/EstadoPantalla';
 import type { RootStackParamList } from '../navigation/types';
 
@@ -104,7 +104,7 @@ export function ActorScreen() {
   if (cargando) {
     return (
       <GradientBackground style={styles.center}>
-        <LoaderClaqueta />
+        <Cargando />
       </GradientBackground>
     );
   }

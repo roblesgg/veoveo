@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GradientBackground } from '../components/GradientBackground';
-import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { Cargando } from '../components/common/Cargando';
 import { EstadoError } from '../components/common/EstadoPantalla';
 import type { RootStackParamList } from '../navigation/types';
 import {
@@ -64,7 +64,7 @@ export function BloqueadosScreen() {
       </View>
 
       {cargando ? (
-        <LoaderClaqueta />
+        <Cargando />
       ) : error ? (
         <EstadoError texto="No hemos podido cargar tus bloqueados." onReintentar={cargar} />
       ) : (
@@ -95,7 +95,7 @@ export function BloqueadosScreen() {
                 style={styles.desbloquear}
               >
                 {quitando === item.uid ? (
-                  <LoaderClaqueta tamano="pequeno" />
+                  <Cargando tamano="pequeno" />
                 ) : (
                   <Text style={{ color: '#ff8a80', fontFamily: ff, fontSize: 14 }}>
                     Desbloquear

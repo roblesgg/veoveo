@@ -17,7 +17,7 @@ import { logoUrl } from '../services/tmdbClient';
 import { URL_NORMAS, URL_PRIVACIDAD } from '../components/common/AvisoLegal';
 import { usePlataformasRegion } from '../hooks/usePlataformasRegion';
 import { COLORS } from '../theme/colors';
-import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { Cargando } from '../components/common/Cargando';
 import { Pulsable } from '../components/common/Pulsable';
 
 export function AjustesScreen() {
@@ -154,7 +154,7 @@ export function AjustesScreen() {
           />
           <View style={styles.platsContainer}>
             {cargandoPlats ? (
-              <LoaderClaqueta tamano="mediano" />
+              <Cargando tamano="mediano" />
             ) : (
               filteredPlats.map((p) => (
                 <Pulsable
