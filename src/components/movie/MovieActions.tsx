@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import * as Haptics from 'expo-haptics';
+import Animated, { FadeIn, ZoomIn, useReducedMotion } from 'react-native-reanimated';
 import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
@@ -20,6 +22,21 @@ type Props = {
 
 export const MovieActions = React.memo(
   ({ user, estadoPelicula, accionBib, bibCargando, onPorVer, onVista, fontFamily }: Props) => {
+    const reducir = useReducedMotion();
+    // El icono entra con un pequeño rebote al cambiar de estado (no al abrir la ficha)
+    const anterior = useRef(estadoPelicula);
+    const cambiado = anterior.current !== estadoPelicula;
+    useEffect(() => {
+      if (anterior.current !== estadoPelicula && estadoPelicula !== 0) {
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+      anterior.current = estadoPelicula;
+    }, [estadoPelicula]);
+    const entrada = !cambiado
+      ? undefined
+      : reducir
+        ? FadeIn.duration(160)
+        : ZoomIn.springify().damping(12).stiffness(260).mass(0.6);
     return (
       <View style={[styles.actionsGlass, SHADOWS.mac]}>
         <BlurView
@@ -49,11 +66,13 @@ export const MovieActions = React.memo(
                 onPress={onPorVer}
                 disabled={accionBib}
               >
-                <Ionicons
-                  name={estadoPelicula === 1 ? 'checkmark' : 'add'}
-                  size={18}
-                  color={estadoPelicula === 1 ? COLORS.background : COLORS.primary}
-                />
+                <Animated.View key={`pv-${estadoPelicula === 1}`} entering={entrada}>
+                  <Ionicons
+                    name={estadoPelicula === 1 ? 'checkmark' : 'add'}
+                    size={18}
+                    color={estadoPelicula === 1 ? COLORS.background : COLORS.primary}
+                  />
+                </Animated.View>
                 <Text
                   style={[
                     styles.btnBibText,
@@ -71,11 +90,13 @@ export const MovieActions = React.memo(
                 onPress={onVista}
                 disabled={accionBib}
               >
-                <Ionicons
-                  name={estadoPelicula === 2 ? 'checkmark-circle' : 'eye-outline'}
-                  size={18}
-                  color={estadoPelicula === 2 ? COLORS.background : COLORS.success}
-                />
+                <Animated.View key={`v-${estadoPelicula === 2}`} entering={entrada}>
+                  <Ionicons
+                    name={estadoPelicula === 2 ? 'checkmark-circle' : 'eye-outline'}
+                    size={18}
+                    color={estadoPelicula === 2 ? COLORS.background : COLORS.success}
+                  />
+                </Animated.View>
                 <Text
                   style={[
                     styles.btnBibText,
