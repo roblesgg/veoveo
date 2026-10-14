@@ -154,6 +154,7 @@ export type PeliculaUsuario = {
   fechaAnadido: number;
   fechaLanzamiento?: string;
   fechaVisto?: number;
+  vistaSinFecha?: boolean; // vista «antes», sin fecha (no sale en «vistas recientes»)
   providers?: {
     // IDs de plataformas donde está disponible (cáche)
     flatrate: number[];

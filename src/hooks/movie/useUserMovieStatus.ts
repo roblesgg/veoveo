@@ -80,7 +80,7 @@ export function useUserMovieStatus(
    * Marca la peli como vista con su valoración (0 = sin valorar).
    * Si ya estaba vista, solo cambia la valoración: nunca la borra ni le cambia la fecha.
    */
-  const onMarcarVista = (valoracion: number, fechaVisto?: number) =>
+  const onMarcarVista = (valoracion: number, fechaVisto?: number | null) =>
     ejecutar(async () => {
       const datos = datosPelicula();
       if (datos) await marcarComoVista(datos, peliculaBib, valoracion, fechaVisto);
@@ -91,7 +91,7 @@ export function useUserMovieStatus(
     ejecutar(() => actualizarValoracion(movieId, valoracion), 'No hemos podido guardar la nota.');
 
   /** Cambia la fecha en que se vio. */
-  const onCambiarFechaVisto = (fecha: number) =>
+  const onCambiarFechaVisto = (fecha: number | null) =>
     ejecutar(() => actualizarFechaVisto(movieId, fecha), 'No hemos podido cambiar la fecha.');
 
   /** Quita la peli de la biblioteca (Por ver o Vistas). Solo con una acción explícita. */

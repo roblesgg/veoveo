@@ -26,7 +26,9 @@ import { Image } from 'expo-image';
 import { useBiblioteca } from '../context/BibliotecaContext';
 import { EsqueletoRejillaPosters } from '../components/common/Esqueleto';
 import { IconoPalomitas } from '../components/iconos/IconosPropios';
-import { fechaDeVista } from '../services/repositorioPeliculasUsuario';
+import { actualizarFechaVisto, fechaDeVista } from '../services/repositorioPeliculasUsuario';
+import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import * as Haptics from 'expo-haptics';
 import { useQueries } from '@tanstack/react-query';
 import { obtenerPlataformasES } from '../hooks/useDescubrir';
 import type { PeliculaUsuario } from '../types';
@@ -61,6 +63,8 @@ export function BibliotecaTab({
 
   // ESTADOS DE UI Y FILTRADO
   const [seccion, setSeccion] = useState<0 | 1>(0); // 0: Por Ver, 1: Vistas
+  // Peli vista cuya fecha se está cambiando (mantener pulsada en Vistas)
+  const [cambiandoFecha, setCambiandoFecha] = useState<PeliculaUsuario | null>(null);
   const [orden, setOrden] = useState<'recientes' | 'alpha' | 'fecha_peli' | 'valoracion'>(
     'recientes',
   );
@@ -215,6 +219,9 @@ export function BibliotecaTab({
               <View style={styles.grid}>{anteriores.map(renderCard)}</View>
             </>
           )}
+          <Text style={[styles.pista, { fontFamily }]}>
+            Mantén pulsada una peli para cambiar cuándo la viste.
+          </Text>
         </>
       );
     }
@@ -237,6 +244,15 @@ export function BibliotecaTab({
         <Pressable
           style={[styles.card, SHADOWS.macLight]}
           onPress={() => onPeliculaClick(p.idPelicula)}
+          onLongPress={
+            seccion === 1
+              ? () => {
+                  void Haptics.selectionAsync();
+                  setCambiandoFecha(p);
+                }
+              : undefined
+          }
+          delayLongPress={350}
         >
           <Image
             source={{ uri: posterUrl(p.rutaPoster, 'w342')! }}
@@ -432,6 +448,22 @@ export function BibliotecaTab({
         </Pressable>
       </Modal>
 
+      {/* Fecha exacta de vista: selector nativo al mantener pulsada una peli en Vistas */}
+      {cambiandoFecha && (
+        <DateTimePicker
+          value={new Date(fechaDeVista(cambiandoFecha) || Date.now())}
+          mode="date"
+          maximumDate={new Date()}
+          onChange={(evento: DateTimePickerEvent, elegida?: Date) => {
+            const peli = cambiandoFecha;
+            setCambiandoFecha(null);
+            if (evento.type === 'set' && elegida) {
+              void actualizarFechaVisto(peli.idPelicula, elegida.getTime()).catch(() => undefined);
+            }
+          }}
+        />
+      )}
+
       {/* MENÚ DE ORDENACIÓN */}
       <FilterSortMenu
         visible={showSortMenu}
@@ -474,6 +506,13 @@ export function BibliotecaTab({
 }
 
 const styles = StyleSheet.create({
+  pista: {
+    color: 'rgba(148,163,184,0.7)',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 18,
+    marginBottom: 8,
+  },
   container: { flex: 1, backgroundColor: '#020617' },
   vacio: { alignItems: 'center', paddingHorizontal: 36, paddingTop: 48, gap: 12 },
   vacioTitulo: { color: '#F8FAFC', fontSize: 20, fontWeight: '700', textAlign: 'center' },
@@ -557,7 +596,12 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
-  sectionHeaderLine: { flex: 1, height: 1, backgroundColor: 'rgba(105,223,217,0.2)', marginLeft: 16 },
+  sectionHeaderLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(105,223,217,0.2)',
+    marginLeft: 16,
+  },
   activeFilterBar: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -8,6 +8,7 @@
 import {
   collection,
   deleteDoc,
+  deleteField,
   doc,
   getDoc,
   getDocs,
@@ -96,14 +97,20 @@ export async function marcarComoVista(
   datos: DatosPeliculaBiblioteca,
   existente: PeliculaUsuario | null,
   valoracion: number,
-  fechaVisto?: number,
+  /** Fecha en que se vio; null = «antes» (sin fecha); undefined = no cambiarla (hoy si es nueva). */
+  cuando?: number | null,
 ): Promise<void> {
   const uid = uidOrThrow();
   const ref = refPelicula(uid, datos.idPelicula);
+  const fecha = cuando === null ? null : (cuando ?? Date.now());
+  const camposFecha =
+    fecha === null
+      ? { fechaVisto: deleteField(), vistaSinFecha: true }
+      : { fechaVisto: fecha, vistaSinFecha: deleteField() };
   if (existente?.estado === 'vista') {
-    await updateDoc(ref, fechaVisto ? { valoracion, fechaVisto } : { valoracion });
+    await updateDoc(ref, cuando === undefined ? { valoracion } : { valoracion, ...camposFecha });
   } else if (existente?.estado === 'por_ver') {
-    await updateDoc(ref, { estado: 'vista', valoracion, fechaVisto: fechaVisto ?? Date.now() });
+    await updateDoc(ref, { estado: 'vista', valoracion, ...camposFecha });
   } else {
     await setDoc(
       ref,
@@ -112,7 +119,7 @@ export async function marcarComoVista(
         estado: 'vista',
         valoracion,
         fechaAnadido: Date.now(),
-        fechaVisto: fechaVisto ?? Date.now(),
+        ...(fecha === null ? { vistaSinFecha: true } : { fechaVisto: fecha }),
       }),
     );
   }
@@ -133,13 +140,25 @@ export async function guardarEnPorVer(datos: DatosPeliculaBiblioteca): Promise<v
 }
 
 /** Cambia la fecha en que el usuario vio la peli. */
-export async function actualizarFechaVisto(idPelicula: number, fechaVisto: number): Promise<void> {
+export async function actualizarFechaVisto(
+  idPelicula: number,
+  fechaVisto: number | null,
+): Promise<void> {
   const uid = uidOrThrow();
-  await updateDoc(refPelicula(uid, idPelicula), { fechaVisto });
+  await updateDoc(
+    refPelicula(uid, idPelicula),
+    fechaVisto === null
+      ? { fechaVisto: deleteField(), vistaSinFecha: true }
+      : { fechaVisto, vistaSinFecha: deleteField() },
+  );
 }
 
-/** Fecha de referencia de una peli vista: cuándo se vio o, si no consta, cuándo se añadió. */
+/**
+ * Fecha de referencia de una peli vista: cuándo se vio. Si se marcó «antes» (sin fecha), 0: va al
+ * final y al grupo «anteriores». Las antiguas sin fecha usan cuándo se añadieron.
+ */
 export function fechaDeVista(p: PeliculaUsuario): number {
+  if (p.vistaSinFecha) return 0;
   return p.fechaVisto ?? p.fechaAnadido;
 }
 

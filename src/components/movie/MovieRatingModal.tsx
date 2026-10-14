@@ -4,17 +4,25 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { COLORS } from '../../theme/colors';
 import { SHADOWS } from '../../theme/theme';
-import { SelectorFechaVista } from './SelectorFechaVista';
+import {
+  SelectorFechaVista,
+  cuandoDeFecha,
+  fechaDeCuando,
+  type CuandoVista,
+} from './SelectorFechaVista';
 
 type Props = {
   visible: boolean;
   onClose: () => void;
-  /** Guarda la peli como vista con su nota (0 = sin nota) y la fecha en que se vio. */
-  onGuardar: (valor: number, fechaVisto: number) => void;
+  /**
+   * Guarda la peli como vista con su nota (0 = sin nota). La fecha: número, null («antes», sin
+   * fecha) o undefined si no se ha tocado (se queda la que había, o hoy si es nueva).
+   */
+  onGuardar: (valor: number, fechaVisto?: number | null) => void;
   titulo?: string;
   valorInicial: number;
-  /** Fecha de vista actual (si ya está vista) o undefined para "hoy". */
-  fechaInicial?: number;
+  /** Fecha de vista actual (null si se vio «antes»), o undefined si aún no está vista. */
+  fechaInicial?: number | null;
   fontFamily: string;
 };
 
@@ -22,13 +30,18 @@ export const MovieRatingModal = React.memo(
   ({ visible, onClose, onGuardar, titulo, valorInicial, fechaInicial, fontFamily }: Props) => {
     const [valorSel, setValorSel] = React.useState(valorInicial > 0 ? valorInicial : 0);
     const [valorNegativa, setValorNegativa] = React.useState(valorInicial === -1);
-    const [fecha, setFecha] = React.useState(fechaInicial ?? Date.now());
+    const [cuando, setCuando] = React.useState<CuandoVista>(
+      fechaInicial === undefined ? 'semana' : cuandoDeFecha(fechaInicial),
+    );
+    const [tocado, setTocado] = React.useState(false);
+    const fecha = tocado ? fechaDeCuando(cuando) : undefined;
 
     React.useEffect(() => {
       if (visible) {
         setValorSel(valorInicial > 0 ? valorInicial : 0);
         setValorNegativa(valorInicial === -1);
-        setFecha(fechaInicial ?? Date.now());
+        setCuando(fechaInicial === undefined ? 'semana' : cuandoDeFecha(fechaInicial));
+        setTocado(false);
       }
     }, [visible, valorInicial, fechaInicial]);
 
@@ -102,7 +115,14 @@ export const MovieRatingModal = React.memo(
                 </Pressable>
               </View>
 
-              <SelectorFechaVista fecha={fecha} onCambio={setFecha} fontFamily={fontFamily} />
+              <SelectorFechaVista
+                valor={cuando}
+                onCambio={(v) => {
+                  setCuando(v);
+                  setTocado(true);
+                }}
+                fontFamily={fontFamily}
+              />
 
               <View style={styles.modalActions}>
                 <Pressable style={styles.modalActionSec} onPress={onClose}>
