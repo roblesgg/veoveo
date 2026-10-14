@@ -8,6 +8,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
 
 import { useAuth } from '../context/AuthContext';
@@ -66,6 +67,11 @@ const linking = {
  */
 export function RootNavigator() {
   const { user, loading } = useAuth();
+  // Pantallas de detalle: la transición del sistema (entras «dentro»); la configuración del Match
+  // sube como una hoja. Con reducir movimiento, todo con fundido.
+  const reducir = useReducedMotion();
+  const detalle = { animation: reducir ? ('fade' as const) : ('default' as const) };
+  const hoja = { animation: reducir ? ('fade' as const) : ('slide_from_bottom' as const) };
 
   return (
     <NavigationContainer linking={linking}>
@@ -102,21 +108,29 @@ export function RootNavigator() {
             /* FLUJO C: Acceso total a la aplicación (App Stack) */
             <>
               <Stack.Screen name="Main" component={MainScreen} />
-              <Stack.Screen name="Perfil" component={PerfilScreen} />
-              <Stack.Screen name="Bloqueados" component={BloqueadosScreen} />
-              <Stack.Screen name="Privacidad" component={PrivacidadScreen} />
-              <Stack.Screen name="Cuenta" component={CuentaScreen} />
-              <Stack.Screen name="Notificaciones" component={NotificacionesScreen} />
-              <Stack.Screen name="Solicitudes" component={SolicitudesScreen} />
-              <Stack.Screen name="BibliotecaAmigo" component={BibliotecaAmigoScreen} />
-              <Stack.Screen name="Ajustes" component={AjustesScreen} />
-              <Stack.Screen name="Actor" component={ActorScreen} />
-              <Stack.Screen name="Pelicula" component={PeliculaScreen} />
-              <Stack.Screen name="Conversacion" component={ConversacionScreen} />
-              <Stack.Screen name="NuevoChat" component={NuevoChatScreen} />
-              <Stack.Screen name="InfoGrupo" component={InfoGrupoScreen} />
+              <Stack.Screen name="Perfil" component={PerfilScreen} options={detalle} />
+              <Stack.Screen name="Bloqueados" component={BloqueadosScreen} options={detalle} />
+              <Stack.Screen name="Privacidad" component={PrivacidadScreen} options={detalle} />
+              <Stack.Screen name="Cuenta" component={CuentaScreen} options={detalle} />
+              <Stack.Screen
+                name="Notificaciones"
+                component={NotificacionesScreen}
+                options={detalle}
+              />
+              <Stack.Screen name="Solicitudes" component={SolicitudesScreen} options={detalle} />
+              <Stack.Screen
+                name="BibliotecaAmigo"
+                component={BibliotecaAmigoScreen}
+                options={detalle}
+              />
+              <Stack.Screen name="Ajustes" component={AjustesScreen} options={detalle} />
+              <Stack.Screen name="Actor" component={ActorScreen} options={detalle} />
+              <Stack.Screen name="Pelicula" component={PeliculaScreen} options={detalle} />
+              <Stack.Screen name="Conversacion" component={ConversacionScreen} options={detalle} />
+              <Stack.Screen name="NuevoChat" component={NuevoChatScreen} options={detalle} />
+              <Stack.Screen name="InfoGrupo" component={InfoGrupoScreen} options={detalle} />
               <Stack.Screen name="MovieMatch" component={MovieMatchScreen} />
-              <Stack.Screen name="MatchConfig" component={MatchConfigScreen} />
+              <Stack.Screen name="MatchConfig" component={MatchConfigScreen} options={hoja} />
             </>
           )}
         </Stack.Navigator>
