@@ -11,8 +11,8 @@ import { COLORS } from '../../theme/colors';
 import { FUENTES } from '../../theme/useMontserrat';
 import { LoaderCaida, type ColorLoader } from './LoaderCaida';
 
-// Forma: estrellas (decidido por Álvaro). Color: pendiente de su elección (morado original o turquesa)
-export const COLOR_LOADER: ColorLoader = 'turquesa';
+// Forma: estrellas. Color: el morado original de la referencia (Álvaro, 14-10; se revisa al verlo)
+export const COLOR_LOADER: ColorLoader = 'morado';
 
 // Lado de una pieza en su punto más grande. El grande es el del original (caja de 100 a escala 0,5).
 const TAMANOS = { pequeno: 16, mediano: 30, grande: 50 } as const;

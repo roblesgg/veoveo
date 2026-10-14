@@ -5,9 +5,10 @@
  *
  * Orden del mazo:
  * 1. Lo que está en el Por ver de varios participantes (lo más probable que coincida).
- * 2. Intercaladas: el Por ver de cada uno, recomendaciones para el grupo y las Vistas de
- *    quien lo permite en su privacidad (`vistasEnMatch`).
- * 3. Si no llega, tendencias y populares de relleno.
+ * 2. El Por ver de cada uno, intercalado entre participantes (hasta el 75 % del mazo).
+ * 3. Por turnos: recomendaciones para el grupo y las Vistas de quien lo permite en su privacidad
+ *    (`vistasEnMatch`).
+ * 4. Si no llega, tendencias y populares de relleno.
  * La biblioteca de quien no la comparte (o no es amigo de quien crea) simplemente no entra.
  */
 
@@ -136,17 +137,29 @@ export function componerMazo(
   // 1. En el Por ver de varios
   barajar([...cartas.values()].filter((c) => (c.pv?.length ?? 0) >= 2)).forEach(meter);
 
-  // 2. Intercaladas por turnos
+  // 2. El Por ver de cada uno, intercalado entre participantes, ANTES que nada más: es lo que
+  //    de verdad quieren ver (Álvaro, 14-10). Hasta el 75 % del mazo, para que siempre quede
+  //    sitio para alguna recomendación.
+  const topePorVer = Math.round(tamano * 0.75);
+  const colasPorVer = bibliotecas.map((b) =>
+    barajar(b.porVer.map((p) => cartas.get(p.idPelicula)!)),
+  );
+  for (let i = 0; mazo.length < topePorVer && colasPorVer.some((c) => c.length > i); i++) {
+    colasPorVer.forEach((c) => mazo.length < topePorVer && meter(c[i]));
+  }
+
+  // 3. Luego, por turnos: recomendaciones para el grupo, las Vistas permitidas y lo que quede
+  //    del Por ver
   const colas: CartaMazo[][] = [
-    ...bibliotecas.map((b) => barajar(b.porVer.map((p) => cartas.get(p.idPelicula)!))),
     recomendadas.map((m) => cartas.get(m.id) ?? desdeTmdb(m, true)),
     ...bibliotecas.map((b) => barajar(b.vistas.map((p) => cartas.get(p.idPelicula)!))),
+    ...colasPorVer,
   ];
   for (let i = 0; mazo.length < tamano && colas.some((c) => c.length > i); i++) {
     colas.forEach((c) => meter(c[i]));
   }
 
-  // 3. Relleno
+  // 4. Relleno (tendencias y populares) solo si no llega
   extra.forEach((m) => meter(desdeTmdb(m, false)));
   return mazo;
 }
