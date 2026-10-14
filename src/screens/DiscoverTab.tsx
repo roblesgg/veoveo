@@ -47,6 +47,7 @@ import { CategoryModal } from '../components/discover/CategoryModal';
 import { EstadoError, EstadoVacio } from '../components/common/EstadoPantalla';
 import { useLanguage } from '../context/LanguageContext';
 import { Cargando } from '../components/common/Cargando';
+import { CampoBusqueda } from '../components/common/Campos';
 
 /**
  * 🚀 [MEMO] Item de Película para la Grilla de Búsqueda.
@@ -285,21 +286,13 @@ export function DiscoverTab({
             entering={FadeInDown}
             style={[styles.searchArea, { top: Math.max(insets.top, 12) + 80 }]}
           >
-            <View style={[styles.searchField, SHADOWS.macLight]}>
-              <TextInput
-                ref={searchInputRef}
-                value={textoBuscar}
-                onChangeText={setTextoBuscar}
-                placeholder={tipoBusqueda === 'movie' ? 'Buscar películas...' : 'Buscar actores...'}
-                placeholderTextColor="rgba(255,255,255,0.5)"
-                style={{ flex: 1, color: '#fff', fontFamily }}
-              />
-              {textoBuscar.length > 0 && (
-                <Pressable onPress={() => setTextoBuscar('')} style={styles.clearBtn} hitSlop={8}>
-                  <Ionicons name="close-circle" size={20} color="rgba(255,255,255,0.4)" />
-                </Pressable>
-              )}
-            </View>
+            <CampoBusqueda
+              ref={searchInputRef}
+              value={textoBuscar}
+              onChangeText={setTextoBuscar}
+              placeholder={tipoBusqueda === 'movie' ? 'Buscar películas...' : 'Buscar actores...'}
+              estilo={[styles.searchField, SHADOWS.macLight]}
+            />
             <View style={styles.typeSelector}>
               <Pressable
                 onPress={() => setTipoBusqueda('movie')}
@@ -502,18 +495,7 @@ const styles = StyleSheet.create({
   perfilFotoMini: { width: '100%', height: '100%' },
 
   searchArea: { position: 'absolute', left: 20, right: 20 },
-  searchField: {
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    marginBottom: 12,
-  },
-  clearBtn: { paddingLeft: 8 },
+  searchField: { marginBottom: 12 },
   typeSelector: { flexDirection: 'row', gap: 8 },
   typeBtn: {
     paddingHorizontal: 16,

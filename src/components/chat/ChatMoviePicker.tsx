@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, StyleSheet, Pressable, TextInput, FlatList } from 'react-native';
+import { Modal, View, Text, StyleSheet, Pressable, FlatList } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Image as ExpoImage } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,6 +10,7 @@ import { COLORS } from '../../theme/colors';
 import { SHADOWS } from '../../theme/theme';
 
 import { Cargando } from '../common/Cargando';
+import { CampoBusqueda } from '../common/Campos';
 
 type Props = {
   visible: boolean;
@@ -109,10 +110,9 @@ export const ChatMoviePicker = ({ visible, mode, onClose, onSelect, fontFamily }
 
           {mode === 'explorar' && (
             <View style={styles.searchBox}>
-              <TextInput
-                style={[styles.input, { fontFamily }]}
+              <CampoBusqueda
+                estilo={styles.input}
                 placeholder="Buscar película..."
-                placeholderTextColor="rgba(255,255,255,0.3)"
                 value={search}
                 onChangeText={setSearch}
                 onSubmitEditing={handleSearch}
@@ -176,13 +176,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   searchBox: { flexDirection: 'row', gap: 10, marginBottom: 20 },
-  input: {
-    flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 16,
-    padding: 14,
-    color: '#fff',
-  },
+  input: { flex: 1 },
   searchBtn: {
     width: 52,
     height: 52,

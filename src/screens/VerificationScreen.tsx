@@ -16,7 +16,7 @@ import { useMontserrat } from '../theme/useMontserrat';
 import { SHADOWS } from '../theme/theme';
 import { sendEmailVerification } from 'firebase/auth';
 
-import { Cargando } from '../components/common/Cargando';
+import { BotonPrincipal } from '../components/common/Botones';
 
 export function VerificationScreen() {
   const insets = useSafeAreaInsets();
@@ -84,17 +84,12 @@ export function VerificationScreen() {
               Una vez que hayas pulsado el enlace en el correo, dale al botón de abajo:
             </Text>
 
-            <Pressable
-              style={[styles.mainBtn, SHADOWS.macLight]}
+            <BotonPrincipal
+              texto="YA LO HE VERIFICADO"
+              estilo={styles.mainBtn}
               onPress={onCheckStatus}
-              disabled={cargando}
-            >
-              {cargando ? (
-                <Cargando tamano="pequeno" color="#fff" />
-              ) : (
-                <Text style={[styles.mainBtnText, { fontFamily: ff }]}>YA LO HE VERIFICADO</Text>
-              )}
-            </Pressable>
+              cargando={cargando}
+            />
 
             {/* FEEDBACK VISUAL */}
             {mensaje && <Text style={[styles.msg, { fontFamily: ff }]}>{mensaje}</Text>}
@@ -161,15 +156,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     lineHeight: 20,
   },
-  mainBtn: {
-    backgroundColor: '#fff',
-    height: 52,
-    borderRadius: 26,
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  mainBtnText: { color: '#000', fontWeight: '900', fontSize: 15 },
+  mainBtn: { width: '100%' },
   msg: { color: '#7CFC9A', marginTop: 16, textAlign: 'center', fontSize: 13 },
   err: { color: '#ff8a80', marginTop: 16, textAlign: 'center', fontSize: 13 },
   footer: { marginTop: 40, alignItems: 'center' },

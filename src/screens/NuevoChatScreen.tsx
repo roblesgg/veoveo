@@ -4,13 +4,15 @@
  * con varios, grupo con nombre y emoji. Solo amigos (lo exigen las reglas).
  */
 import { useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { IconCheck, IconChevronLeft, IconSearch } from '@tabler/icons-react-native';
+import { IconCheck, IconChevronLeft } from '@tabler/icons-react-native';
 import { useSocialData } from '../hooks/social/useSocialData';
 import { abrirChatIndividual, crearGrupo } from '../services/repositorioChats';
 import { Avatar } from '../components/common/Avatar';
+import { BotonPrincipal } from '../components/common/Botones';
+import { CampoBusqueda, CampoTexto } from '../components/common/Campos';
 import { EMOJIS_GRUPO, SelectorEmoji } from '../components/chat/SelectorEmoji';
 import { COLORS } from '../theme/colors';
 import { FUENTES } from '../theme/useMontserrat';
@@ -40,7 +42,9 @@ export function NuevoChatScreen() {
     setCreando(true);
     setError(null);
     try {
-      const chatId = esGrupo ? await crearGrupo(elegidos, nombre, emoji) : await abrirChatIndividual(elegidos[0]);
+      const chatId = esGrupo
+        ? await crearGrupo(elegidos, nombre, emoji)
+        : await abrirChatIndividual(elegidos[0]);
       navigation.replace('Conversacion', { chatId });
     } catch {
       setError('No hemos podido crear el chat. Revisa la conexión.');
@@ -60,27 +64,22 @@ export function NuevoChatScreen() {
       {esGrupo && (
         <View style={styles.grupo}>
           <SelectorEmoji valor={emoji} onCambio={setEmoji} />
-          <TextInput
+          <CampoTexto
             value={nombre}
             onChangeText={setNombre}
             placeholder="Nombre del grupo"
-            placeholderTextColor={COLORS.textMuted}
-            style={styles.campoNombre}
+            estilo={styles.campoNombre}
             maxLength={40}
           />
         </View>
       )}
 
-      <View style={styles.buscador}>
-        <IconSearch size={18} color={COLORS.textMuted} strokeWidth={2} />
-        <TextInput
-          value={filtro}
-          onChangeText={setFiltro}
-          placeholder="Buscar entre tus amigos"
-          placeholderTextColor={COLORS.textMuted}
-          style={styles.campo}
-        />
-      </View>
+      <CampoBusqueda
+        value={filtro}
+        onChangeText={setFiltro}
+        placeholder="Buscar entre tus amigos"
+        estilo={styles.buscador}
+      />
 
       <FlatList
         data={lista}
@@ -88,13 +87,20 @@ export function NuevoChatScreen() {
         contentContainerStyle={{ paddingBottom: 120 }}
         ListEmptyComponent={
           <Text style={styles.vacio}>
-            {amigos.length === 0 ? 'Aún no tienes amigos. Añádelos desde Social.' : 'Nadie se llama así.'}
+            {amigos.length === 0
+              ? 'Aún no tienes amigos. Añádelos desde Social.'
+              : 'Nadie se llama así.'}
           </Text>
         }
         renderItem={({ item }) => {
           const marcado = elegidos.includes(item.uid);
           return (
-            <Pressable style={styles.fila} onPress={() => alternar(item.uid)} accessibilityRole="checkbox" accessibilityState={{ checked: marcado }}>
+            <Pressable
+              style={styles.fila}
+              onPress={() => alternar(item.uid)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: marcado }}
+            >
               <Avatar uri={item.fotoPerfil} nombre={item.username} tamano={44} />
               <Text style={styles.nombre}>{item.username}</Text>
               <View style={[styles.casilla, marcado && styles.casillaOn]}>
@@ -107,15 +113,17 @@ export function NuevoChatScreen() {
 
       {error && <Text style={styles.error}>{error}</Text>}
       <View style={[styles.pieBoton, { bottom: insets.bottom + 20 }]}>
-        <Pressable
+        <BotonPrincipal
+          texto={
+            elegidos.length === 0
+              ? 'Elige a quién escribir'
+              : esGrupo
+                ? `Crear grupo (${elegidos.length})`
+                : 'Escribir'
+          }
           onPress={() => void empezar()}
-          disabled={elegidos.length === 0 || creando}
-          style={[styles.boton, (elegidos.length === 0 || creando) && { opacity: 0.4 }]}
-        >
-          <Text style={styles.botonTexto}>
-            {elegidos.length === 0 ? 'Elige a quién escribir' : esGrupo ? `Crear grupo (${elegidos.length})` : 'Escribir'}
-          </Text>
-        </Pressable>
+          desactivado={elegidos.length === 0 || creando}
+        />
       </View>
     </View>
   );
@@ -123,42 +131,55 @@ export function NuevoChatScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: COLORS.background },
-  cabecera: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingBottom: 12 },
-  titulo: { color: COLORS.text, fontSize: 20, fontFamily: FUENTES.titulo },
-  grupo: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, marginBottom: 12 },
-  campoNombre: {
-    flex: 1,
-    height: 48,
-    borderRadius: 999,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    paddingHorizontal: 16,
-    color: COLORS.text,
-    fontSize: 16,
-    fontFamily: FUENTES.texto,
-  },
-  buscador: {
-    marginHorizontal: 20,
-    marginBottom: 8,
-    height: 44,
-    borderRadius: 999,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+  cabecera: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 16,
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingBottom: 12,
   },
-  campo: { flex: 1, color: COLORS.text, fontSize: 15, fontFamily: FUENTES.texto },
-  fila: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 20, paddingVertical: 10 },
+  titulo: { color: COLORS.text, fontSize: 20, fontFamily: FUENTES.titulo },
+  grupo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 20,
+    marginBottom: 12,
+  },
+  campoNombre: { flex: 1 },
+  buscador: { marginHorizontal: 20, marginBottom: 8 },
+  fila: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
   nombre: { flex: 1, color: COLORS.text, fontSize: 16, fontFamily: FUENTES.texto },
-  casilla: { width: 26, height: 26, borderRadius: 13, borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)', alignItems: 'center', justifyContent: 'center' },
+  casilla: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   casillaOn: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  vacio: { color: COLORS.textMuted, fontSize: 15, fontFamily: FUENTES.texto, textAlign: 'center', marginTop: 40, paddingHorizontal: 36 },
-  error: { color: COLORS.error, fontSize: 13, fontFamily: FUENTES.texto, textAlign: 'center', marginBottom: 90 },
+  vacio: {
+    color: COLORS.textMuted,
+    fontSize: 15,
+    fontFamily: FUENTES.texto,
+    textAlign: 'center',
+    marginTop: 40,
+    paddingHorizontal: 36,
+  },
+  error: {
+    color: COLORS.error,
+    fontSize: 13,
+    fontFamily: FUENTES.texto,
+    textAlign: 'center',
+    marginBottom: 90,
+  },
   pieBoton: { position: 'absolute', left: 20, right: 20 },
-  boton: { height: 52, borderRadius: 999, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center' },
-  botonTexto: { color: COLORS.onAccent, fontSize: 16, fontFamily: FUENTES.titulo },
 });

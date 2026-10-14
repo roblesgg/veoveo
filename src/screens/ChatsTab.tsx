@@ -4,15 +4,17 @@
  * con no leídos, silenciados y Movie Match en curso. Pulsación larga: silenciar o borrar para mí.
  */
 import { memo, useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
-import { IconBell, IconBellOff, IconCards, IconEdit, IconSearch, IconTrash } from '@tabler/icons-react-native';
+import { IconBell, IconBellOff, IconCards, IconEdit, IconTrash } from '@tabler/icons-react-native';
 import { useChats } from '../context/ChatsContext';
 import { useAuth } from '../context/AuthContext';
 import { nombreDe, usePerfiles } from '../hooks/usePerfiles';
 import { contarNoLeidos, ocultarChat, silenciarChat } from '../services/repositorioChats';
 import { Avatar } from '../components/common/Avatar';
+import { BotonPrincipal } from '../components/common/Botones';
+import { CampoBusqueda } from '../components/common/Campos';
 import { Esqueleto } from '../components/common/Esqueleto';
 import { HojaAcciones } from '../components/common/HojaAcciones';
 import { IconoPalomitas } from '../components/iconos/IconosPropios';
@@ -29,7 +31,11 @@ type Props = {
 };
 
 /** Título y avatar de un chat: el nombre del grupo o el del otro participante. */
-export function presentacionChat(chat: Chat, yo: string, perfiles: Record<string, UsuarioPerfil | undefined>) {
+export function presentacionChat(
+  chat: Chat,
+  yo: string,
+  perfiles: Record<string, UsuarioPerfil | undefined>,
+) {
   if (chat.type === 'group') {
     return { titulo: chat.name || 'Grupo', emoji: chat.emoji ?? '🍿', foto: null, otro: null };
   }
@@ -47,10 +53,14 @@ export function ChatsTab({ onAbrirChat, onNuevoChat, onPerfilClick, userFoto }: 
   const [seleccionado, setSeleccionado] = useState<Chat | null>(null);
 
   const otros = useMemo(
-    () => chats.flatMap((c) => (c.type === 'individual' ? c.participants.filter((p) => p !== yo) : [])),
+    () =>
+      chats.flatMap((c) => (c.type === 'individual' ? c.participants.filter((p) => p !== yo) : [])),
     [chats, yo],
   );
-  const remitentes = useMemo(() => chats.map((c) => c.lastMessage?.senderId).filter(Boolean) as string[], [chats]);
+  const remitentes = useMemo(
+    () => chats.map((c) => c.lastMessage?.senderId).filter(Boolean) as string[],
+    [chats],
+  );
   const perfiles = usePerfiles([...otros, ...remitentes]);
 
   const filtrados = useMemo(() => {
@@ -65,7 +75,12 @@ export function ChatsTab({ onAbrirChat, onNuevoChat, onPerfilClick, userFoto }: 
     <View style={styles.flex}>
       <View style={[styles.cabecera, { paddingTop: insets.top + 12 }]}>
         <Text style={styles.titulo}>Chats</Text>
-        <Pressable onPress={onNuevoChat} style={styles.icono} hitSlop={8} accessibilityLabel="Nuevo chat">
+        <Pressable
+          onPress={onNuevoChat}
+          style={styles.icono}
+          hitSlop={8}
+          accessibilityLabel="Nuevo chat"
+        >
           <IconEdit size={24} color={COLORS.text} strokeWidth={2} />
         </Pressable>
         <Pressable onPress={onPerfilClick} hitSlop={8} accessibilityLabel="Tu perfil">
@@ -73,16 +88,12 @@ export function ChatsTab({ onAbrirChat, onNuevoChat, onPerfilClick, userFoto }: 
         </Pressable>
       </View>
 
-      <View style={styles.buscador}>
-        <IconSearch size={18} color={COLORS.textMuted} strokeWidth={2} />
-        <TextInput
-          value={busqueda}
-          onChangeText={setBusqueda}
-          placeholder="Buscar chats"
-          placeholderTextColor={COLORS.textMuted}
-          style={styles.campo}
-        />
-      </View>
+      <CampoBusqueda
+        value={busqueda}
+        onChangeText={setBusqueda}
+        placeholder="Buscar chats"
+        estilo={styles.buscador}
+      />
 
       {cargando ? (
         <View style={{ paddingHorizontal: 20, gap: 18, marginTop: 12 }}>
@@ -106,9 +117,7 @@ export function ChatsTab({ onAbrirChat, onNuevoChat, onPerfilClick, userFoto }: 
           <IconoPalomitas size={64} />
           <Text style={styles.vacioTitulo}>Aún no tienes chats</Text>
           <Text style={styles.vacioTexto}>Escribe a un amigo y elegid peli juntos.</Text>
-          <Pressable style={styles.boton} onPress={onNuevoChat}>
-            <Text style={styles.botonTexto}>Nuevo chat</Text>
-          </Pressable>
+          <BotonPrincipal texto="Nuevo chat" onPress={onNuevoChat} estilo={styles.boton} />
         </View>
       ) : (
         <FlatList
@@ -138,7 +147,12 @@ export function ChatsTab({ onAbrirChat, onNuevoChat, onPerfilClick, userFoto }: 
             ? [
                 {
                   texto: silenciado ? 'Quitar silencio' : 'Silenciar',
-                  icono: (c) => (silenciado ? <IconBell size={22} color={c} /> : <IconBellOff size={22} color={c} />),
+                  icono: (c) =>
+                    silenciado ? (
+                      <IconBell size={22} color={c} />
+                    ) : (
+                      <IconBellOff size={22} color={c} />
+                    ),
                   onPress: () => void silenciarChat(seleccionado.id, !silenciado),
                 },
                 {
@@ -184,7 +198,11 @@ const FilaChat = memo(function FilaChat({
   let vistaPrevia = 'Sin mensajes todavía';
   if (ultimo) {
     const autor =
-      ultimo.senderId === yo ? 'Tú: ' : chat.type === 'group' ? `${nombreDe(perfiles[ultimo.senderId])}: ` : '';
+      ultimo.senderId === yo
+        ? 'Tú: '
+        : chat.type === 'group'
+          ? `${nombreDe(perfiles[ultimo.senderId])}: `
+          : '';
     vistaPrevia = ultimo.eliminado ? 'Mensaje eliminado' : `${autor}${ultimo.text}`;
   }
 
@@ -193,7 +211,10 @@ const FilaChat = memo(function FilaChat({
       onPress={onPress}
       onLongPress={onLongPress}
       delayLongPress={300}
-      style={({ pressed }) => [styles.fila, pressed && { backgroundColor: 'rgba(255,255,255,0.04)' }]}
+      style={({ pressed }) => [
+        styles.fila,
+        pressed && { backgroundColor: 'rgba(255,255,255,0.04)' },
+      ]}
       accessibilityRole="button"
       accessibilityLabel={`${titulo}${noLeido ? ', mensajes sin leer' : ''}`}
     >
@@ -211,7 +232,14 @@ const FilaChat = memo(function FilaChat({
           </Text>
           {estado?.silenciado && <IconBellOff size={15} color={COLORS.textMuted} strokeWidth={2} />}
         </View>
-        <Text style={[styles.previa, ultimo?.eliminado && { fontStyle: 'italic' }, noLeido && { color: COLORS.text }]} numberOfLines={1}>
+        <Text
+          style={[
+            styles.previa,
+            ultimo?.eliminado && { fontStyle: 'italic' },
+            noLeido && { color: COLORS.text },
+          ]}
+          numberOfLines={1}
+        >
           {vistaPrevia}
         </Text>
         {chat.activeMatchId ? (
@@ -227,7 +255,9 @@ const FilaChat = memo(function FilaChat({
         </Text>
         {noLeido && (
           <View style={styles.contador}>
-            <Text style={styles.contadorTexto}>{cuantos && cuantos > 99 ? '99+' : (cuantos ?? 1)}</Text>
+            <Text style={styles.contadorTexto}>
+              {cuantos && cuantos > 99 ? '99+' : (cuantos ?? 1)}
+            </Text>
           </View>
         )}
       </View>
@@ -237,24 +267,29 @@ const FilaChat = memo(function FilaChat({
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: COLORS.background },
-  cabecera: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingBottom: 12 },
-  titulo: { flex: 1, color: COLORS.text, fontSize: 28, fontFamily: FUENTES.titulo, letterSpacing: -0.3 },
-  icono: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  buscador: {
-    marginHorizontal: 20,
-    marginBottom: 8,
-    height: 44,
-    borderRadius: 999,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+  cabecera: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 16,
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingBottom: 12,
   },
-  campo: { flex: 1, color: COLORS.text, fontSize: 15, fontFamily: FUENTES.texto },
-  fila: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 12 },
+  titulo: {
+    flex: 1,
+    color: COLORS.text,
+    fontSize: 28,
+    fontFamily: FUENTES.titulo,
+    letterSpacing: -0.3,
+  },
+  icono: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  buscador: { marginHorizontal: 20, marginBottom: 8 },
+  fila: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
   emoji: {
     width: 52,
     height: 52,
@@ -296,16 +331,18 @@ const styles = StyleSheet.create({
   },
   contadorTexto: { color: COLORS.onAccent, fontSize: 11, fontFamily: FUENTES.titulo },
   vacio: { alignItems: 'center', paddingHorizontal: 36, paddingTop: 56, gap: 12 },
-  vacioTitulo: { color: COLORS.text, fontSize: 20, fontFamily: FUENTES.titulo, textAlign: 'center' },
-  vacioTexto: { color: COLORS.textMuted, fontSize: 15, lineHeight: 21, fontFamily: FUENTES.texto, textAlign: 'center' },
-  boton: {
-    marginTop: 8,
-    height: 52,
-    paddingHorizontal: 32,
-    borderRadius: 999,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
+  vacioTitulo: {
+    color: COLORS.text,
+    fontSize: 20,
+    fontFamily: FUENTES.titulo,
+    textAlign: 'center',
   },
-  botonTexto: { color: COLORS.onAccent, fontSize: 16, fontFamily: FUENTES.titulo },
+  vacioTexto: {
+    color: COLORS.textMuted,
+    fontSize: 15,
+    lineHeight: 21,
+    fontFamily: FUENTES.texto,
+    textAlign: 'center',
+  },
+  boton: { marginTop: 8, paddingHorizontal: 32 },
 });

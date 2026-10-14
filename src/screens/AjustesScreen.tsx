@@ -3,7 +3,7 @@ import { MuestraLoaders } from '../components/common/MuestraLoaders';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState, useEffect, useMemo } from 'react';
-import { Alert, Image, Linking, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Image, Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { GradientBackground } from '../components/GradientBackground';
@@ -18,6 +18,7 @@ import { URL_NORMAS, URL_PRIVACIDAD } from '../components/common/AvisoLegal';
 import { usePlataformasRegion } from '../hooks/usePlataformasRegion';
 import { COLORS } from '../theme/colors';
 import { Cargando } from '../components/common/Cargando';
+import { CampoBusqueda } from '../components/common/Campos';
 import { Pulsable } from '../components/common/Pulsable';
 
 export function AjustesScreen() {
@@ -145,12 +146,11 @@ export function AjustesScreen() {
             </View>
           </View>
 
-          <TextInput
+          <CampoBusqueda
             value={busquedaPlataforma}
             onChangeText={setBusquedaPlataforma}
             placeholder="Buscar (ej: Amazon, Movistar, HBO...)"
-            placeholderTextColor="rgba(255,255,255,0.4)"
-            style={[styles.platSearch, { fontFamily }]}
+            estilo={styles.platSearch}
           />
           <View style={styles.platsContainer}>
             {cargandoPlats ? (
@@ -322,15 +322,7 @@ const styles = StyleSheet.create({
   platLogo: { width: 36, height: 36, borderRadius: 10, marginBottom: 8 },
   platName: { color: '#fff', fontSize: 10, fontWeight: '700', textAlign: 'center' },
   check: { position: 'absolute', top: 4, right: 4 },
-  platSearch: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 14,
-    padding: 14,
-    color: '#fff',
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
+  platSearch: { marginBottom: 16 },
   legalText: { color: 'rgba(255,255,255,0.4)', fontSize: 13, lineHeight: 18, marginTop: 12 },
   versionText: {
     color: 'rgba(255,255,255,0.2)',

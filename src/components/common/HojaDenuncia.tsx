@@ -3,7 +3,7 @@
  * si se denuncia a una persona, la opción de bloquearla a la vez.
  */
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconCheck, IconFlag } from '@tabler/icons-react-native';
 import {
@@ -16,7 +16,8 @@ import {
 import { bloquearUsuario } from '../../services/repositorioSocial';
 import { COLORS } from '../../theme/colors';
 import { FUENTES } from '../../theme/useMontserrat';
-import { Cargando } from './Cargando';
+import { BotonPrincipal } from './Botones';
+import { CampoTexto } from './Campos';
 import { FondoCristal } from './FondoCristal';
 import { HojaBase } from './HojaBase';
 import { Pulsable } from './Pulsable';
@@ -89,9 +90,7 @@ export function HojaDenuncia({ objeto, titulo, nombreBloqueo, onCerrar, onBloque
               denunciado no sabrá que has sido tú.
               {bloquear && puedeBloquear ? `\n\nHas bloqueado a ${nombreBloqueo}.` : ''}
             </Text>
-            <Pulsable style={styles.boton} onPress={cerrar} accessibilityRole="button">
-              <Text style={styles.botonTexto}>Cerrar</Text>
-            </Pulsable>
+            <BotonPrincipal texto="Cerrar" onPress={cerrar} estilo={styles.boton} />
           </View>
         ) : (
           <ScrollView keyboardShouldPersistTaps="handled" bounces={false}>
@@ -114,12 +113,11 @@ export function HojaDenuncia({ objeto, titulo, nombreBloqueo, onCerrar, onBloque
                 );
               })}
             </View>
-            <TextInput
+            <CampoTexto
               value={detalle}
               onChangeText={setDetalle}
               placeholder="Cuéntanos más (opcional)"
-              placeholderTextColor={COLORS.textMuted}
-              style={styles.campo}
+              estilo={styles.campo}
               multiline
               maxLength={MAX_DETALLE_DENUNCIA}
             />
@@ -137,18 +135,13 @@ export function HojaDenuncia({ objeto, titulo, nombreBloqueo, onCerrar, onBloque
               </Pulsable>
             )}
             {error && <Text style={styles.error}>{error}</Text>}
-            <Pulsable
-              style={[styles.boton, (!motivo || enviando) && { opacity: 0.4 }]}
-              disabled={!motivo || enviando}
+            <BotonPrincipal
+              texto="Enviar denuncia"
+              estilo={styles.boton}
+              desactivado={!motivo}
+              cargando={enviando}
               onPress={() => void enviar()}
-              accessibilityRole="button"
-            >
-              {enviando ? (
-                <Cargando tamano="pequeno" color={COLORS.onAccent} />
-              ) : (
-                <Text style={styles.botonTexto}>Enviar denuncia</Text>
-              )}
-            </Pulsable>
+            />
           </ScrollView>
         )}
       </View>
@@ -197,20 +190,7 @@ const styles = StyleSheet.create({
   },
   radioOn: { borderColor: COLORS.primary, borderWidth: 6 },
   motivoTexto: { flex: 1, color: COLORS.text, fontSize: 15, fontFamily: FUENTES.texto },
-  campo: {
-    marginTop: 14,
-    minHeight: 80,
-    maxHeight: 140,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    color: COLORS.text,
-    fontSize: 15,
-    fontFamily: FUENTES.texto,
-    textAlignVertical: 'top',
-  },
+  campo: { marginTop: 14, maxHeight: 140 },
   filaBloqueo: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 14 },
   casilla: {
     width: 24,
@@ -229,14 +209,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 12,
   },
-  boton: {
-    marginTop: 18,
-    height: 50,
-    borderRadius: 999,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  botonTexto: { color: COLORS.onAccent, fontSize: 16, fontFamily: FUENTES.titulo },
+  boton: { marginTop: 18 },
   gracias: { alignItems: 'center', gap: 6, paddingVertical: 10 },
 });

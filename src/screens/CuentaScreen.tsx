@@ -5,13 +5,15 @@
  * identificarse (contraseña o Google) justo antes, como exige Firebase.
  */
 import { useState } from 'react';
-import { ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconChevronLeft } from '@tabler/icons-react-native';
 import { useAuth } from '../context/AuthContext';
 import { borrarMisDatos, exportarMisDatos, type PasoBorrado } from '../services/cuentaDatos';
 import { Cargando } from '../components/common/Cargando';
+import { BotonPrincipal } from '../components/common/Botones';
+import { CampoTexto } from '../components/common/Campos';
 import { COLORS } from '../theme/colors';
 import { FUENTES } from '../theme/useMontserrat';
 import { Pulsable } from '../components/common/Pulsable';
@@ -123,27 +125,24 @@ export function CuentaScreen() {
     placeholder: string,
     secreto = false,
   ) => (
-    <TextInput
+    <CampoTexto
       value={valor}
       onChangeText={onCambio}
       placeholder={placeholder}
-      placeholderTextColor={COLORS.textMuted}
       secureTextEntry={secreto}
       autoCapitalize="none"
       autoCorrect={false}
       keyboardType={!secreto && placeholder.includes('correo') ? 'email-address' : 'default'}
-      style={styles.campo}
     />
   );
 
   const boton = (texto: string, onPress: () => void, activo: boolean, peligro = false) => (
-    <Pulsable
+    <BotonPrincipal
+      texto={texto}
       onPress={onPress}
-      disabled={!activo}
-      style={[styles.boton, peligro && styles.botonPeligro, !activo && { opacity: 0.4 }]}
-    >
-      <Text style={[styles.botonTexto, peligro && { color: COLORS.text }]}>{texto}</Text>
-    </Pulsable>
+      desactivado={!activo}
+      variante={peligro ? 'peligro' : 'principal'}
+    />
   );
 
   return (
@@ -272,26 +271,6 @@ const styles = StyleSheet.create({
   ayuda: { color: COLORS.textMuted, fontSize: 13, lineHeight: 19, fontFamily: FUENTES.texto },
   enlace: { color: COLORS.primary, fontSize: 14, fontFamily: FUENTES.seminegrita },
   panel: { gap: 10, marginTop: 4 },
-  campo: {
-    height: 48,
-    borderRadius: 14,
-    backgroundColor: COLORS.background,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    paddingHorizontal: 14,
-    color: COLORS.text,
-    fontSize: 15,
-    fontFamily: FUENTES.texto,
-  },
-  boton: {
-    height: 48,
-    borderRadius: 999,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  botonPeligro: { backgroundColor: COLORS.error },
-  botonTexto: { color: COLORS.onAccent, fontSize: 15, fontFamily: FUENTES.titulo },
   aviso: { color: COLORS.accent, fontSize: 14, lineHeight: 20, fontFamily: FUENTES.texto },
   error: { color: COLORS.error, fontSize: 14, lineHeight: 20, fontFamily: FUENTES.texto },
 });

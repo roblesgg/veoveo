@@ -12,6 +12,7 @@ import {
   type CuandoVista,
 } from './SelectorFechaVista';
 import { Pulsable } from '../common/Pulsable';
+import { BotonPrincipal } from '../common/Botones';
 
 type Props = {
   visible: boolean;
@@ -125,15 +126,11 @@ export const MovieRatingModal = React.memo(
                   <Text style={{ color: 'rgba(255,255,255,0.65)', fontFamily }}>Sin nota</Text>
                 </Pulsable>
 
-                <Pulsable
+                <BotonPrincipal
+                  texto="Guardar"
                   onPress={handleGuardar}
-                  disabled={valorSel === 0 && !valorNegativa}
-                  style={[styles.saveBtnMain, valorSel === 0 && !valorNegativa && { opacity: 0.4 }]}
-                >
-                  <Text style={{ color: '#fff', fontFamily, fontWeight: '800', fontSize: 16 }}>
-                    Guardar
-                  </Text>
-                </Pulsable>
+                  desactivado={valorSel === 0 && !valorNegativa}
+                />
               </View>
             </View>
           </View>
@@ -184,15 +181,4 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   modalActionSec: { padding: 10, alignSelf: 'center' },
-  saveBtnMain: {
-    backgroundColor: '#38bdf8',
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    borderRadius: 20,
-    shadowColor: '#38bdf8',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  },
 });

@@ -6,17 +6,11 @@
  * tuyas (las de Ajustes) y puedes marcar las de quien juega contigo.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  IconCheck,
-  IconFilterOff,
-  IconPlayerPlay,
-  IconSearch,
-  IconX,
-} from '@tabler/icons-react-native';
+import { IconCheck, IconFilterOff, IconPlayerPlay, IconX } from '@tabler/icons-react-native';
 import { useAuth } from '../context/AuthContext';
 import { useSocialData } from '../hooks/social/useSocialData';
 import { nombreDe, usePerfiles } from '../hooks/usePerfiles';
@@ -24,6 +18,8 @@ import { crearMatch } from '../services/repositorioMatches';
 import { observarChat } from '../services/repositorioChats';
 import { Avatar } from '../components/common/Avatar';
 import { Cargando } from '../components/common/Cargando';
+import { BotonPrincipal, Segmentos } from '../components/common/Botones';
+import { CampoBusqueda } from '../components/common/Campos';
 import { HojaAcciones } from '../components/common/HojaAcciones';
 import { usePlataformasRegion } from '../hooks/usePlataformasRegion';
 import { generarMazo, MINIMO_MAZO } from '../services/mazoMatch';
@@ -172,21 +168,14 @@ export function MatchConfigScreen() {
         para el grupo y las Vistas de quien lo permite.
       </Text>
       <Text style={[styles.etiqueta, { marginTop: 12 }]}>¿Dónde lo veis?</Text>
-      <View style={styles.segmentos}>
-        {([true, false] as const).map((v) => (
-          <Pulsable
-            key={String(v)}
-            onPress={() => setFiltrar(v)}
-            style={[styles.segmento, filtrar === v && styles.segmentoOn]}
-            accessibilityRole="radio"
-            accessibilityState={{ selected: filtrar === v }}
-          >
-            <Text style={[styles.segmentoTexto, filtrar === v && styles.segmentoTextoOn]}>
-              {v ? 'Elegir plataformas' : 'Todas'}
-            </Text>
-          </Pulsable>
-        ))}
-      </View>
+      <Segmentos
+        valor={filtrar}
+        onCambio={setFiltrar}
+        opciones={[
+          { valor: true, texto: 'Elegir plataformas' },
+          { valor: false, texto: 'Todas' },
+        ]}
+      />
       {filtrar && (
         <>
           <View style={styles.logos}>
@@ -217,21 +206,14 @@ export function MatchConfigScreen() {
         </>
       )}
       <Text style={[styles.etiqueta, { marginTop: 12 }]}>¿Y las que alguien ya ha visto?</Text>
-      <View style={styles.segmentos}>
-        {([true, false] as const).map((v) => (
-          <Pulsable
-            key={String(v)}
-            onPress={() => setIncluirVistas(v)}
-            style={[styles.segmento, incluirVistas === v && styles.segmentoOn]}
-            accessibilityRole="radio"
-            accessibilityState={{ selected: incluirVistas === v }}
-          >
-            <Text style={[styles.segmentoTexto, incluirVistas === v && styles.segmentoTextoOn]}>
-              {v ? 'También entran' : 'Solo sin ver'}
-            </Text>
-          </Pulsable>
-        ))}
-      </View>
+      <Segmentos
+        valor={incluirVistas}
+        onCambio={setIncluirVistas}
+        opciones={[
+          { valor: true, texto: 'También entran' },
+          { valor: false, texto: 'Solo sin ver' },
+        ]}
+      />
       <Text style={styles.ayuda}>
         Cada uno decide en su Privacidad si sus vistas cuentan para el Match.
       </Text>
@@ -275,16 +257,12 @@ export function MatchConfigScreen() {
             <>
               {cabeceraConfig}
               {amigos.length > 6 && (
-                <View style={styles.buscador}>
-                  <IconSearch size={18} color={COLORS.textMuted} strokeWidth={2} />
-                  <TextInput
-                    value={filtro}
-                    onChangeText={setFiltro}
-                    placeholder="Buscar entre tus amigos"
-                    placeholderTextColor={COLORS.textMuted}
-                    style={styles.campo}
-                  />
-                </View>
+                <CampoBusqueda
+                  value={filtro}
+                  onChangeText={setFiltro}
+                  placeholder="Buscar entre tus amigos"
+                  estilo={styles.buscador}
+                />
               )}
             </>
           }
@@ -354,15 +332,11 @@ export function MatchConfigScreen() {
         ]}
       />
       <View style={[styles.pieBoton, { bottom: insets.bottom + 20 }]}>
-        <Pulsable
+        <BotonPrincipal
+          texto={participantes.length === 0 ? 'Elige al menos un amigo' : 'Empezar'}
           onPress={() => void empezar()}
-          disabled={participantes.length === 0}
-          style={[styles.boton, participantes.length === 0 && { opacity: 0.4 }]}
-        >
-          <Text style={styles.botonTexto}>
-            {participantes.length === 0 ? 'Elige al menos un amigo' : 'Empezar'}
-          </Text>
-        </Pulsable>
+          desactivado={participantes.length === 0}
+        />
       </View>
     </View>
   );
@@ -395,24 +369,6 @@ const styles = StyleSheet.create({
   objetivoOn: { backgroundColor: COLORS.accent, borderColor: COLORS.accent },
   objetivoTexto: { color: COLORS.text, fontSize: 20, fontFamily: FUENTES.titulo },
   objetivoTextoOn: { color: COLORS.onAccent },
-  segmentos: {
-    flexDirection: 'row',
-    padding: 3,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(255,255,255,0.14)',
-  },
-  segmento: {
-    flex: 1,
-    height: 38,
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  segmentoOn: { backgroundColor: COLORS.primary },
-  segmentoTexto: { color: COLORS.text, fontSize: 14, fontFamily: FUENTES.texto },
-  segmentoTextoOn: { color: COLORS.onAccent, fontFamily: FUENTES.titulo },
   logos: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   logo: {
     width: 52,
@@ -430,20 +386,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     backgroundColor: COLORS.surface,
   },
-  buscador: {
-    marginHorizontal: 20,
-    marginBottom: 8,
-    height: 44,
-    borderRadius: 999,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 16,
-  },
-  campo: { flex: 1, color: COLORS.text, fontSize: 15, fontFamily: FUENTES.texto },
+  buscador: { marginHorizontal: 20, marginBottom: 8 },
   fila: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -478,12 +421,4 @@ const styles = StyleSheet.create({
     marginBottom: 90,
   },
   pieBoton: { position: 'absolute', left: 20, right: 20 },
-  boton: {
-    height: 52,
-    borderRadius: 999,
-    backgroundColor: COLORS.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  botonTexto: { color: COLORS.onAccent, fontSize: 16, fontFamily: FUENTES.titulo },
 });

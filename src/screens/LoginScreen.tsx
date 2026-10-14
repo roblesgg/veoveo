@@ -9,7 +9,7 @@ import Constants from 'expo-constants';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState } from 'react';
-import { Alert, Platform, StyleSheet, Text, TextInput, View, Linking } from 'react-native';
+import { Alert, Platform, StyleSheet, Text, View, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
@@ -21,6 +21,8 @@ import { useMontserrat } from '../theme/useMontserrat';
 import { AlertModal } from '../components/common/AlertModal';
 import { AvisoLegal } from '../components/common/AvisoLegal';
 import { Cargando } from '../components/common/Cargando';
+import { BotonPrincipal } from '../components/common/Botones';
+import { CampoTexto } from '../components/common/Campos';
 import { Pulsable } from '../components/common/Pulsable';
 
 export function LoginScreen() {
@@ -60,24 +62,22 @@ export function LoginScreen() {
         ) : null}
 
         {/* INPUTS DE ACCESO */}
-        <TextInput
+        <CampoTexto
           value={email}
           onChangeText={setEmail}
           placeholder="Email"
-          placeholderTextColor="#888"
           underlineColorAndroid="transparent"
           keyboardType="email-address"
           autoCapitalize="none"
-          style={[styles.input, SHADOWS.macLight, { fontFamily: ff }]}
+          estilo={[styles.input, SHADOWS.macLight]}
         />
-        <TextInput
+        <CampoTexto
           value={password}
           onChangeText={setPassword}
           placeholder="Contraseña"
-          placeholderTextColor="#888"
           underlineColorAndroid="transparent"
           secureTextEntry
-          style={[styles.input, SHADOWS.macLight, { fontFamily: ff }]}
+          estilo={[styles.input, SHADOWS.macLight]}
         />
 
         {/* MENSAJES DE ERROR DINÁMICOS */}
@@ -90,9 +90,10 @@ export function LoginScreen() {
         ) : null}
 
         {/* BOTÓN: ACCESO TRADICIONAL */}
-        <Pulsable
-          style={[styles.btn, styles.btnDark, SHADOWS.macLight]}
-          disabled={loading || !firebaseReady}
+        <BotonPrincipal
+          texto="INICIAR SESIÓN"
+          estilo={styles.btnPrincipal}
+          desactivado={loading || !firebaseReady}
           onPress={async () => {
             setErrorMessage('');
             setLoading(true);
@@ -108,9 +109,7 @@ export function LoginScreen() {
               setLoading(false);
             }
           }}
-        >
-          <Text style={[styles.btnText, { fontFamily: ff }]}>INICIAR SESIÓN</Text>
-        </Pulsable>
+        />
 
         {/* BOTÓN: ACCESO CON GOOGLE */}
         <Pulsable
@@ -244,16 +243,7 @@ const styles = StyleSheet.create({
   },
   logo: { fontSize: 48, color: '#fff', textAlign: 'center', marginBottom: 40 },
   warn: { color: '#ffcc80', marginBottom: 16, textAlign: 'center', fontSize: 13 },
-  input: {
-    borderRadius: 24,
-    backgroundColor: '#1e1e2d',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-    paddingHorizontal: 20,
-    height: 52,
-    color: '#fff',
-    marginBottom: 16,
-  },
+  input: { marginBottom: 16 },
   err: { color: COLORS.error, marginBottom: 16, textAlign: 'center', fontSize: 14 },
   btn: {
     height: 50,
@@ -262,9 +252,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 12,
   },
-  btnDark: { backgroundColor: '#000' },
+  btnPrincipal: { marginBottom: 12 },
   btnLight: { backgroundColor: '#fff' },
-  btnText: { color: '#fff', fontWeight: '700' },
   btnTextDark: { color: '#000', fontWeight: '700' },
   link: { color: '#fff', textAlign: 'center' },
   version: { color: 'rgba(255,255,255,0.2)', textAlign: 'center', marginTop: 32, fontSize: 12 },

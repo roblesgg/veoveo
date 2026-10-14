@@ -19,7 +19,6 @@ import {
   Linking,
   Platform,
   Modal,
-  TextInput,
 } from 'react-native';
 import { Image as ExpoImage } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -46,6 +45,7 @@ import { ProfileStats } from '../components/profile/ProfileStats';
 import { ProfileOptions } from '../components/profile/ProfileOptions';
 import { UsernameModal, AvatarModal } from '../components/profile/ProfileModals';
 import { Cargando } from '../components/common/Cargando';
+import { CampoTexto } from '../components/common/Campos';
 
 export function PerfilScreen() {
   const navigation = useNavigation<any>();
@@ -240,14 +240,12 @@ export function PerfilScreen() {
         <View style={styles.modalBackdrop}>
           <View style={styles.bioModal}>
             <Text style={styles.bioModalTitulo}>Tu bio</Text>
-            <TextInput
+            <CampoTexto
               value={bioEditando ?? ''}
               onChangeText={setBioEditando}
               maxLength={160}
               multiline
               placeholder="Terror los viernes, comedias los domingos…"
-              placeholderTextColor="rgba(255,255,255,0.4)"
-              style={styles.bioInput}
               autoFocus
             />
             <Text style={styles.bioContador}>{(bioEditando ?? '').length}/160</Text>
@@ -413,16 +411,6 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   bioModalTitulo: { color: '#fff', fontSize: 18, fontWeight: '800' },
-  bioInput: {
-    minHeight: 90,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    padding: 12,
-    color: '#fff',
-    fontSize: 15,
-    textAlignVertical: 'top',
-  },
   bioContador: { color: 'rgba(255,255,255,0.4)', fontSize: 12, textAlign: 'right' },
   bioBotones: { flexDirection: 'row', gap: 10, justifyContent: 'flex-end' },
   bioBoton: {

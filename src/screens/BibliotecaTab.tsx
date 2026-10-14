@@ -42,6 +42,8 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { RatingBadge } from '../components/RatingBadge';
 import { Pulsable } from '../components/common/Pulsable';
+import { BotonPrincipal } from '../components/common/Botones';
+import { CampoBusqueda } from '../components/common/Campos';
 
 const UNA_SEMANA = 1000 * 60 * 60 * 24 * 7;
 
@@ -332,17 +334,14 @@ export function BibliotecaTab({
         </View>
 
         {buscar && (
-          <View style={[styles.searchFieldContainer, SHADOWS.macLight]}>
-            <TextInput
-              ref={searchInputRef}
-              value={textoBuscar}
-              onChangeText={setTextoBuscar}
-              placeholder="Buscar título..."
-              placeholderTextColor="rgba(255,255,255,0.4)"
-              style={[styles.searchTextInput, { fontFamily }]}
-              autoFocus
-            />
-          </View>
+          <CampoBusqueda
+            ref={searchInputRef}
+            value={textoBuscar}
+            onChangeText={setTextoBuscar}
+            placeholder="Buscar título..."
+            autoFocus
+            estilo={[styles.searchFieldContainer, SHADOWS.macLight]}
+          />
         )}
       </View>
 
@@ -442,9 +441,11 @@ export function BibliotecaTab({
                 </Pulsable>
               ))}
             </ScrollView>
-            <Pulsable style={styles.modalCloseBtn} onPress={() => setShowPlatModal(false)}>
-              <Text style={styles.modalCloseText}>LISTO</Text>
-            </Pulsable>
+            <BotonPrincipal
+              texto="LISTO"
+              onPress={() => setShowPlatModal(false)}
+              estilo={styles.modalCloseBtn}
+            />
           </View>
         </Pressable>
       </Modal>
@@ -546,17 +547,8 @@ const styles = StyleSheet.create({
     top: 175,
     left: 20,
     right: 20,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
     zIndex: 100,
   },
-  searchTextInput: { flex: 1, color: '#fff', fontSize: 16 },
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
   gridItem: { width: '33.33%', padding: 4 },
   card: {
@@ -629,13 +621,5 @@ const styles = StyleSheet.create({
   },
   platItemOn: { backgroundColor: COLORS.primary },
   platItemText: { flex: 1, color: '#fff', fontSize: 16, fontWeight: '700' },
-  modalCloseBtn: {
-    marginTop: 24,
-    backgroundColor: '#fff',
-    height: 54,
-    borderRadius: 27,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalCloseText: { color: '#000', fontSize: 15, fontWeight: '900', letterSpacing: 1 },
+  modalCloseBtn: { marginTop: 24 },
 });

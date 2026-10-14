@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconCards } from '@tabler/icons-react-native';
 import { IconoClaqueta, IconoPalomitas } from './iconos/IconosPropios';
+import { BotonPrincipal } from './common/Botones';
 import { COLORS } from '../theme/colors';
 import { FUENTES } from '../theme/useMontserrat';
 
@@ -84,11 +85,11 @@ export function Bienvenida({ onTerminar }: { onTerminar: () => void }) {
           <View key={p.titulo} style={[styles.punto, i === pagina && styles.puntoOn]} />
         ))}
       </View>
-      <Pressable onPress={siguiente} style={styles.boton} accessibilityRole="button">
-        <Text style={styles.botonTexto}>
-          {pagina === PANTALLAS.length - 1 ? 'Empezar' : 'Siguiente'}
-        </Text>
-      </Pressable>
+      <BotonPrincipal
+        texto={pagina === PANTALLAS.length - 1 ? 'Empezar' : 'Siguiente'}
+        onPress={siguiente}
+        estilo={styles.boton}
+      />
     </View>
   );
 }
@@ -125,13 +126,5 @@ const styles = StyleSheet.create({
   puntos: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: 20 },
   punto: { width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.2)' },
   puntoOn: { width: 24, backgroundColor: COLORS.primary },
-  boton: {
-    marginHorizontal: 20,
-    height: 52,
-    borderRadius: 999,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  botonTexto: { color: COLORS.onAccent, fontSize: 16, fontFamily: FUENTES.titulo },
+  boton: { marginHorizontal: 20 },
 });

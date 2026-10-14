@@ -4,21 +4,13 @@
  * de amigo) y las solicitudes pendientes. El muro de actividad de los amigos llega en D4.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  FlatList,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { FlatList, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useMuro } from '../hooks/social/useMuro';
 import { MuroAmigos } from '../components/social/MuroAmigos';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
-import { IconCards, IconCopy, IconSearch } from '@tabler/icons-react-native';
+import { IconCards, IconCopy } from '@tabler/icons-react-native';
 import { useSocialData } from '../hooks/social/useSocialData';
 import { useAuth } from '../context/AuthContext';
 import { observarUsuario } from '../services/repositorioUsuarios';
@@ -32,6 +24,8 @@ import { IconoPalomitas } from '../components/iconos/IconosPropios';
 import { COLORS } from '../theme/colors';
 import { FUENTES } from '../theme/useMontserrat';
 import { Pulsable } from '../components/common/Pulsable';
+import { BotonPrincipal, Segmentos } from '../components/common/Botones';
+import { CampoBusqueda } from '../components/common/Campos';
 
 type Props = {
   fontFamily: string;
@@ -138,25 +132,16 @@ export function SocialTab({
         fontFamily={fontFamily}
       />
 
-      <View style={styles.segmento}>
-        {(['muro', 'amigos', 'buscar'] as const).map((s) => (
-          <Pulsable
-            key={s}
-            onPress={() => setSeccion(s)}
-            style={[styles.segBoton, seccion === s && styles.segOn]}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: seccion === s }}
-          >
-            <Text style={[styles.segTexto, seccion === s && styles.segTextoOn]}>
-              {s === 'muro'
-                ? 'Muro'
-                : s === 'amigos'
-                  ? `Amigos${amigos.length ? ` (${amigos.length})` : ''}`
-                  : 'Añadir amigos'}
-            </Text>
-          </Pulsable>
-        ))}
-      </View>
+      <Segmentos
+        estilo={styles.segmento}
+        valor={seccion}
+        onCambio={setSeccion}
+        opciones={[
+          { valor: 'muro', texto: 'Muro' },
+          { valor: 'amigos', texto: `Amigos${amigos.length ? ` (${amigos.length})` : ''}` },
+          { valor: 'buscar', texto: 'Añadir amigos' },
+        ]}
+      />
 
       {seccion === 'muro' ? (
         <ScrollView
@@ -205,16 +190,7 @@ export function SocialTab({
           contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 140 }}
           ListHeaderComponent={
             amigos.length > 6 ? (
-              <View style={styles.buscador}>
-                <IconSearch size={18} color={COLORS.textMuted} strokeWidth={2} />
-                <TextInput
-                  value={filtro}
-                  onChangeText={setFiltro}
-                  placeholder="Filtrar amigos"
-                  placeholderTextColor={COLORS.textMuted}
-                  style={styles.campo}
-                />
-              </View>
+              <CampoBusqueda value={filtro} onChangeText={setFiltro} placeholder="Filtrar amigos" />
             ) : null
           }
           ListEmptyComponent={
@@ -224,9 +200,11 @@ export function SocialTab({
               <Text style={styles.vacioTexto}>
                 Añádelos por su nombre o su código y verás lo que ven.
               </Text>
-              <Pulsable style={styles.boton} onPress={() => setSeccion('buscar')}>
-                <Text style={styles.botonTexto}>Añadir amigos</Text>
-              </Pulsable>
+              <BotonPrincipal
+                texto="Añadir amigos"
+                onPress={() => setSeccion('buscar')}
+                estilo={styles.boton}
+              />
             </View>
           }
           renderItem={({ item }) => (
@@ -263,18 +241,13 @@ export function SocialTab({
                   <IconCopy size={18} color={COLORS.accent} strokeWidth={2} />
                 </Pulsable>
               )}
-              <View style={styles.buscador}>
-                <IconSearch size={18} color={COLORS.textMuted} strokeWidth={2} />
-                <TextInput
-                  value={busqueda}
-                  onChangeText={setBusqueda}
-                  placeholder="Nombre de usuario exacto o código"
-                  placeholderTextColor={COLORS.textMuted}
-                  style={styles.campo}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-              </View>
+              <CampoBusqueda
+                value={busqueda}
+                onChangeText={setBusqueda}
+                placeholder="Nombre de usuario exacto o código"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
               <Text style={styles.ayuda}>
                 Para encontrar a alguien, pídele su nombre exacto en VeoVeo o su código de 6 letras.
               </Text>
@@ -338,30 +311,7 @@ const styles = StyleSheet.create({
   punto: { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.accent },
   matchEnCursoTexto: { flex: 1, color: COLORS.text, fontSize: 14, fontFamily: FUENTES.texto },
   matchSeguir: { color: COLORS.accent, fontSize: 14, fontFamily: FUENTES.titulo },
-  segmento: { flexDirection: 'row', gap: 8, paddingHorizontal: 20, marginBottom: 12 },
-  segBoton: {
-    height: 36,
-    paddingHorizontal: 16,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    justifyContent: 'center',
-  },
-  segOn: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  segTexto: { color: COLORS.text, fontSize: 14, fontFamily: FUENTES.texto },
-  segTextoOn: { color: COLORS.onAccent, fontFamily: FUENTES.titulo },
-  buscador: {
-    height: 46,
-    borderRadius: 999,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 16,
-  },
-  campo: { flex: 1, color: COLORS.text, fontSize: 15, fontFamily: FUENTES.texto },
+  segmento: { marginHorizontal: 20, marginBottom: 12 },
   ayuda: { color: COLORS.textMuted, fontSize: 13, lineHeight: 19, fontFamily: FUENTES.texto },
   codigo: {
     flexDirection: 'row',
@@ -390,14 +340,5 @@ const styles = StyleSheet.create({
     fontFamily: FUENTES.texto,
     textAlign: 'center',
   },
-  boton: {
-    marginTop: 8,
-    height: 52,
-    paddingHorizontal: 32,
-    borderRadius: 999,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  botonTexto: { color: COLORS.onAccent, fontSize: 16, fontFamily: FUENTES.titulo },
+  boton: { marginTop: 8, paddingHorizontal: 32 },
 });

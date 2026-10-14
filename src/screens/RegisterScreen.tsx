@@ -8,7 +8,7 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { GradientBackground } from '../components/GradientBackground';
@@ -18,6 +18,8 @@ import { COLORS } from '../theme/colors';
 import { SHADOWS } from '../theme/theme';
 import { useMontserrat } from '../theme/useMontserrat';
 import { Cargando } from '../components/common/Cargando';
+import { BotonPrincipal } from '../components/common/Botones';
+import { CampoTexto } from '../components/common/Campos';
 import { Pulsable } from '../components/common/Pulsable';
 
 export function RegisterScreen() {
@@ -46,33 +48,30 @@ export function RegisterScreen() {
         ) : null}
 
         {/* INPUTS DE REGISTRO */}
-        <TextInput
+        <CampoTexto
           value={email}
           onChangeText={setEmail}
           placeholder="Email"
-          placeholderTextColor="#888"
           underlineColorAndroid="transparent"
           keyboardType="email-address"
           autoCapitalize="none"
-          style={[styles.input, SHADOWS.macLight, { fontFamily: ff }]}
+          estilo={[styles.input, SHADOWS.macLight]}
         />
-        <TextInput
+        <CampoTexto
           value={password}
           onChangeText={setPassword}
           placeholder="Contraseña"
-          placeholderTextColor="#888"
           underlineColorAndroid="transparent"
           secureTextEntry
-          style={[styles.input, SHADOWS.macLight, { fontFamily: ff }]}
+          estilo={[styles.input, SHADOWS.macLight]}
         />
-        <TextInput
+        <CampoTexto
           value={confirm}
           onChangeText={setConfirm}
           placeholder="Confirmar contraseña"
-          placeholderTextColor="#888"
           underlineColorAndroid="transparent"
           secureTextEntry
-          style={[styles.input, SHADOWS.macLight, { fontFamily: ff }]}
+          estilo={[styles.input, SHADOWS.macLight]}
         />
 
         {/* FEEDBACK DE ERRORES */}
@@ -84,9 +83,9 @@ export function RegisterScreen() {
         ) : null}
 
         {/* BOTÓN: EJECUTAR REGISTRO */}
-        <Pulsable
-          style={[styles.btn, styles.btnDark, SHADOWS.macLight]}
-          disabled={loading || !firebaseReady}
+        <BotonPrincipal
+          texto="REGISTRARSE"
+          desactivado={loading || !firebaseReady}
           onPress={async () => {
             setErrorMessage('');
 
@@ -110,9 +109,7 @@ export function RegisterScreen() {
               setLoading(false);
             }
           }}
-        >
-          <Text style={[styles.btnText, { fontFamily: ff }]}>REGISTRARSE</Text>
-        </Pulsable>
+        />
         <AvisoLegal fontFamily={ff} />
 
         {/* LINK VOLVER A LOGIN */}
@@ -133,24 +130,7 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 40, fontWeight: '700', color: '#fff', textAlign: 'center', marginBottom: 28 },
   warn: { color: '#ffcc80', marginBottom: 12, textAlign: 'center', fontSize: 13 },
-  input: {
-    borderRadius: 24,
-    backgroundColor: '#1e1e2d',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-    paddingHorizontal: 20,
-    height: 52,
-    color: '#fff',
-    marginBottom: 16,
-  },
+  input: { marginBottom: 16 },
   err: { color: COLORS.error, marginBottom: 16, textAlign: 'center', fontSize: 14 },
-  btn: {
-    height: 50,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  btnDark: { backgroundColor: '#000' },
-  btnText: { color: '#fff', fontWeight: '700' },
   link: { color: '#fff', textAlign: 'center' },
 });

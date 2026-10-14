@@ -4,16 +4,7 @@
  * (añadir amigos, quitar, hacer administrador) y salir del grupo.
  */
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -46,6 +37,8 @@ import {
 import { Avatar } from '../components/common/Avatar';
 import { HojaAcciones } from '../components/common/HojaAcciones';
 import { Cargando } from '../components/common/Cargando';
+import { BotonPrincipal } from '../components/common/Botones';
+import { CampoTexto } from '../components/common/Campos';
 import { ConfirmModal } from '../components/common/ConfirmModal';
 import { HojaDenuncia } from '../components/common/HojaDenuncia';
 import type { ObjetoDenuncia } from '../services/repositorioDenuncias';
@@ -140,10 +133,10 @@ export function InfoGrupoScreen() {
           )}
           {editandoNombre ? (
             <View style={styles.filaNombre}>
-              <TextInput
+              <CampoTexto
                 value={nombre}
                 onChangeText={setNombre}
-                style={styles.campoNombre}
+                estilo={styles.campoNombre}
                 autoFocus
                 maxLength={40}
               />
@@ -335,9 +328,10 @@ export function InfoGrupoScreen() {
               );
             })
           )}
-          <Pressable
-            style={[styles.boton, nuevos.length === 0 && { opacity: 0.4 }]}
-            disabled={nuevos.length === 0}
+          <BotonPrincipal
+            texto="Añadir"
+            estilo={styles.boton}
+            desactivado={nuevos.length === 0}
             onPress={() => {
               const anadir = nuevos;
               setAnadiendo(false);
@@ -350,9 +344,7 @@ export function InfoGrupoScreen() {
                 await avisarEnElChat(`${nombreDe(perfiles[yo], true)} ha añadido a ${nombres}`);
               }, 'No hemos podido añadirlos.');
             }}
-          >
-            <Text style={styles.botonTexto}>Añadir</Text>
-          </Pressable>
+          />
         </View>
       </Modal>
 
@@ -401,18 +393,7 @@ const styles = StyleSheet.create({
   },
   filaNombre: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   nombreGrupo: { color: COLORS.text, fontSize: 22, fontFamily: FUENTES.titulo },
-  campoNombre: {
-    minWidth: 200,
-    height: 44,
-    borderRadius: 999,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    paddingHorizontal: 16,
-    color: COLORS.text,
-    fontSize: 17,
-    fontFamily: FUENTES.texto,
-  },
+  campoNombre: { minWidth: 200 },
   texto: { color: COLORS.textMuted, fontSize: 14, fontFamily: FUENTES.texto, textAlign: 'center' },
   seccion: {
     color: COLORS.text,
@@ -466,13 +447,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   casillaOn: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  boton: {
-    marginTop: 12,
-    height: 52,
-    borderRadius: 999,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  botonTexto: { color: COLORS.onAccent, fontSize: 16, fontFamily: FUENTES.titulo },
+  boton: { marginTop: 12 },
 });

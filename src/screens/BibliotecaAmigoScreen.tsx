@@ -38,6 +38,7 @@ import { GradientBackground } from '../components/GradientBackground';
 import { FilterSortMenu } from '../components/FilterSortMenu';
 import { RatingBadge } from '../components/RatingBadge';
 import { Cargando } from '../components/common/Cargando';
+import { CampoBusqueda } from '../components/common/Campos';
 import { HojaDenuncia } from '../components/common/HojaDenuncia';
 import { RootStackParamList } from '../navigation/types';
 
@@ -334,26 +335,12 @@ export function BibliotecaAmigoScreen() {
         )}
 
         {/* Buscador */}
-        <View style={[styles.searchContainer, { zIndex: 100 }]}>
-          <Ionicons
-            name="search"
-            size={20}
-            color="rgba(255,255,255,0.4)"
-            style={styles.searchIcon}
-          />
-          <TextInput
-            value={buscar}
-            onChangeText={setBuscar}
-            placeholder="Buscar película..."
-            placeholderTextColor="rgba(255,255,255,0.3)"
-            style={[styles.searchField, { fontFamily: ff }]}
-          />
-          {buscar.length > 0 && (
-            <Pressable onPress={() => setBuscar('')} style={styles.clearBtn} hitSlop={8}>
-              <Ionicons name="close-circle" size={18} color="rgba(255,255,255,0.4)" />
-            </Pressable>
-          )}
-        </View>
+        <CampoBusqueda
+          value={buscar}
+          onChangeText={setBuscar}
+          placeholder="Buscar película..."
+          estilo={[styles.searchContainer, { zIndex: 100 }]}
+        />
 
         {/* Tabs Biblioteca */}
         <View style={styles.tabContainer}>
@@ -502,25 +489,6 @@ const styles = StyleSheet.create({
   searchContainer: {
     width: '100%',
     marginBottom: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: GlassSurface,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    paddingHorizontal: 16,
-    height: 48,
-  },
-  searchIcon: { marginRight: 10 },
-  searchField: {
-    flex: 1,
-    color: '#fff',
-    fontSize: 15,
-  },
-  clearBtn: {
-    paddingLeft: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   tabContainer: {
     width: '100%',

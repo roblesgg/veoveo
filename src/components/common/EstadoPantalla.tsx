@@ -7,7 +7,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { IconCloudOff } from '@tabler/icons-react-native';
 import { COLORS } from '../../theme/colors';
 import { FUENTES } from '../../theme/useMontserrat';
-import { Pulsable } from './Pulsable';
+import { BotonPrincipal } from './Botones';
 
 export function EstadoError({
   texto = 'No hemos podido cargar esto. Revisa la conexión.',
@@ -21,9 +21,7 @@ export function EstadoError({
       <IconCloudOff size={48} color={COLORS.textMuted} strokeWidth={1.5} />
       <Text style={styles.texto}>{texto}</Text>
       {onReintentar && (
-        <Pulsable onPress={onReintentar} style={styles.boton} accessibilityRole="button">
-          <Text style={styles.botonTexto}>Reintentar</Text>
-        </Pulsable>
+        <BotonPrincipal texto="Reintentar" onPress={onReintentar} estilo={styles.boton} />
       )}
     </View>
   );
@@ -63,13 +61,5 @@ const styles = StyleSheet.create({
     fontFamily: FUENTES.texto,
     textAlign: 'center',
   },
-  boton: {
-    marginTop: 4,
-    height: 46,
-    paddingHorizontal: 28,
-    borderRadius: 999,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-  },
-  botonTexto: { color: COLORS.onAccent, fontSize: 15, fontFamily: FUENTES.titulo },
+  boton: { marginTop: 4 },
 });

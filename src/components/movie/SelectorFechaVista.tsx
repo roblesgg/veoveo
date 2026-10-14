@@ -4,8 +4,7 @@
  * La fecha exacta se cambia manteniendo pulsada la peli en la Biblioteca.
  */
 import { StyleSheet, Text, View } from 'react-native';
-import { COLORS } from '../../theme/colors';
-import { Pulsable } from '../common/Pulsable';
+import { Segmentos } from '../common/Botones';
 
 const DIA = 24 * 60 * 60 * 1000;
 
@@ -41,24 +40,7 @@ export function SelectorFechaVista({ valor, onCambio, fontFamily }: Props) {
   return (
     <View style={styles.contenedor}>
       <Text style={[styles.etiqueta, { fontFamily }]}>¿Cuándo la viste?</Text>
-      <View style={styles.segmentos} accessibilityRole="radiogroup">
-        {OPCIONES.map(({ valor: v, texto }) => {
-          const activo = v === valor;
-          return (
-            <Pulsable
-              key={v}
-              onPress={() => onCambio(v)}
-              style={[styles.segmento, activo && styles.segmentoActivo]}
-              accessibilityRole="radio"
-              accessibilityState={{ checked: activo }}
-            >
-              <Text style={[styles.texto, { fontFamily }, activo && styles.textoActivo]}>
-                {texto}
-              </Text>
-            </Pulsable>
-          );
-        })}
-      </View>
+      <Segmentos opciones={OPCIONES} valor={valor} onCambio={onCambio} estilo={styles.segmentos} />
     </View>
   );
 }
@@ -66,23 +48,5 @@ export function SelectorFechaVista({ valor, onCambio, fontFamily }: Props) {
 const styles = StyleSheet.create({
   contenedor: { width: '100%', marginBottom: 20, alignItems: 'center' },
   etiqueta: { color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 10 },
-  segmentos: {
-    flexDirection: 'row',
-    width: '100%',
-    padding: 3,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(255,255,255,0.14)',
-  },
-  segmento: {
-    flex: 1,
-    height: 36,
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  segmentoActivo: { backgroundColor: COLORS.primary },
-  texto: { color: COLORS.text, fontSize: 13 },
-  textoActivo: { color: COLORS.onAccent, fontWeight: '700' },
+  segmentos: { width: '100%' },
 });

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../theme/colors';
 
 import { Cargando } from '../common/Cargando';
+import { CampoTexto } from '../common/Campos';
 
 type UsernameModalProps = {
   visible: boolean;
@@ -53,12 +54,11 @@ export const UsernameModal = ({
             Elige cómo te verán los demás en VeoVeo.
           </Text>
 
-          <TextInput
+          <CampoTexto
             value={val}
             onChangeText={setVal}
-            style={[styles.modernInput, { fontFamily }]}
+            estilo={styles.modernInput}
             placeholder="Nuevo nombre..."
-            placeholderTextColor="rgba(255,255,255,0.3)"
           />
 
           <View style={styles.modernActions}>
@@ -133,12 +133,11 @@ export const AvatarModal = ({
             Pega un enlace o usa tu cuenta de Google.
           </Text>
 
-          <TextInput
+          <CampoTexto
             value={val}
             onChangeText={setVal}
-            style={[styles.modernInput, { fontFamily }]}
+            estilo={styles.modernInput}
             placeholder="https://imgur.com/..."
-            placeholderTextColor="rgba(255,255,255,0.3)"
           />
 
           {googlePhotoUrl && (
@@ -216,17 +215,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     lineHeight: 20,
   },
-  modernInput: {
-    width: '100%',
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 18,
-    padding: 18,
-    color: '#fff',
-    fontSize: 16,
-    borderWidth: 1.2,
-    borderColor: 'rgba(255,255,255,0.1)',
-    marginBottom: 20,
-  },
+  modernInput: { width: '100%', marginBottom: 20 },
   googleBtn: {
     width: '100%',
     flexDirection: 'row',
