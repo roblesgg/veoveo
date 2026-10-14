@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { COLORS } from '../../theme/colors';
 import { SHADOWS } from '../../theme/theme';
+import { EstrellasValorar } from './EstrellasValorar';
 import {
   SelectorFechaVista,
   cuandoDeFecha,
@@ -77,24 +78,13 @@ export const MovieRatingModal = React.memo(
                 ¿Qué te ha parecido la peli?
               </Text>
 
-              <View style={styles.starsRow}>
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <Pulsable
-                    key={n}
-                    onPress={() => {
-                      setValorSel(n);
-                      setValorNegativa(false);
-                    }}
-                    style={styles.starBtn}
-                  >
-                    <Ionicons
-                      name={!valorNegativa && n <= valorSel ? 'star' : 'star-outline'}
-                      size={36}
-                      color={!valorNegativa && n <= valorSel ? '#FFD700' : 'rgba(255,255,255,0.2)'}
-                    />
-                  </Pulsable>
-                ))}
-              </View>
+              <EstrellasValorar
+                valor={valorNegativa ? 0 : valorSel}
+                onCambio={(n) => {
+                  setValorSel(n);
+                  setValorNegativa(false);
+                }}
+              />
 
               <View style={styles.poopBox}>
                 <Pulsable
