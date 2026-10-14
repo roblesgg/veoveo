@@ -45,12 +45,12 @@ function Estrella({
   const estilo = useAnimatedStyle(() => {
     if (reducir) return {};
     const bajoElDedo = arrastrando.value && valor.value === n;
+    // Dos escalas por separado: el rebote (número) y el foco bajo el dedo (animación).
+    // Multiplicar un número por withSpring(...) da NaN y la estrella no se pinta.
     return {
       transform: [
-        {
-          scale:
-            rebote.value * withSpring(bajoElDedo ? 1.25 : 1, { duration: 260, dampingRatio: 0.7 }),
-        },
+        { scale: rebote.value },
+        { scale: withSpring(bajoElDedo ? 1.25 : 1, { duration: 260, dampingRatio: 0.7 }) },
       ],
     };
   });
