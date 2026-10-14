@@ -137,32 +137,32 @@ export function PeliculaScreen() {
     <View style={[styles.flex, { backgroundColor: GradientBottom }]}>
       {/* 🖼️ FONDO: Poster desenfocado con gradiente envolvente */}
       {(detalles.backdrop_path || detalles.poster_path) && (
-        <View style={styles.fixedBackdrop}>
-          {/* Carga progresiva: la w300 se pinta al momento y la w1280 entra encima con un fundido.
-              La calidad final no se recorta. */}
-          <ExpoImage
-            source={{ uri: posterUrl(detalles.backdrop_path || detalles.poster_path, 'w1280')! }}
-            placeholder={{
-              uri: posterUrl(detalles.backdrop_path || detalles.poster_path, 'w300')!,
-            }}
-            placeholderContentFit="cover"
-            contentFit="cover"
-            cachePolicy="memory-disk"
-            transition={300}
-            style={styles.backdropImg}
-          />
-          <LinearGradient
-            colors={[
-              'rgba(0,0,0,0)',
-              'rgba(0,0,0,0)',
-              'rgba(30,27,75,0.4)',
-              GradientBottom,
-              GradientBottom,
-              GradientBottom,
-            ]}
-            locations={[0, 0.2, 0.5, 0.75, 0.9, 1]}
-            style={StyleSheet.absoluteFillObject}
-          />
+        <View style={styles.fixedBackdrop} pointerEvents="none">
+          {/* La imagen con SU proporción (fondo 16:9 o cartel 2:3), a lo ancho y arriba.
+              Estirarla a toda la altura la ampliaba ×3 y se veía borrosa aunque fuera la w1280.
+              Carga progresiva: la w300 se pinta al momento y la grande entra con un fundido. */}
+          <View style={{ width: '100%', aspectRatio: detalles.backdrop_path ? 16 / 9 : 2 / 3 }}>
+            <ExpoImage
+              source={{
+                uri: detalles.backdrop_path
+                  ? posterUrl(detalles.backdrop_path, 'w1280')!
+                  : posterUrl(detalles.poster_path, 'original')!,
+              }}
+              placeholder={{
+                uri: posterUrl(detalles.backdrop_path || detalles.poster_path, 'w300')!,
+              }}
+              placeholderContentFit="cover"
+              contentFit="cover"
+              cachePolicy="memory-disk"
+              transition={300}
+              style={StyleSheet.absoluteFillObject}
+            />
+            <LinearGradient
+              colors={['rgba(2,6,23,0.55)', 'rgba(2,6,23,0)', 'rgba(2,6,23,0)', GradientBottom]}
+              locations={[0, 0.3, 0.55, 1]}
+              style={StyleSheet.absoluteFillObject}
+            />
+          </View>
         </View>
       )}
 
@@ -309,7 +309,6 @@ const styles = StyleSheet.create({
   },
   body: { paddingHorizontal: 20 },
   fixedBackdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' },
-  backdropImg: { width: '100%', height: 750, resizeMode: 'cover', transform: [{ scale: 1.2 }] },
   sectionTitle: {
     fontSize: 22,
     color: 'rgba(255,255,255,0.95)',
