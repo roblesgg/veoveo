@@ -10,6 +10,7 @@ import type { PeliculaUsuario } from '../../types';
 import { COLORS } from '../../theme/colors';
 import { FUENTES } from '../../theme/useMontserrat';
 import { SelectorFechaVista, cuandoDeFecha, fechaDeCuando } from './SelectorFechaVista';
+import { FondoCristal } from '../common/FondoCristal';
 
 type Props = {
   pelicula: PeliculaUsuario | null;
@@ -30,6 +31,7 @@ export function HojaCuandoVista({ pelicula, onCerrar }: Props) {
     >
       <Pressable style={styles.fondo} onPress={onCerrar} accessibilityLabel="Cerrar" />
       <View style={[styles.hoja, { paddingBottom: insets.bottom + 20 }]}>
+        <FondoCristal />
         <Text style={styles.titulo} numberOfLines={2}>
           {pelicula?.titulo}
         </Text>
@@ -55,7 +57,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: COLORS.surface,
+    overflow: 'hidden',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     borderWidth: StyleSheet.hairlineWidth,

@@ -27,6 +27,7 @@ import { bloquearUsuario } from '../../services/repositorioSocial';
 import { COLORS } from '../../theme/colors';
 import { FUENTES } from '../../theme/useMontserrat';
 import { LoaderClaqueta } from './LoaderClaqueta';
+import { FondoCristal } from './FondoCristal';
 
 type Props = {
   /** null = cerrada */
@@ -100,6 +101,7 @@ export function HojaDenuncia({ objeto, titulo, nombreBloqueo, onCerrar, onBloque
         pointerEvents="box-none"
       >
         <View style={[styles.hoja, { paddingBottom: insets.bottom + 20 }]}>
+          <FondoCristal />
           {enviada ? (
             <View style={styles.gracias}>
               <IconFlag size={44} color={COLORS.primary} strokeWidth={1.6} />
@@ -182,7 +184,7 @@ const styles = StyleSheet.create({
   zona: { flex: 1, justifyContent: 'flex-end' },
   hoja: {
     maxHeight: '90%',
-    backgroundColor: COLORS.surface,
+    overflow: 'hidden',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     borderWidth: 1,

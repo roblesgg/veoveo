@@ -66,6 +66,7 @@ import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
 import type { CartaMazo, MovieMatch, UsuarioPerfil, VotosMatch } from '../types';
 import { COLORS } from '../theme/colors';
 import { FUENTES } from '../theme/useMontserrat';
+import { FondoCristal } from '../components/common/FondoCristal';
 
 type VotoLocal = 'si' | 'no' | 'deshecho';
 
@@ -747,6 +748,7 @@ export function MovieMatchScreen() {
             accessibilityLabel="Cerrar"
           />
           <View style={[styles.panel, { paddingBottom: insets.bottom + 20 }]}>
+            <FondoCristal />
             <Text style={styles.panelTitulo}>
               {coincidencias.length === 0
                 ? 'Aún no hay coincidencias'
@@ -985,7 +987,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   panel: {
-    backgroundColor: COLORS.surface,
+    overflow: 'hidden',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     paddingHorizontal: 20,
