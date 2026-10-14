@@ -117,18 +117,21 @@ function cargarClaves() {
 
 async function prepararAuth() {
   const token = await tokenDeAcceso();
-  // Lo que hace «Comenzar» en la consola de Authentication (sin facturación: plan Spark)
-  await idt(token, 'POST', `v2/projects/${PROYECTO}/identityPlatform:initializeAuth`, {}).catch(
-    (e) => {
-      if (!/ALREADY|exists/i.test(String(e))) throw e;
-    },
-  );
+  // Authentication tiene que estar iniciado a mano en la consola («Comenzar»): por API solo se
+  // puede con Identity Platform, que pide facturación. Ver docs/entornos.md.
   await idt(
     token,
     'PATCH',
     `admin/v2/projects/${PROYECTO}/config?updateMask=signIn.email.enabled,signIn.email.passwordRequired`,
     { signIn: { email: { enabled: true, passwordRequired: true } } },
-  );
+  ).catch((e) => {
+    if (/CONFIGURATION_NOT_FOUND/.test(String(e))) {
+      throw new Error(
+        'Authentication no está iniciado en veoveo-pruebas: consola → Authentication → Comenzar → Correo electrónico/contraseña.',
+      );
+    }
+    throw e;
+  });
   console.log('Auth: inicio de sesión con correo y contraseña activado.');
 
   const claves = cargarClaves();
