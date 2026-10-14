@@ -65,6 +65,7 @@ import { FUENTES } from '../theme/useMontserrat';
 import { esOtroDia, formatearHora, formatearSeparadorDia } from '../utils/fechas';
 import type { Chat, Message, MiembroChat } from '../types';
 import { Pulsable } from '../components/common/Pulsable';
+import Animated, { Easing, FadeIn, Keyframe, useReducedMotion } from 'react-native-reanimated';
 
 // Colores para distinguir remitentes en los grupos (contraste suficiente sobre la burbuja oscura)
 const COLORES_REMITENTE = [
@@ -109,6 +110,19 @@ export function ConversacionScreen() {
   const [aviso, setAviso] = useState<string | null>(null);
   const [denuncia, setDenuncia] = useState<ObjetoDenuncia | null>(null);
   const inputRef = useRef<TextInput>(null);
+  const abiertoEn = useRef(Date.now());
+  const reducirMovimiento = useReducedMotion();
+  // La lista está invertida: -8 aquí se ve como «sube desde abajo»
+  const entradaMensaje = reducirMovimiento
+    ? FadeIn.duration(160)
+    : new Keyframe({
+        0: { opacity: 0, transform: [{ translateY: -8 }] },
+        100: {
+          opacity: 1,
+          transform: [{ translateY: 0 }],
+          easing: Easing.bezier(0.23, 1, 0.32, 1),
+        },
+      }).duration(160);
 
   useEffect(() => observarChat(chatId, setChat), [chatId]);
   useEffect(
@@ -378,7 +392,11 @@ export function ConversacionScreen() {
     }
 
     return (
-      <View style={[styles.filaMensaje, mio ? styles.derecha : styles.izquierda]}>
+      <Animated.View
+        style={[styles.filaMensaje, mio ? styles.derecha : styles.izquierda]}
+        // Solo mi mensaje recién enviado entra (casi imperceptible); los de otros no se mueven
+        entering={mio && m.timestamp > abiertoEn.current ? entradaMensaje : undefined}
+      >
         {remitente}
         <Pulsable
           onLongPress={() => setSeleccionado(m)}
@@ -437,7 +455,7 @@ export function ConversacionScreen() {
           )}
           {pie}
         </Pulsable>
-      </View>
+      </Animated.View>
     );
   };
 
