@@ -15,5 +15,5 @@
 
 ## Pruebas (`veoveo-pruebas`)
 
-Ana, Beto y Carla (`*@veoveo-pruebas.test`), con datos de ejemplo. Ver `docs/entornos.md`.
+Alvaro, Beto y Manoli (`*@veoveo-pruebas.test`), con datos de ejemplo. Ver `docs/entornos.md`.
 Contraseñas en `DripDev/_copias/veoveo/cuentas-pruebas.txt`.

@@ -57,8 +57,8 @@ if (archivoClaves.startsWith(raiz + path.sep))
 const CUENTAS = [
   {
     clave: 'ana',
-    email: 'ana@veoveo-pruebas.test',
-    nombre: 'Ana',
+    email: 'alvaro@veoveo-pruebas.test',
+    nombre: 'Alvaro',
     bio: 'Ciencia ficción y palomitas.',
   },
   {
@@ -69,8 +69,8 @@ const CUENTAS = [
   },
   {
     clave: 'carla',
-    email: 'carla@veoveo-pruebas.test',
-    nombre: 'Carla',
+    email: 'manoli@veoveo-pruebas.test',
+    nombre: 'Manoli',
     bio: 'Animación por encima de todo.',
   },
 ];
@@ -241,7 +241,7 @@ const MAZO_IDS = [
   693134, 1124, 278, 1022789, 238, 13, 194, 550, 569094, 424, 945961, 77338, 496243, 872585, 120,
   4935, 105, 11, 155, 862,
 ];
-// Beto y Carla ya han votado: si Ana dice «sí» a 693134, 1124 y 278, el Match llega a 3.
+// Beto y Manoli ya han votado: si Alvaro dice «sí» a 693134, 1124 y 278, el Match llega a 3.
 const VOTOS = {
   beto: { si: [693134, 1124, 278, 238, 13, 569094], no: [550, 424] },
   carla: { si: [693134, 1022789, 1124, 278, 194], no: [238, 13] },

@@ -9,7 +9,7 @@ Hay dos proyectos de Firebase y nunca se mezclan.
 | Región de Firestore | `eur3` (UE) | `nam5` (EE. UU.; solo datos inventados) |
 | App | **VeoVeo** (Google Play), `com.roblesgg.veoveo` | **VeoVeo Test** (APK), `com.roblesgg.veoveo.test` |
 | Configuración web | `.env` | `.env.pruebas.local` (no se sube) |
-| Cuentas | Las de los usuarios | Ana, Beto y Carla (`*@veoveo-pruebas.test`); contraseñas en `DripDev/_copias/veoveo/cuentas-pruebas.txt` |
+| Cuentas | Las de los usuarios | Alvaro, Beto y Manoli (`*@veoveo-pruebas.test`); contraseñas en `DripDev/_copias/veoveo/cuentas-pruebas.txt` |
 
 ## Regla
 
@@ -26,7 +26,7 @@ Hay dos proyectos de Firebase y nunca se mezclan.
 |---|---|
 | Compilar el APK de pruebas | `powershell -File scripts/pruebas/compilar-apk.ps1` |
 | Instalarlo en el móvil de Álvaro | `adb install -r <apk>` y nada más (ver la norma del móvil personal) |
-| Hacer de Beto o Carla (probar con un solo móvil: mensajes en tiempo real y avisos) | `node scripts/pruebas/actuar.mjs mensaje beto "texto"` o `... grupo carla "texto"` |
+| Hacer de Beto o Manoli (probar con un solo móvil: mensajes en tiempo real y avisos) | `node scripts/pruebas/actuar.mjs mensaje beto "texto"` o `... grupo manoli "texto"` |
 | Crear cuentas y datos de ejemplo | `node scripts/pruebas/preparar.mjs` (necesita `firebase login`; no repite datos si ya existen) |
 | Desplegar reglas e índices en pruebas | `firebase deploy --only firestore --project veoveo-pruebas` |
 | Probar las reglas sin Firebase | `npm run test:reglas` (emulador) |
@@ -38,11 +38,11 @@ necesita el OK de Álvaro.
 ## Datos de ejemplo
 
 `scripts/pruebas/preparar.mjs` deja:
-- Ana, Beto y Carla con biblioteca (8 vistas con nota y 5 por ver cada uno), frase y privacidad por defecto;
-- amistades Ana–Beto y Ana–Carla, y una solicitud pendiente de Carla a Beto;
-- un chat Ana–Beto con una peli compartida;
-- el grupo «Cine del finde» (administra Ana) con un **Movie Match a medias**: Beto y Carla ya han
-  votado; si Ana dice «sí» a *Dune: Parte dos*, *El truco final* y *Cadena perpetua*, se llega a 3
+- Alvaro, Beto y Manoli con biblioteca (8 vistas con nota y 5 por ver cada uno), frase y privacidad por defecto;
+- amistades Alvaro–Beto y Alvaro–Manoli, y una solicitud pendiente de Manoli a Beto;
+- un chat Alvaro–Beto con una peli compartida;
+- el grupo «Cine del finde» (administra Alvaro) con un **Movie Match a medias**: Beto y Manoli ya han
+  votado; si Alvaro dice «sí» a *Dune: Parte dos*, *El truco final* y *Cadena perpetua*, se llega a 3
   coincidencias y termina.
 
 ## Límites del entorno de pruebas
