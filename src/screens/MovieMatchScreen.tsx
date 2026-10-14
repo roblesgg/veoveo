@@ -6,19 +6,34 @@
  * alguien lo termina antes) se enseñan todas las coincidencias.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
+import * as Haptics from 'expo-haptics';
+import { BlurView } from 'expo-blur';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
+  Easing,
   Extrapolation,
   FadeIn,
   FadeOut,
+  ZoomIn,
   interpolate,
   runOnJS,
+  useAnimatedReaction,
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   withSpring,
   withTiming,
@@ -27,7 +42,7 @@ import {
   IconArrowBackUp,
   IconCards,
   IconChevronLeft,
-  IconHeart,
+  IconHeartFilled,
   IconInfoCircle,
   IconX,
 } from '@tabler/icons-react-native';
@@ -53,6 +68,57 @@ import { COLORS } from '../theme/colors';
 import { FUENTES } from '../theme/useMontserrat';
 
 type VotoLocal = 'si' | 'no' | 'deshecho';
+
+// Salida de una carta: arranca rápida y frena (ease-out fuerte)
+const SALIDA = Easing.bezier(0.23, 1, 0.32, 1);
+
+/** Botón redondo que se hunde al pulsarlo (respuesta al tocar, no al soltar). */
+function BotonRedondo({
+  tamano,
+  onPress,
+  etiqueta,
+  estilo,
+  desactivado,
+  children,
+}: {
+  tamano: number;
+  onPress: () => void;
+  etiqueta: string;
+  estilo: StyleProp<ViewStyle>;
+  desactivado?: boolean;
+  children: React.ReactNode;
+}) {
+  const escala = useSharedValue(1);
+  const estiloEscala = useAnimatedStyle(() => ({ transform: [{ scale: escala.value }] }));
+  return (
+    <Pressable
+      onPressIn={() => {
+        escala.value = withTiming(0.94, { duration: 120, easing: SALIDA });
+      }}
+      onPressOut={() => {
+        escala.value = withSpring(1, { duration: 300, dampingRatio: 0.7 });
+      }}
+      onPress={onPress}
+      disabled={desactivado}
+      accessibilityRole="button"
+      accessibilityLabel={etiqueta}
+      hitSlop={8}
+      pressRetentionOffset={16}
+    >
+      <Animated.View
+        style={[
+          { width: tamano, height: tamano, borderRadius: tamano / 2 },
+          styles.botonBase,
+          estilo,
+          desactivado && { opacity: 0.35 },
+          estiloEscala,
+        ]}
+      >
+        {children}
+      </Animated.View>
+    </Pressable>
+  );
+}
 
 /** "En el Por ver de Ana y Beto", "Recomendada para el grupo"… */
 function motivoCarta(
@@ -149,7 +215,8 @@ export function MovieMatchScreen() {
     match.coincidencias.forEach((id) => vistas.current!.add(id));
     if (nueva) {
       setCelebrando(mazo.find((c) => c.id === nueva) ?? null);
-      const t = setTimeout(() => setCelebrando(null), 2400);
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      const t = setTimeout(() => setCelebrando(null), 2600);
       return () => clearTimeout(t);
     }
   }, [match, jugable, mazo]);
@@ -160,11 +227,17 @@ export function MovieMatchScreen() {
   const UMBRAL = anchoCarta * 0.28;
   const x = useSharedValue(0);
   const y = useSharedValue(0);
+  // +1 si se agarra por la mitad de arriba, -1 por la de abajo: gira como una carta de verdad
+  const agarre = useSharedValue(1);
+  // Lado al que se votará si se suelta ahora (-1 paso, 0 nada, 1 me apetece), para el háptico
+  const lado = useSharedValue(0);
+  const reducir = useReducedMotion();
 
   useEffect(() => {
     x.value = 0;
     y.value = 0;
-  }, [actual?.id, x, y]);
+    lado.value = 0;
+  }, [actual?.id, x, y, lado]);
 
   const alVotar = useCallback(
     (si: boolean) => {
@@ -180,11 +253,38 @@ export function MovieMatchScreen() {
     [matchId, pendientes],
   );
 
+  const votoConHaptico = useCallback(
+    (si: boolean) => {
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      alVotar(si);
+    },
+    [alVotar],
+  );
+
+  // Botones: la carta sale con el mismo gesto que al deslizarla (o se funde, con reducir movimiento)
   const lanzar = (si: boolean) => {
-    x.value = withTiming((si ? 1 : -1) * width * 1.3, { duration: 220 }, (fin) => {
-      if (fin) runOnJS(alVotar)(si);
+    if (reducir) {
+      votoConHaptico(si);
+      return;
+    }
+    agarre.value = 1;
+    x.value = withTiming((si ? 1 : -1) * width * 1.4, { duration: 260, easing: SALIDA }, (fin) => {
+      if (fin) runOnJS(votoConHaptico)(si);
     });
+    y.value = withTiming(-40, { duration: 260, easing: SALIDA });
   };
+
+  // Al cruzar el umbral mientras se arrastra: un toque (sabes que, si sueltas, cuenta)
+  useAnimatedReaction(
+    () => (x.value > UMBRAL ? 1 : x.value < -UMBRAL ? -1 : 0),
+    (ahora, antes) => {
+      if (antes !== null && ahora !== antes && ahora !== 0) {
+        runOnJS(Haptics.selectionAsync)();
+      }
+      lado.value = ahora;
+    },
+    [UMBRAL],
+  );
 
   const deshacer = () => {
     const id = historial[historial.length - 1];
@@ -196,19 +296,31 @@ export function MovieMatchScreen() {
 
   const pan = Gesture.Pan()
     .enabled(!!actual)
+    .onBegin((e) => {
+      agarre.value = e.y < altoCarta / 2 ? 1 : -1;
+    })
     .onUpdate((e) => {
       x.value = e.translationX;
-      y.value = e.translationY * 0.4;
+      // En vertical se mueve, pero con resistencia: la baraja es horizontal
+      y.value = e.translationY * 0.35;
     })
     .onEnd((e) => {
-      if (Math.abs(e.translationX) > UMBRAL || Math.abs(e.velocityX) > 900) {
-        const si = e.translationX > 0;
-        x.value = withTiming((si ? 1 : -1) * width * 1.3, { duration: 200 }, (fin) => {
-          if (fin) runOnJS(alVotar)(si);
+      // Decide por adónde iría con la inercia del dedo, no solo por dónde está: un golpe corto vale
+      const proyectada = e.translationX + e.velocityX * 0.18;
+      if (Math.abs(proyectada) > UMBRAL) {
+        const si = proyectada > 0;
+        const destino = (si ? 1 : -1) * width * 1.4;
+        // Sale a la velocidad que llevaba el dedo (entre 150 y 300 ms)
+        const rapidez = Math.max(Math.abs(e.velocityX), 1200);
+        const ms = Math.min(300, Math.max(150, (Math.abs(destino - x.value) / rapidez) * 1000));
+        x.value = withTiming(destino, { duration: ms, easing: SALIDA }, (fin) => {
+          if (fin) runOnJS(votoConHaptico)(si);
         });
+        y.value = withTiming(y.value + e.velocityY * 0.12, { duration: ms, easing: SALIDA });
       } else {
-        x.value = withSpring(0, { damping: 18 });
-        y.value = withSpring(0, { damping: 18 });
+        // Vuelve a su sitio con un muelle que conserva la velocidad del dedo
+        x.value = withSpring(0, { duration: 420, dampingRatio: 0.72, velocity: e.velocityX });
+        y.value = withSpring(0, { duration: 420, dampingRatio: 0.8, velocity: e.velocityY });
       }
     });
 
@@ -217,21 +329,53 @@ export function MovieMatchScreen() {
       { translateX: x.value },
       { translateY: y.value },
       {
-        rotate: `${interpolate(x.value, [-width, 0, width], [-14, 0, 14], Extrapolation.CLAMP)}deg`,
+        rotate: `${
+          reducir
+            ? 0
+            : interpolate(x.value, [-width, 0, width], [-12, 0, 12], Extrapolation.CLAMP) *
+              agarre.value
+        }deg`,
       },
     ],
   }));
+  // Tinte de color que crece con el arrastre (turquesa o rojo) y la etiqueta del voto
   const estiloSi = useAnimatedStyle(() => ({
-    opacity: interpolate(x.value, [0, UMBRAL], [0, 1], Extrapolation.CLAMP),
+    opacity: interpolate(x.value, [UMBRAL * 0.2, UMBRAL], [0, 1], Extrapolation.CLAMP),
+    transform: [
+      { scale: interpolate(x.value, [0, UMBRAL], [0.9, 1], Extrapolation.CLAMP) },
+      { rotate: '-8deg' },
+    ],
   }));
   const estiloNo = useAnimatedStyle(() => ({
-    opacity: interpolate(x.value, [-UMBRAL, 0], [1, 0], Extrapolation.CLAMP),
-  }));
-  const estiloDetras = useAnimatedStyle(() => ({
+    opacity: interpolate(x.value, [-UMBRAL, -UMBRAL * 0.2], [1, 0], Extrapolation.CLAMP),
     transform: [
-      { scale: interpolate(Math.abs(x.value), [0, UMBRAL], [0.94, 1], Extrapolation.CLAMP) },
+      { scale: interpolate(x.value, [-UMBRAL, 0], [1, 0.9], Extrapolation.CLAMP) },
+      { rotate: '8deg' },
     ],
-    opacity: interpolate(Math.abs(x.value), [0, UMBRAL], [0.6, 1], Extrapolation.CLAMP),
+  }));
+  const estiloTinteSi = useAnimatedStyle(() => ({
+    opacity: interpolate(x.value, [0, UMBRAL * 1.4], [0, 0.35], Extrapolation.CLAMP),
+  }));
+  const estiloTinteNo = useAnimatedStyle(() => ({
+    opacity: interpolate(x.value, [-UMBRAL * 1.4, 0], [0.35, 0], Extrapolation.CLAMP),
+  }));
+  // La siguiente carta asoma detrás, algo más pequeña y más abajo, y sube al sitio mientras arrastras
+  const estiloDetras = useAnimatedStyle(() => {
+    const p = interpolate(Math.abs(x.value), [0, UMBRAL * 1.2], [0, 1], Extrapolation.CLAMP);
+    return {
+      transform: [{ translateY: (1 - p) * 18 }, { scale: 0.93 + p * 0.07 }],
+    };
+  });
+  const estiloVelo = useAnimatedStyle(() => ({
+    opacity:
+      0.45 * (1 - interpolate(Math.abs(x.value), [0, UMBRAL * 1.2], [0, 1], Extrapolation.CLAMP)),
+  }));
+  // Los botones responden al arrastre: el del lado al que vas crece
+  const estiloBotonSi = useAnimatedStyle(() => ({
+    transform: [{ scale: interpolate(x.value, [0, UMBRAL], [1, 1.12], Extrapolation.CLAMP) }],
+  }));
+  const estiloBotonNo = useAnimatedStyle(() => ({
+    transform: [{ scale: interpolate(x.value, [-UMBRAL, 0], [1.12, 1], Extrapolation.CLAMP) }],
   }));
 
   // ── Estados de carga y error ──
@@ -391,18 +535,15 @@ export function MovieMatchScreen() {
           <>
             {siguiente && (
               <Animated.View
-                style={[
-                  styles.carta,
-                  { width: anchoCarta, height: altoCarta },
-                  styles.cartaDetras,
-                  estiloDetras,
-                ]}
+                style={[styles.carta, { width: anchoCarta, height: altoCarta }, estiloDetras]}
               >
                 <Image
                   source={{ uri: posterUrl(siguiente.p, 'w500') ?? undefined }}
                   style={StyleSheet.absoluteFill}
                   cachePolicy="memory-disk"
                 />
+                {/* Velo que se aclara a medida que la de delante se va */}
+                <Animated.View style={[styles.velo, estiloVelo]} pointerEvents="none" />
               </Animated.View>
             )}
             <GestureDetector gesture={pan}>
@@ -417,11 +558,22 @@ export function MovieMatchScreen() {
                   cachePolicy="memory-disk"
                   transition={120}
                 />
+                <Animated.View
+                  style={[styles.tinte, { backgroundColor: COLORS.accent }, estiloTinteSi]}
+                  pointerEvents="none"
+                />
+                <Animated.View
+                  style={[styles.tinte, { backgroundColor: COLORS.error }, estiloTinteNo]}
+                  pointerEvents="none"
+                />
                 <LinearGradient
-                  colors={['transparent', 'rgba(2,6,23,0.95)']}
+                  colors={['transparent', 'rgba(2,6,23,0.55)', 'rgba(2,6,23,0.96)']}
+                  locations={[0, 0.45, 1]}
                   style={styles.degradado}
                 >
-                  <Text style={styles.motivo}>{motivoCarta(actual, yo, perfiles)}</Text>
+                  <View style={styles.motivoPastilla}>
+                    <Text style={styles.motivo}>{motivoCarta(actual, yo, perfiles)}</Text>
+                  </View>
                   <View style={styles.filaTitulo}>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.peliTitulo} numberOfLines={2}>
@@ -442,13 +594,15 @@ export function MovieMatchScreen() {
                   style={[styles.sello, styles.selloSi, estiloSi]}
                   pointerEvents="none"
                 >
-                  <Text style={[styles.selloTexto, { color: COLORS.accent }]}>ME APETECE</Text>
+                  <IconHeartFilled size={18} color={COLORS.onAccent} />
+                  <Text style={[styles.selloTexto, { color: COLORS.onAccent }]}>Me apetece</Text>
                 </Animated.View>
                 <Animated.View
                   style={[styles.sello, styles.selloNo, estiloNo]}
                   pointerEvents="none"
                 >
-                  <Text style={[styles.selloTexto, { color: COLORS.error }]}>PASO</Text>
+                  <IconX size={18} color="#fff" strokeWidth={3} />
+                  <Text style={[styles.selloTexto, { color: '#fff' }]}>Paso</Text>
                 </Animated.View>
               </Animated.View>
             </GestureDetector>
@@ -470,28 +624,36 @@ export function MovieMatchScreen() {
       <View style={[styles.botonera, { paddingBottom: insets.bottom + 16 }]}>
         {actual ? (
           <>
-            <Pressable
-              style={[styles.redondo, styles.redondoNo]}
-              onPress={() => lanzar(false)}
-              accessibilityLabel="Paso"
-            >
-              <IconX size={32} color={COLORS.error} strokeWidth={2.4} />
-            </Pressable>
-            <Pressable
-              style={[styles.redondoPeque, historial.length === 0 && { opacity: 0.35 }]}
+            <Animated.View style={estiloBotonNo}>
+              <BotonRedondo
+                tamano={64}
+                onPress={() => lanzar(false)}
+                etiqueta="Paso"
+                estilo={styles.botonCristal}
+              >
+                <IconX size={28} color="#fff" strokeWidth={2.4} />
+              </BotonRedondo>
+            </Animated.View>
+            <BotonRedondo
+              tamano={46}
               onPress={deshacer}
-              disabled={historial.length === 0}
-              accessibilityLabel="Deshacer el último voto"
+              desactivado={historial.length === 0}
+              etiqueta="Deshacer el último voto"
+              estilo={styles.botonCristal}
             >
-              <IconArrowBackUp size={22} color={COLORS.text} strokeWidth={2} />
-            </Pressable>
-            <Pressable
-              style={[styles.redondo, styles.redondoSi]}
-              onPress={() => lanzar(true)}
-              accessibilityLabel="Me apetece"
-            >
-              <IconHeart size={32} color={COLORS.accent} strokeWidth={2.4} />
-            </Pressable>
+              <IconArrowBackUp size={20} color={COLORS.textMuted} strokeWidth={2} />
+            </BotonRedondo>
+            <Animated.View style={estiloBotonSi}>
+              <View style={styles.halo} pointerEvents="none" />
+              <BotonRedondo
+                tamano={76}
+                onPress={() => lanzar(true)}
+                etiqueta="Me apetece"
+                estilo={styles.botonSi}
+              >
+                <IconHeartFilled size={32} color={COLORS.onAccent} />
+              </BotonRedondo>
+            </Animated.View>
           </>
         ) : null}
       </View>
@@ -511,18 +673,60 @@ export function MovieMatchScreen() {
 
       {celebrando && (
         <Animated.View
-          entering={FadeIn.duration(200)}
-          exiting={FadeOut.duration(250)}
-          style={styles.celebracion}
-          pointerEvents="none"
+          entering={FadeIn.duration(220)}
+          exiting={FadeOut.duration(260)}
+          style={StyleSheet.absoluteFill}
         >
-          <Text style={styles.celebracionTitulo}>¡Coincidencia!</Text>
-          <Image
-            source={{ uri: posterUrl(celebrando.p, 'w342') ?? undefined }}
-            style={styles.celebracionPoster}
-            cachePolicy="memory-disk"
+          {/* Fondo translúcido fijo (se funde la capa, nunca se anima la intensidad del blur) */}
+          <BlurView
+            intensity={40}
+            tint="dark"
+            style={StyleSheet.absoluteFill}
+            experimentalBlurMethod="dimezisBlurView"
           />
-          <Text style={styles.celebracionTexto}>A todos os apetece ver {celebrando.t}</Text>
+          <Pressable style={styles.celebracion} onPress={() => setCelebrando(null)}>
+            <Animated.Text
+              entering={reducir ? FadeIn.duration(200) : FadeIn.duration(260).delay(80)}
+              style={styles.celebracionTitulo}
+            >
+              ¡Coincidencia!
+            </Animated.Text>
+            <Animated.View
+              entering={
+                reducir
+                  ? FadeIn.duration(200)
+                  : ZoomIn.springify().damping(14).stiffness(160).mass(0.8)
+              }
+              style={styles.celebracionMarco}
+            >
+              <Image
+                source={{ uri: posterUrl(celebrando.p, 'w500') ?? undefined }}
+                placeholder={{ uri: posterUrl(celebrando.p, 'w185') ?? undefined }}
+                style={styles.celebracionPoster}
+                cachePolicy="memory-disk"
+              />
+            </Animated.View>
+            <Animated.View
+              entering={FadeIn.duration(260).delay(reducir ? 0 : 220)}
+              style={styles.celebracionGente}
+            >
+              {match.participants.map((uid) => (
+                <View key={uid} style={styles.celebracionAvatar}>
+                  <Avatar
+                    uri={perfiles[uid]?.fotoPerfil}
+                    nombre={perfiles[uid]?.username}
+                    tamano={34}
+                  />
+                </View>
+              ))}
+            </Animated.View>
+            <Animated.Text
+              entering={FadeIn.duration(260).delay(reducir ? 0 : 280)}
+              style={styles.celebracionTexto}
+            >
+              A todos os apetece ver {celebrando.t}
+            </Animated.Text>
+          </Pressable>
         </Animated.View>
       )}
 
@@ -617,11 +821,14 @@ const styles = StyleSheet.create({
   mesa: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   carta: {
     position: 'absolute',
-    borderRadius: 24,
+    borderRadius: 28,
     overflow: 'hidden',
     backgroundColor: COLORS.card,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.16)',
   },
-  cartaDetras: {},
+  velo: { ...StyleSheet.absoluteFillObject, backgroundColor: COLORS.background },
+  tinte: { ...StyleSheet.absoluteFillObject },
   degradado: {
     position: 'absolute',
     left: 0,
@@ -632,47 +839,56 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     gap: 6,
   },
-  motivo: { color: COLORS.accent, fontSize: 13, fontFamily: FUENTES.seminegrita },
+  motivoPastilla: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: 'rgba(105,223,217,0.14)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(105,223,217,0.45)',
+  },
+  motivo: { color: COLORS.accent, fontSize: 12, fontFamily: FUENTES.seminegrita },
   filaTitulo: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },
   peliTitulo: { color: COLORS.text, fontSize: 24, lineHeight: 29, fontFamily: FUENTES.titulo },
   peliAnio: { color: COLORS.textMuted, fontSize: 15, fontFamily: FUENTES.texto, marginTop: 2 },
   sello: {
     position: 'absolute',
-    top: 28,
+    top: 26,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 10,
-    borderWidth: 3,
-    backgroundColor: 'rgba(2,6,23,0.55)',
+    height: 38,
+    borderRadius: 999,
   },
-  selloSi: { left: 22, borderColor: COLORS.accent, transform: [{ rotate: '-12deg' }] },
-  selloNo: { right: 22, borderColor: COLORS.error, transform: [{ rotate: '12deg' }] },
-  selloTexto: { fontSize: 22, fontFamily: FUENTES.portada, letterSpacing: 1 },
+  selloSi: { left: 20, backgroundColor: COLORS.accent },
+  selloNo: { right: 20, backgroundColor: COLORS.error },
+  selloTexto: { fontSize: 16, fontFamily: FUENTES.titulo },
   botonera: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 28,
+    gap: 26,
     paddingTop: 12,
     minHeight: 100,
   },
-  redondo: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
+  botonBase: { alignItems: 'center', justifyContent: 'center' },
+  botonCristal: {
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.22)',
   },
-  redondoNo: { backgroundColor: 'rgba(239,68,68,0.1)', borderColor: 'rgba(239,68,68,0.4)' },
-  redondoSi: { backgroundColor: 'rgba(105,223,217,0.1)', borderColor: 'rgba(105,223,217,0.45)' },
-  redondoPeque: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.surface,
+  botonSi: { backgroundColor: COLORS.accent },
+  // Halo turquesa suave detrás del botón principal (sin sombras animadas)
+  halo: {
+    position: 'absolute',
+    top: -8,
+    left: -8,
+    right: -8,
+    bottom: -8,
+    borderRadius: 999,
+    backgroundColor: 'rgba(105,223,217,0.16)',
   },
   terminar: { position: 'absolute', alignSelf: 'center' },
   terminarTexto: {
@@ -732,14 +948,26 @@ const styles = StyleSheet.create({
   avisoTexto: { color: COLORS.text, fontSize: 14, fontFamily: FUENTES.texto, textAlign: 'center' },
   celebracion: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(2,6,23,0.88)',
+    backgroundColor: 'rgba(2,6,23,0.55)',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 16,
+    gap: 18,
     padding: 32,
   },
   celebracionTitulo: { color: COLORS.accent, fontSize: 34, fontFamily: FUENTES.portada },
-  celebracionPoster: { width: 180, height: 270, borderRadius: 18 },
+  celebracionMarco: {
+    padding: 3,
+    borderRadius: 24,
+    backgroundColor: 'rgba(105,223,217,0.35)',
+  },
+  celebracionPoster: { width: 200, height: 300, borderRadius: 21 },
+  celebracionGente: { flexDirection: 'row' },
+  celebracionAvatar: {
+    marginHorizontal: -5,
+    borderRadius: 999,
+    borderWidth: 2,
+    borderColor: COLORS.background,
+  },
   celebracionTexto: {
     color: COLORS.text,
     fontSize: 17,
