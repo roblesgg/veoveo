@@ -1,10 +1,12 @@
 /**
- * Muro de Social: filas horizontales con lo que ven tus amigos.
- * "Visto últimamente", "Les encanta", una fila por categoría y "En su Por ver".
+ * Muro de Social: filas horizontales con lo que ven tus amigos. Sobre todo imagen: el cartel ya
+ * dice qué peli es y la cara qué amigo, así que no se repiten título ni nombre debajo (siguen en
+ * la etiqueta de accesibilidad; sin cartel, sale el título; sin foto, la inicial).
  */
 import { memo } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { IconStarFilled } from '@tabler/icons-react-native';
 import { posterUrl } from '../../services/tmdbClient';
@@ -16,7 +18,7 @@ import { EsqueletoFilaPosters } from '../common/Esqueleto';
 import { COLORS } from '../../theme/colors';
 import { FUENTES } from '../../theme/useMontserrat';
 
-const ANCHO = 116;
+const ANCHO = 148;
 
 type Tarjeta = {
   id: number;
@@ -36,43 +38,54 @@ const TarjetaPeli = memo(function TarjetaPeli({
   perfiles: Record<string, UsuarioPerfil | undefined>;
   onPress: (id: number) => void;
 }) {
-  const nombres = t.amigos.map((u) => perfiles[u]?.username ?? '…');
+  const nombres = t.amigos.map((u) => perfiles[u]?.username ?? 'un amigo');
   return (
     <Pressable
       style={styles.tarjeta}
       onPress={() => onPress(t.id)}
-      accessibilityLabel={`${t.titulo}. ${nombres.join(', ')}`}
+      accessibilityLabel={[t.titulo, t.pie ?? nombres.join(', '), t.nota ? `nota ${t.nota}` : '']
+        .filter(Boolean)
+        .join('. ')}
     >
-      <Image
-        source={{ uri: posterUrl(t.poster, 'w342') ?? undefined }}
-        style={styles.poster}
-        cachePolicy="memory-disk"
-        transition={150}
-        recyclingKey={String(t.id)}
-      />
-      <View style={styles.amigos}>
-        {t.amigos.slice(0, 3).map((u, i) => (
-          <Avatar
-            key={u}
-            uri={perfiles[u]?.fotoPerfil}
-            nombre={perfiles[u]?.username}
-            tamano={22}
-            style={[styles.miniAvatar, i > 0 && { marginLeft: -8 }]}
-          />
-        ))}
-        {t.nota ? (
-          <View style={styles.nota}>
-            <IconStarFilled size={11} color={COLORS.accent} />
-            <Text style={styles.notaTexto}>{t.nota.toFixed(t.nota % 1 ? 1 : 0)}</Text>
-          </View>
-        ) : null}
-      </View>
-      <Text style={styles.titulo} numberOfLines={2}>
-        {t.titulo}
-      </Text>
-      <Text style={styles.pie} numberOfLines={1}>
-        {t.pie ?? (nombres.length > 1 ? `${nombres[0]} y ${nombres.length - 1} más` : nombres[0])}
-      </Text>
+      {t.poster ? (
+        <Image
+          source={{ uri: posterUrl(t.poster, 'w342') ?? undefined }}
+          style={styles.poster}
+          cachePolicy="memory-disk"
+          transition={150}
+          recyclingKey={String(t.id)}
+        />
+      ) : (
+        <View style={[styles.poster, styles.sinPoster]}>
+          <Text style={styles.sinPosterTexto} numberOfLines={4}>
+            {t.titulo}
+          </Text>
+        </View>
+      )}
+      <LinearGradient
+        colors={['transparent', 'rgba(2,6,23,0.75)']}
+        style={styles.pieCartel}
+        pointerEvents="none"
+      >
+        <View style={styles.amigos}>
+          {t.amigos.slice(0, 3).map((u, i) => (
+            <Avatar
+              key={u}
+              uri={perfiles[u]?.fotoPerfil}
+              nombre={perfiles[u]?.username}
+              tamano={26}
+              style={[styles.miniAvatar, i > 0 && { marginLeft: -9 }]}
+            />
+          ))}
+          {t.amigos.length > 3 ? <Text style={styles.mas}>+{t.amigos.length - 3}</Text> : null}
+        </View>
+      </LinearGradient>
+      {t.nota ? (
+        <View style={styles.nota}>
+          <IconStarFilled size={11} color={COLORS.accent} />
+          <Text style={styles.notaTexto}>{t.nota.toFixed(t.nota % 1 ? 1 : 0)}</Text>
+        </View>
+      ) : null}
     </Pressable>
   );
 });
@@ -97,7 +110,7 @@ function Fila({
         data={tarjetas}
         keyExtractor={(t) => String(t.id)}
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
+        contentContainerStyle={{ paddingHorizontal: 20, gap: 14 }}
         renderItem={({ item }) => <TarjetaPeli t={item} perfiles={perfiles} onPress={onPeli} />}
         initialNumToRender={4}
         windowSize={3}
@@ -146,9 +159,9 @@ export function MuroAmigos({
     );
   }
   return (
-    <View style={{ gap: 26, paddingBottom: 8 }}>
+    <View style={{ gap: 32, paddingBottom: 8 }}>
       <Fila
-        titulo="Visto últimamente por tus amigos"
+        titulo="Lo último de tus amigos"
         perfiles={perfiles}
         onPeli={onPeli}
         tarjetas={muro.vistasRecientes.map(({ amigo, peli }) => ({
@@ -160,7 +173,7 @@ export function MuroAmigos({
         }))}
       />
       <Fila
-        titulo="A tus amigos les encanta"
+        titulo="Les encanta"
         perfiles={perfiles}
         onPeli={onPeli}
         tarjetas={muro.favoritas.map((p) => desde(p))}
@@ -175,7 +188,7 @@ export function MuroAmigos({
         />
       ))}
       <Fila
-        titulo="En el Por ver de tus amigos"
+        titulo="En su Por ver"
         perfiles={perfiles}
         onPeli={onPeli}
         tarjetas={muro.porVer.map((p) => desde(p))}
@@ -192,23 +205,50 @@ const styles = StyleSheet.create({
     fontFamily: FUENTES.titulo,
     paddingHorizontal: 20,
   },
-  tarjeta: { width: ANCHO, gap: 6 },
-  poster: { width: ANCHO, height: ANCHO * 1.5, borderRadius: 14, backgroundColor: COLORS.card },
-  amigos: { flexDirection: 'row', alignItems: 'center', marginTop: -18, paddingHorizontal: 6 },
-  miniAvatar: { borderWidth: 2, borderColor: COLORS.background },
+  tarjeta: { width: ANCHO },
+  poster: {
+    width: ANCHO,
+    height: ANCHO * 1.5,
+    borderRadius: 18,
+    backgroundColor: COLORS.card,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.12)',
+  },
+  sinPoster: { alignItems: 'center', justifyContent: 'center', padding: 12 },
+  sinPosterTexto: {
+    color: COLORS.text,
+    fontSize: 14,
+    lineHeight: 18,
+    fontFamily: FUENTES.seminegrita,
+    textAlign: 'center',
+  },
+  pieCartel: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingTop: 28,
+    paddingBottom: 8,
+    paddingHorizontal: 8,
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
+  },
+  amigos: { flexDirection: 'row', alignItems: 'center' },
+  miniAvatar: { borderWidth: 2, borderColor: 'rgba(2,6,23,0.9)' },
+  mas: { color: COLORS.text, fontSize: 12, fontFamily: FUENTES.titulo, marginLeft: 6 },
   nota: {
-    marginLeft: 'auto',
+    position: 'absolute',
+    top: 8,
+    right: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
-    paddingHorizontal: 6,
-    height: 20,
+    gap: 3,
+    paddingHorizontal: 7,
+    height: 22,
     borderRadius: 999,
-    backgroundColor: 'rgba(2,6,23,0.85)',
+    backgroundColor: 'rgba(2,6,23,0.75)',
   },
-  notaTexto: { color: COLORS.accent, fontSize: 11, fontFamily: FUENTES.titulo },
-  titulo: { color: COLORS.text, fontSize: 13, lineHeight: 17, fontFamily: FUENTES.seminegrita },
-  pie: { color: COLORS.textMuted, fontSize: 12, fontFamily: FUENTES.texto, marginTop: -2 },
+  notaTexto: { color: COLORS.accent, fontSize: 12, fontFamily: FUENTES.titulo },
   vacio: {
     color: COLORS.textMuted,
     fontSize: 15,

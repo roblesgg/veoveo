@@ -19,7 +19,7 @@ import { MuroAmigos } from '../components/social/MuroAmigos';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
-import { IconCards, IconChevronRight, IconCopy, IconSearch } from '@tabler/icons-react-native';
+import { IconCards, IconCopy, IconSearch } from '@tabler/icons-react-native';
 import { useSocialData } from '../hooks/social/useSocialData';
 import { useAuth } from '../context/AuthContext';
 import { observarUsuario } from '../services/repositorioUsuarios';
@@ -117,6 +117,16 @@ export function SocialTab({
     <View style={styles.flex}>
       <View style={[styles.cabecera, { paddingTop: insets.top + 12 }]}>
         <Text style={styles.titulo}>Social</Text>
+        {/* El Movie Match se empieza desde aquí (siempre a mano) o desde un chat */}
+        <Pressable
+          onPress={onNuevoMatch}
+          hitSlop={8}
+          style={styles.botonMatch}
+          accessibilityRole="button"
+          accessibilityLabel="Nuevo Movie Match con amigos"
+        >
+          <IconCards size={22} color={COLORS.accent} strokeWidth={2} />
+        </Pressable>
         <Pressable onPress={onPerfilClick} hitSlop={8} accessibilityLabel="Tu perfil">
           <Avatar uri={userFoto} nombre={user?.displayName} tamano={40} />
         </Pressable>
@@ -160,31 +170,26 @@ export function SocialTab({
             />
           }
         >
-          <View style={styles.match}>
-            <Pressable style={styles.matchNuevo} onPress={onNuevoMatch} accessibilityRole="button">
-              <IconCards size={24} color={COLORS.accent} strokeWidth={2} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.matchTitulo}>Movie Match con amigos</Text>
-                <Text style={styles.matchTexto}>Deslizad y encontrad qué ver juntos.</Text>
-              </View>
-              <IconChevronRight size={20} color={COLORS.textMuted} strokeWidth={2} />
-            </Pressable>
-            {matches.map((m) => (
-              <Pressable
-                key={m.id}
-                style={styles.matchEnCurso}
-                onPress={() => onAbrirMatch(m.id)}
-                accessibilityLabel="Seguir el Movie Match en curso"
-              >
-                <View style={styles.punto} />
-                <Text style={styles.matchEnCursoTexto} numberOfLines={1}>
-                  Match en curso · {m.participants.length} personas · {m.coincidencias.length}/
-                  {m.objetivo}
-                </Text>
-                <Text style={styles.matchSeguir}>Seguir</Text>
-              </Pressable>
-            ))}
-          </View>
+          {/* Matches en curso: solo si hay alguno (nada de huecos vacíos) */}
+          {matches.length > 0 && (
+            <View style={styles.match}>
+              {matches.map((m) => (
+                <Pressable
+                  key={m.id}
+                  style={styles.matchEnCurso}
+                  onPress={() => onAbrirMatch(m.id)}
+                  accessibilityLabel="Seguir el Movie Match en curso"
+                >
+                  <View style={styles.punto} />
+                  <Text style={styles.matchEnCursoTexto} numberOfLines={1}>
+                    Match en curso · {m.participants.length} personas · {m.coincidencias.length}/
+                    {m.objetivo}
+                  </Text>
+                  <Text style={styles.matchSeguir}>Seguir</Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
           <MuroAmigos
             muro={muro}
             categorias={categorias}
@@ -295,6 +300,17 @@ export function SocialTab({
 }
 
 const styles = StyleSheet.create({
+  botonMatch: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(105,223,217,0.12)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(105,223,217,0.45)',
+  },
   flex: { flex: 1, backgroundColor: COLORS.background },
   cabecera: {
     flexDirection: 'row',
@@ -310,18 +326,6 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   match: { paddingHorizontal: 20, marginBottom: 14, gap: 8 },
-  matchNuevo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    padding: 16,
-    borderRadius: 20,
-    backgroundColor: 'rgba(105,223,217,0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(105,223,217,0.3)',
-  },
-  matchTitulo: { color: COLORS.text, fontSize: 16, fontFamily: FUENTES.titulo },
-  matchTexto: { color: COLORS.textMuted, fontSize: 13, fontFamily: FUENTES.texto, marginTop: 2 },
   matchEnCurso: {
     flexDirection: 'row',
     alignItems: 'center',
