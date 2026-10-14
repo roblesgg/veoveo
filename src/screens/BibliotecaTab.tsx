@@ -26,8 +26,8 @@ import { Image } from 'expo-image';
 import { useBiblioteca } from '../context/BibliotecaContext';
 import { EsqueletoRejillaPosters } from '../components/common/Esqueleto';
 import { IconoPalomitas } from '../components/iconos/IconosPropios';
-import { actualizarFechaVisto, fechaDeVista } from '../services/repositorioPeliculasUsuario';
-import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { fechaDeVista } from '../services/repositorioPeliculasUsuario';
+import { HojaCuandoVista } from '../components/movie/HojaCuandoVista';
 import * as Haptics from 'expo-haptics';
 import { useQueries } from '@tanstack/react-query';
 import { obtenerPlataformasES } from '../hooks/useDescubrir';
@@ -448,21 +448,8 @@ export function BibliotecaTab({
         </Pressable>
       </Modal>
 
-      {/* Fecha exacta de vista: selector nativo al mantener pulsada una peli en Vistas */}
-      {cambiandoFecha && (
-        <DateTimePicker
-          value={new Date(fechaDeVista(cambiandoFecha) || Date.now())}
-          mode="date"
-          maximumDate={new Date()}
-          onChange={(evento: DateTimePickerEvent, elegida?: Date) => {
-            const peli = cambiandoFecha;
-            setCambiandoFecha(null);
-            if (evento.type === 'set' && elegida) {
-              void actualizarFechaVisto(peli.idPelicula, elegida.getTime()).catch(() => undefined);
-            }
-          }}
-        />
-      )}
+      {/* Cuándo la viste: las mismas tres opciones (mantener pulsada una peli en Vistas) */}
+      <HojaCuandoVista pelicula={cambiandoFecha} onCerrar={() => setCambiandoFecha(null)} />
 
       {/* MENÚ DE ORDENACIÓN */}
       <FilterSortMenu
