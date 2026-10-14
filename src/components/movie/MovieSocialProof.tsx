@@ -1,19 +1,13 @@
 import { Image as ExpoImage } from 'expo-image';
 import { avatarUrl } from '../../utils/imagenes';
 import React, { useEffect, useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  ScrollView,
-  ActivityIndicator,
-  Pressable,
-} from 'react-native';
+import { StyleSheet, Text, View, Image, ScrollView, Pressable } from 'react-native';
 import { obtenerActividadAmigosPelicula } from '../../services/repositorioSocial';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+
+import { LoaderClaqueta } from '../common/LoaderClaqueta';
 
 type Props = {
   movieId: number;
@@ -43,7 +37,11 @@ export function MovieSocialProof({ movieId, fontFamily }: Props) {
   }, [movieId]);
 
   if (loading)
-    return <ActivityIndicator color="rgba(255,255,255,0.3)" style={{ marginVertical: 20 }} />;
+    return (
+      <View style={{ marginVertical: 20 }}>
+        <LoaderClaqueta tamano="mediano" />
+      </View>
+    );
   if (actividad.length === 0) return null;
 
   const vistas = actividad.filter((a) => a.estado === 'vista');
@@ -69,7 +67,12 @@ export function MovieSocialProof({ movieId, fontFamily }: Props) {
               >
                 <BlurView intensity={30} tint="dark" style={styles.chipInner}>
                   {a.foto ? (
-                    <ExpoImage source={{ uri: avatarUrl(a.foto, 24)! }} style={styles.foto} contentFit="cover" cachePolicy="memory-disk" />
+                    <ExpoImage
+                      source={{ uri: avatarUrl(a.foto, 24)! }}
+                      style={styles.foto}
+                      contentFit="cover"
+                      cachePolicy="memory-disk"
+                    />
                   ) : (
                     <View style={styles.fotoPlaceholder}>
                       <Ionicons name="person" size={14} color="#fff" />
@@ -105,7 +108,12 @@ export function MovieSocialProof({ movieId, fontFamily }: Props) {
               >
                 <BlurView intensity={20} tint="dark" style={styles.chipInner}>
                   {a.foto ? (
-                    <ExpoImage source={{ uri: avatarUrl(a.foto, 24)! }} style={styles.foto} contentFit="cover" cachePolicy="memory-disk" />
+                    <ExpoImage
+                      source={{ uri: avatarUrl(a.foto, 24)! }}
+                      style={styles.foto}
+                      contentFit="cover"
+                      cachePolicy="memory-disk"
+                    />
                   ) : (
                     <View style={styles.fotoPlaceholder}>
                       <Ionicons name="person" size={14} color="#fff" />

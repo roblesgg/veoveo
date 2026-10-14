@@ -1,9 +1,11 @@
 import React from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { COLORS, GLASS } from '../../theme/colors';
 import { SHADOWS } from '../../theme/theme';
+
+import { LoaderClaqueta } from '../common/LoaderClaqueta';
 
 type Props = {
   user: any;
@@ -36,7 +38,9 @@ export const MovieActions = React.memo(
           {!user ? (
             <Text style={styles.aviso}>Inicia sesión para guardar en tu biblioteca.</Text>
           ) : bibCargando ? (
-            <ActivityIndicator color="#fff" style={{ marginVertical: 16 }} />
+            <View style={{ marginVertical: 12 }}>
+              <LoaderClaqueta tamano="mediano" />
+            </View>
           ) : (
             <View style={styles.rowBotones}>
               <Pressable

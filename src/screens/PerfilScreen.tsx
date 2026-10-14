@@ -9,7 +9,6 @@ import { avatarUrl } from '../utils/imagenes';
 
 import React, { useState, useEffect } from 'react';
 import {
-  ActivityIndicator,
   Image,
   Pressable,
   ScrollView,
@@ -46,6 +45,7 @@ import { useUserProfile } from '../hooks/profile/useUserProfile';
 import { ProfileStats } from '../components/profile/ProfileStats';
 import { ProfileOptions } from '../components/profile/ProfileOptions';
 import { UsernameModal, AvatarModal } from '../components/profile/ProfileModals';
+import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
 
 export function PerfilScreen() {
   const navigation = useNavigation<any>();
@@ -88,7 +88,7 @@ export function PerfilScreen() {
   if (cargando && !usuario) {
     return (
       <GradientBackground style={styles.center}>
-        <ActivityIndicator size="large" color="#fff" />
+        <LoaderClaqueta tamano="grande" />
       </GradientBackground>
     );
   }

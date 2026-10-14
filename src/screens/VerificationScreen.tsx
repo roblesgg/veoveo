@@ -8,13 +8,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { GradientBackground } from '../components/GradientBackground';
 import { useMontserrat } from '../theme/useMontserrat';
 import { SHADOWS } from '../theme/theme';
 import { sendEmailVerification } from 'firebase/auth';
+
+import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
 
 export function VerificationScreen() {
   const insets = useSafeAreaInsets();
@@ -88,7 +90,7 @@ export function VerificationScreen() {
               disabled={cargando}
             >
               {cargando ? (
-                <ActivityIndicator color="#fff" />
+                <LoaderClaqueta tamano="pequeno" color="#fff" />
               ) : (
                 <Text style={[styles.mainBtnText, { fontFamily: ff }]}>YA LO HE VERIFICADO</Text>
               )}

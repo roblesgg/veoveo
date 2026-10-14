@@ -4,7 +4,6 @@
  */
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -27,6 +26,7 @@ import {
 import { bloquearUsuario } from '../../services/repositorioSocial';
 import { COLORS } from '../../theme/colors';
 import { FUENTES } from '../../theme/useMontserrat';
+import { LoaderClaqueta } from './LoaderClaqueta';
 
 type Props = {
   /** null = cerrada */
@@ -164,7 +164,7 @@ export function HojaDenuncia({ objeto, titulo, nombreBloqueo, onCerrar, onBloque
                 accessibilityRole="button"
               >
                 {enviando ? (
-                  <ActivityIndicator color={COLORS.onAccent} />
+                  <LoaderClaqueta tamano="pequeno" color={COLORS.onAccent} />
                 ) : (
                   <Text style={styles.botonTexto}>Enviar denuncia</Text>
                 )}

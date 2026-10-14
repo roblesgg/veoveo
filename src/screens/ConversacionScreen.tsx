@@ -7,7 +7,6 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -500,7 +499,9 @@ export function ConversacionScreen() {
         onEndReachedThreshold={0.3}
         ListFooterComponent={
           cargandoMas ? (
-            <ActivityIndicator color={COLORS.textMuted} style={{ marginVertical: 16 }} />
+            <View style={{ marginVertical: 16 }}>
+              <LoaderClaqueta tamano="pequeno" />
+            </View>
           ) : null
         }
         ListEmptyComponent={

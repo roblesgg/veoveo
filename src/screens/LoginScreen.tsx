@@ -10,7 +10,6 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Platform,
   Pressable,
@@ -30,6 +29,7 @@ import { SHADOWS } from '../theme/theme';
 import { useMontserrat } from '../theme/useMontserrat';
 import { AlertModal } from '../components/common/AlertModal';
 import { AvisoLegal } from '../components/common/AvisoLegal';
+import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
 
 export function LoginScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -91,7 +91,11 @@ export function LoginScreen() {
         {/* MENSAJES DE ERROR DINÁMICOS */}
         {errorMessage ? <Text style={[styles.err, { fontFamily: ff }]}>{errorMessage}</Text> : null}
 
-        {loading ? <ActivityIndicator color="#fff" style={{ marginBottom: 16 }} /> : null}
+        {loading ? (
+          <View style={{ marginBottom: 16 }}>
+            <LoaderClaqueta tamano="mediano" />
+          </View>
+        ) : null}
 
         {/* BOTÓN: ACCESO TRADICIONAL */}
         <Pressable

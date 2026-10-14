@@ -1,16 +1,10 @@
 import React, { useState } from 'react';
-import {
-  ActivityIndicator,
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../theme/colors';
+
+import { LoaderClaqueta } from '../common/LoaderClaqueta';
 
 type UsernameModalProps = {
   visible: boolean;
@@ -75,7 +69,7 @@ export const UsernameModal = ({
             </Pressable>
             {loading ? (
               <View style={styles.btnConfirm}>
-                <ActivityIndicator color="#fff" />
+                <LoaderClaqueta tamano="pequeno" color="#fff" />
               </View>
             ) : (
               <Pressable onPress={handleSave} style={styles.btnConfirm}>
@@ -168,7 +162,7 @@ export const AvatarModal = ({
             </Pressable>
             {loading ? (
               <View style={styles.btnConfirm}>
-                <ActivityIndicator color="#fff" />
+                <LoaderClaqueta tamano="pequeno" color="#fff" />
               </View>
             ) : (
               <Pressable onPress={() => handleSave()} style={styles.btnConfirm}>

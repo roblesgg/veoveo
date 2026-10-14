@@ -3,7 +3,6 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState, useEffect, useMemo } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Image,
   Linking,
@@ -27,6 +26,7 @@ import { logoUrl } from '../services/tmdbClient';
 import { URL_NORMAS, URL_PRIVACIDAD } from '../components/common/AvisoLegal';
 import { usePlataformasRegion } from '../hooks/usePlataformasRegion';
 import { COLORS } from '../theme/colors';
+import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
 
 export function AjustesScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -160,7 +160,7 @@ export function AjustesScreen() {
           />
           <View style={styles.platsContainer}>
             {cargandoPlats ? (
-              <ActivityIndicator color="#fff" />
+              <LoaderClaqueta tamano="mediano" />
             ) : (
               filteredPlats.map((p) => (
                 <Pressable
@@ -234,7 +234,9 @@ export function AjustesScreen() {
           >
             <View style={{ flex: 1 }}>
               <Text style={[styles.cardTitle, { fontFamily }]}>Contacto y soporte</Text>
-              <Text style={[styles.cardDesc, { fontFamily }]}>Escríbenos a dripdev.dev@gmail.com</Text>
+              <Text style={[styles.cardDesc, { fontFamily }]}>
+                Escríbenos a dripdev.dev@gmail.com
+              </Text>
             </View>
             <Ionicons name="mail-outline" size={20} color="rgba(255,255,255,0.5)" />
           </Pressable>

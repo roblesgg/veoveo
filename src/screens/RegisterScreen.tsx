@@ -8,7 +8,7 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { GradientBackground } from '../components/GradientBackground';
@@ -17,6 +17,7 @@ import type { RootStackParamList } from '../navigation/types';
 import { COLORS } from '../theme/colors';
 import { SHADOWS } from '../theme/theme';
 import { useMontserrat } from '../theme/useMontserrat';
+import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
 
 export function RegisterScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -75,7 +76,11 @@ export function RegisterScreen() {
 
         {/* FEEDBACK DE ERRORES */}
         {errorMessage ? <Text style={[styles.err, { fontFamily: ff }]}>{errorMessage}</Text> : null}
-        {loading ? <ActivityIndicator color="#fff" style={{ marginBottom: 16 }} /> : null}
+        {loading ? (
+          <View style={{ marginBottom: 16 }}>
+            <LoaderClaqueta tamano="mediano" />
+          </View>
+        ) : null}
 
         {/* BOTÓN: EJECUTAR REGISTRO */}
         <Pressable

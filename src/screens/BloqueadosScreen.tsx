@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GradientBackground } from '../components/GradientBackground';
 import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
@@ -95,7 +95,7 @@ export function BloqueadosScreen() {
                 style={styles.desbloquear}
               >
                 {quitando === item.uid ? (
-                  <ActivityIndicator color="#fff" size="small" />
+                  <LoaderClaqueta tamano="pequeno" />
                 ) : (
                   <Text style={{ color: '#ff8a80', fontFamily: ff, fontSize: 14 }}>
                     Desbloquear

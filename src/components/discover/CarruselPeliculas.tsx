@@ -7,15 +7,7 @@
  */
 
 import React, { memo, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-  type ViewToken,
-} from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View, type ViewToken } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInRight } from 'react-native-reanimated';
 import { PosterItem } from './PosterItem';
@@ -25,6 +17,7 @@ import { marcarHito } from '../../utils/medicionArranque';
 import { useCarrusel, useRecomendaciones } from '../../hooks/useDescubrir';
 import { obtenerCarrusel } from '../../constants/carruseles';
 import { EsqueletoFilaPosters } from '../common/Esqueleto';
+import { LoaderClaqueta } from '../common/LoaderClaqueta';
 
 /** Un póster está "quieto" si lleva medio segundo con el 60 % a la vista. */
 const VISIBILIDAD_POSTER = { itemVisiblePercentThreshold: 60, minimumViewTime: 500 };
@@ -150,7 +143,7 @@ export const CarruselPeliculas = memo(
             ListFooterComponent={
               catalogo.isFetchingNextPage ? (
                 <View style={styles.footerCargando}>
-                  <ActivityIndicator color={COLORS.primary} />
+                  <LoaderClaqueta tamano="pequeno" />
                 </View>
               ) : null
             }

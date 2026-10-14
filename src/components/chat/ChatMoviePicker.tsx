@@ -1,14 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Modal,
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  TextInput,
-  FlatList,
-  ActivityIndicator,
-} from 'react-native';
+import { Modal, View, Text, StyleSheet, Pressable, TextInput, FlatList } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Image as ExpoImage } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,6 +8,8 @@ import { posterUrl, tmdbApi } from '../../services/tmdbClient';
 import { PeliculaUsuario, Movie } from '../../types';
 import { COLORS } from '../../theme/colors';
 import { SHADOWS } from '../../theme/theme';
+
+import { LoaderClaqueta } from '../common/LoaderClaqueta';
 
 type Props = {
   visible: boolean;
@@ -131,7 +124,9 @@ export const ChatMoviePicker = ({ visible, mode, onClose, onSelect, fontFamily }
           )}
 
           {loading ? (
-            <ActivityIndicator color={COLORS.primary} style={{ marginTop: 40 }} />
+            <View style={{ marginTop: 40 }}>
+              <LoaderClaqueta tamano="mediano" />
+            </View>
           ) : (
             <FlatList
               data={movies}

@@ -1,7 +1,8 @@
 /**
  * Loader de marca: la tapa de la claqueta se cierra de golpe con un pequeño rebote.
- * SOLO para esperas a pantalla completa (arranque, preparar el Movie Match).
- * En listas y carruseles se usan esqueletos (Esqueleto.tsx).
+ * Es el indicador de carga de toda la app, en tres tamaños: «pequeno» (dentro de botones y filas),
+ * «mediano» (secciones) y «grande» (pantalla completa). Donde ya se sabe la forma de lo que viene
+ * (carruseles, biblioteca) se usan esqueletos (Esqueleto.tsx), no esto.
  * Va en el hilo de UI (Reanimated). Con «reducir movimiento», solo respira (fundido).
  */
 import { useEffect } from 'react';
@@ -24,9 +25,19 @@ import { FUENTES } from '../../theme/useMontserrat';
 
 const GAnimado = Animated.createAnimatedComponent(G);
 
-type Props = { texto?: string; tamano?: number };
+const TAMANOS = { pequeno: 22, mediano: 48, grande: 88 } as const;
 
-export function LoaderClaqueta({ texto, tamano = 88 }: Props) {
+type Props = {
+  texto?: string;
+  tamano?: number | keyof typeof TAMANOS;
+  /** Color del trazo (por defecto turquesa; dentro de un botón turquesa, el de su texto) */
+  color?: string;
+};
+
+export function LoaderClaqueta({ texto, tamano = 'grande', color = COLORS.accent }: Props) {
+  const lado = typeof tamano === 'number' ? tamano : TAMANOS[tamano];
+  // En pequeño el trazo es más grueso para que se lea
+  const trazo = lado < 32 ? 5 : 3;
   const reducir = useReducedMotion();
   const angulo = useSharedValue(-22);
   const opacidad = useSharedValue(1);
@@ -61,9 +72,22 @@ export function LoaderClaqueta({ texto, tamano = 88 }: Props) {
   const estiloRespirar = useAnimatedStyle(() => ({ opacity: opacidad.value }));
 
   return (
-    <View style={styles.contenedor} accessibilityRole="progressbar" accessibilityLabel={texto ?? 'Cargando'}>
+    <View
+      style={styles.contenedor}
+      accessibilityRole="progressbar"
+      accessibilityLabel={texto ?? 'Cargando'}
+    >
       <Animated.View style={estiloRespirar}>
-        <Svg width={tamano} height={tamano} viewBox="0 0 64 64" fill="none" stroke={COLORS.accent} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+        <Svg
+          width={lado}
+          height={lado}
+          viewBox="0 0 64 64"
+          fill="none"
+          stroke={color}
+          strokeWidth={trazo}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <Rect x={6} y={28} width={52} height={28} rx={5} />
           <Path d="M6 40h52" />
           <GAnimado animatedProps={propsTapa} originX={6} originY={26}>
@@ -78,6 +102,6 @@ export function LoaderClaqueta({ texto, tamano = 88 }: Props) {
 }
 
 const styles = StyleSheet.create({
-  contenedor: { alignItems: 'center', justifyContent: 'center', gap: 14 },
+  contenedor: { alignItems: 'center', justifyContent: 'center', gap: 12 },
   texto: { color: COLORS.textMuted, fontSize: 14, fontFamily: FUENTES.texto },
 });
