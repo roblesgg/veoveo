@@ -7,6 +7,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
+import { cargarPortada, type Portada } from '../storage/pruebasDiseno';
 import { Image as ExpoImage } from 'expo-image';
 import {
   ActivityIndicator,
@@ -48,6 +49,11 @@ import { MovieRatingModal } from '../components/movie/MovieRatingModal';
 import { MovieSocialProof } from '../components/movie/MovieSocialProof';
 
 export function PeliculaScreen() {
+  // Versión de la portada a prueba (Ajustes, solo en el APK de pruebas)
+  const [portada, setPortada] = useState<Portada>('nitida');
+  React.useEffect(() => {
+    void cargarPortada().then(setPortada);
+  }, []);
   const route = useRoute<RouteProp<RootStackParamList, 'Pelicula'>>();
   const { movieId } = route.params;
   const navigation = useNavigation<any>();
@@ -138,31 +144,63 @@ export function PeliculaScreen() {
       {/* 🖼️ FONDO: Poster desenfocado con gradiente envolvente */}
       {(detalles.backdrop_path || detalles.poster_path) && (
         <View style={styles.fixedBackdrop} pointerEvents="none">
-          {/* La imagen con SU proporción (fondo 16:9 o cartel 2:3), a lo ancho y arriba.
-              Estirarla a toda la altura la ampliaba ×3 y se veía borrosa aunque fuera la w1280.
-              Carga progresiva: la w300 se pinta al momento y la grande entra con un fundido. */}
-          <View style={{ width: '100%', aspectRatio: detalles.backdrop_path ? 16 / 9 : 2 / 3 }}>
-            <ExpoImage
-              source={{
-                uri: detalles.backdrop_path
-                  ? posterUrl(detalles.backdrop_path, 'w1280')!
-                  : posterUrl(detalles.poster_path, 'original')!,
-              }}
-              placeholder={{
-                uri: posterUrl(detalles.backdrop_path || detalles.poster_path, 'w300')!,
-              }}
-              placeholderContentFit="cover"
-              contentFit="cover"
-              cachePolicy="memory-disk"
-              transition={300}
-              style={StyleSheet.absoluteFillObject}
-            />
-            <LinearGradient
-              colors={['rgba(2,6,23,0.55)', 'rgba(2,6,23,0)', 'rgba(2,6,23,0)', GradientBottom]}
-              locations={[0, 0.3, 0.55, 1]}
-              style={StyleSheet.absoluteFillObject}
-            />
-          </View>
+          {/* Portada grande que cubre, en buena calidad. Se usa el CARTEL (vertical, hasta
+              2000×3000), no el fondo apaisado: estirar el fondo w1280 a una caja alta lo
+              ampliaba ×3 y se veía borroso. Dos versiones a prueba (Ajustes, solo pruebas):
+              «nitida» = cartel original cubriendo arriba; «desenfocada» = cartel pequeño
+              desenfocado cubriendo todo, con el cartel nítido de la tarjeta delante (pesa poco).
+              Carga progresiva: la w342 se pinta al momento y la grande entra con un fundido. */}
+          {detalles.poster_path && portada === 'desenfocada' ? (
+            <>
+              <ExpoImage
+                source={{ uri: posterUrl(detalles.poster_path, 'w342')! }}
+                blurRadius={40}
+                contentFit="cover"
+                cachePolicy="memory-disk"
+                style={StyleSheet.absoluteFillObject}
+              />
+              <LinearGradient
+                colors={['rgba(2,6,23,0.45)', 'rgba(2,6,23,0.55)', GradientBottom]}
+                locations={[0, 0.45, 0.9]}
+                style={StyleSheet.absoluteFillObject}
+              />
+            </>
+          ) : (
+            <View
+              style={
+                detalles.poster_path
+                  ? { width: '100%', height: 750 }
+                  : { width: '100%', aspectRatio: 16 / 9 }
+              }
+            >
+              <ExpoImage
+                source={{
+                  uri: detalles.poster_path
+                    ? posterUrl(detalles.poster_path, 'original')!
+                    : posterUrl(detalles.backdrop_path, 'w1280')!,
+                }}
+                placeholder={{
+                  uri: posterUrl(detalles.poster_path || detalles.backdrop_path, 'w342')!,
+                }}
+                placeholderContentFit="cover"
+                contentFit="cover"
+                cachePolicy="memory-disk"
+                transition={300}
+                style={StyleSheet.absoluteFillObject}
+              />
+              <LinearGradient
+                colors={[
+                  'rgba(2,6,23,0.5)',
+                  'rgba(0,0,0,0)',
+                  'rgba(30,27,75,0.4)',
+                  GradientBottom,
+                  GradientBottom,
+                ]}
+                locations={[0, 0.2, 0.5, 0.8, 1]}
+                style={StyleSheet.absoluteFillObject}
+              />
+            </View>
+          )}
         </View>
       )}
 
