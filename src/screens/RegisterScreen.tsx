@@ -8,7 +8,7 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { GradientBackground } from '../components/GradientBackground';
@@ -18,6 +18,7 @@ import { COLORS } from '../theme/colors';
 import { SHADOWS } from '../theme/theme';
 import { useMontserrat } from '../theme/useMontserrat';
 import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { Pulsable } from '../components/common/Pulsable';
 
 export function RegisterScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -83,7 +84,7 @@ export function RegisterScreen() {
         ) : null}
 
         {/* BOTÓN: EJECUTAR REGISTRO */}
-        <Pressable
+        <Pulsable
           style={[styles.btn, styles.btnDark, SHADOWS.macLight]}
           disabled={loading || !firebaseReady}
           onPress={async () => {
@@ -111,13 +112,13 @@ export function RegisterScreen() {
           }}
         >
           <Text style={[styles.btnText, { fontFamily: ff }]}>REGISTRARSE</Text>
-        </Pressable>
+        </Pulsable>
         <AvisoLegal fontFamily={ff} />
 
         {/* LINK VOLVER A LOGIN */}
-        <Pressable onPress={() => navigation.navigate('Login')} style={{ marginTop: 16 }}>
+        <Pulsable onPress={() => navigation.navigate('Login')} style={{ marginTop: 16 }}>
           <Text style={[styles.link, { fontFamily: ff }]}>¿Ya tienes cuenta? Inicia sesión</Text>
-        </Pressable>
+        </Pulsable>
       </View>
     </GradientBackground>
   );

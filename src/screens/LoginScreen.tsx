@@ -9,16 +9,7 @@ import Constants from 'expo-constants';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState } from 'react';
-import {
-  Alert,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  Linking,
-} from 'react-native';
+import { Alert, Platform, StyleSheet, Text, TextInput, View, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
@@ -30,6 +21,7 @@ import { useMontserrat } from '../theme/useMontserrat';
 import { AlertModal } from '../components/common/AlertModal';
 import { AvisoLegal } from '../components/common/AvisoLegal';
 import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { Pulsable } from '../components/common/Pulsable';
 
 export function LoginScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -98,7 +90,7 @@ export function LoginScreen() {
         ) : null}
 
         {/* BOTÓN: ACCESO TRADICIONAL */}
-        <Pressable
+        <Pulsable
           style={[styles.btn, styles.btnDark, SHADOWS.macLight]}
           disabled={loading || !firebaseReady}
           onPress={async () => {
@@ -118,10 +110,10 @@ export function LoginScreen() {
           }}
         >
           <Text style={[styles.btnText, { fontFamily: ff }]}>INICIAR SESIÓN</Text>
-        </Pressable>
+        </Pulsable>
 
         {/* BOTÓN: ACCESO CON GOOGLE */}
-        <Pressable
+        <Pulsable
           style={[styles.btn, styles.btnLight, SHADOWS.macLight]}
           disabled={loading || !firebaseReady}
           onPress={async () => {
@@ -172,16 +164,16 @@ export function LoginScreen() {
             </View>
             <Text style={[styles.btnTextDark, { fontFamily: ff }]}>Continuar con Google</Text>
           </View>
-        </Pressable>
+        </Pulsable>
         <AvisoLegal fontFamily={ff} inicio="Al continuar" />
 
         {/* NAVEGACIÓN A REGISTRO */}
-        <Pressable onPress={() => navigation.navigate('Register')} style={{ marginTop: 16 }}>
+        <Pulsable onPress={() => navigation.navigate('Register')} style={{ marginTop: 16 }}>
           <Text style={[styles.link, { fontFamily: ff }]}>¿No tienes cuenta? Regístrate</Text>
-        </Pressable>
+        </Pulsable>
 
         {/* OLVIDO DE CONTRASEÑA */}
-        <Pressable
+        <Pulsable
           onPress={async () => {
             if (!email.trim()) {
               setAlertInfo({
@@ -214,13 +206,13 @@ export function LoginScreen() {
           <Text style={[styles.link, { fontFamily: ff, opacity: 0.7, fontSize: 13 }]}>
             ¿Has olvidado tu contraseña?
           </Text>
-        </Pressable>
+        </Pulsable>
 
         <Text style={[styles.version, { fontFamily: ff }]}>v{Constants.expoConfig?.version}</Text>
 
-        <Pressable onPress={() => Linking.openURL('https://dripdev.dev')} style={{ marginTop: 8 }}>
+        <Pulsable onPress={() => Linking.openURL('https://dripdev.dev')} style={{ marginTop: 8 }}>
           <Text style={[styles.dripLink, { fontFamily: ff }]}>by DripDev</Text>
-        </Pressable>
+        </Pulsable>
       </View>
 
       {/* MODAL DE ALERTA PERSONALIZADO */}

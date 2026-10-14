@@ -6,7 +6,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   FlatList,
-  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -32,6 +31,7 @@ import { SolicitudesBadge } from '../components/social/SolicitudesBadge';
 import { IconoPalomitas } from '../components/iconos/IconosPropios';
 import { COLORS } from '../theme/colors';
 import { FUENTES } from '../theme/useMontserrat';
+import { Pulsable } from '../components/common/Pulsable';
 
 type Props = {
   fontFamily: string;
@@ -118,7 +118,7 @@ export function SocialTab({
       <View style={[styles.cabecera, { paddingTop: insets.top + 12 }]}>
         <Text style={styles.titulo}>Social</Text>
         {/* El Movie Match se empieza desde aquí (siempre a mano) o desde un chat */}
-        <Pressable
+        <Pulsable
           onPress={onNuevoMatch}
           hitSlop={8}
           style={styles.botonMatch}
@@ -126,10 +126,10 @@ export function SocialTab({
           accessibilityLabel="Nuevo Movie Match con amigos"
         >
           <IconCards size={22} color={COLORS.accent} strokeWidth={2} />
-        </Pressable>
-        <Pressable onPress={onPerfilClick} hitSlop={8} accessibilityLabel="Tu perfil">
+        </Pulsable>
+        <Pulsable onPress={onPerfilClick} hitSlop={8} accessibilityLabel="Tu perfil">
           <Avatar uri={userFoto} nombre={user?.displayName} tamano={40} />
-        </Pressable>
+        </Pulsable>
       </View>
 
       <SolicitudesBadge
@@ -140,7 +140,7 @@ export function SocialTab({
 
       <View style={styles.segmento}>
         {(['muro', 'amigos', 'buscar'] as const).map((s) => (
-          <Pressable
+          <Pulsable
             key={s}
             onPress={() => setSeccion(s)}
             style={[styles.segBoton, seccion === s && styles.segOn]}
@@ -154,7 +154,7 @@ export function SocialTab({
                   ? `Amigos${amigos.length ? ` (${amigos.length})` : ''}`
                   : 'Añadir amigos'}
             </Text>
-          </Pressable>
+          </Pulsable>
         ))}
       </View>
 
@@ -174,7 +174,7 @@ export function SocialTab({
           {matches.length > 0 && (
             <View style={styles.match}>
               {matches.map((m) => (
-                <Pressable
+                <Pulsable
                   key={m.id}
                   style={styles.matchEnCurso}
                   onPress={() => onAbrirMatch(m.id)}
@@ -186,7 +186,7 @@ export function SocialTab({
                     {m.objetivo}
                   </Text>
                   <Text style={styles.matchSeguir}>Seguir</Text>
-                </Pressable>
+                </Pulsable>
               ))}
             </View>
           )}
@@ -224,9 +224,9 @@ export function SocialTab({
               <Text style={styles.vacioTexto}>
                 Añádelos por su nombre o su código y verás lo que ven.
               </Text>
-              <Pressable style={styles.boton} onPress={() => setSeccion('buscar')}>
+              <Pulsable style={styles.boton} onPress={() => setSeccion('buscar')}>
                 <Text style={styles.botonTexto}>Añadir amigos</Text>
-              </Pressable>
+              </Pulsable>
             </View>
           }
           renderItem={({ item }) => (
@@ -246,7 +246,7 @@ export function SocialTab({
           ListHeaderComponent={
             <View style={{ gap: 12, marginBottom: 8 }}>
               {miCodigo && (
-                <Pressable
+                <Pulsable
                   style={styles.codigo}
                   onPress={() => {
                     void Clipboard.setStringAsync(miCodigo);
@@ -261,7 +261,7 @@ export function SocialTab({
                   </View>
                   <Text style={styles.codigoAccion}>{copiado ? 'Copiado' : 'Copiar'}</Text>
                   <IconCopy size={18} color={COLORS.accent} strokeWidth={2} />
-                </Pressable>
+                </Pulsable>
               )}
               <View style={styles.buscador}>
                 <IconSearch size={18} color={COLORS.textMuted} strokeWidth={2} />

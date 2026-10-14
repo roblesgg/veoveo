@@ -4,7 +4,7 @@
  * la etiqueta de accesibilidad; sin cartel, sale el título; sin foto, la inicial).
  */
 import { memo } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -17,6 +17,7 @@ import { Avatar } from '../common/Avatar';
 import { EsqueletoFilaPosters } from '../common/Esqueleto';
 import { COLORS } from '../../theme/colors';
 import { FUENTES } from '../../theme/useMontserrat';
+import { Pulsable } from '../common/Pulsable';
 
 const ANCHO = 148;
 
@@ -40,7 +41,7 @@ const TarjetaPeli = memo(function TarjetaPeli({
 }) {
   const nombres = t.amigos.map((u) => perfiles[u]?.username ?? 'un amigo');
   return (
-    <Pressable
+    <Pulsable
       style={styles.tarjeta}
       onPress={() => onPress(t.id)}
       accessibilityLabel={[t.titulo, t.pie ?? nombres.join(', '), t.nota ? `nota ${t.nota}` : '']
@@ -86,7 +87,7 @@ const TarjetaPeli = memo(function TarjetaPeli({
           <Text style={styles.notaTexto}>{t.nota.toFixed(t.nota % 1 ? 1 : 0)}</Text>
         </View>
       ) : null}
-    </Pressable>
+    </Pulsable>
   );
 });
 

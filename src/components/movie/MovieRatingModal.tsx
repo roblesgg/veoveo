@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { COLORS } from '../../theme/colors';
@@ -10,6 +10,7 @@ import {
   fechaDeCuando,
   type CuandoVista,
 } from './SelectorFechaVista';
+import { Pulsable } from '../common/Pulsable';
 
 type Props = {
   visible: boolean;
@@ -78,7 +79,7 @@ export const MovieRatingModal = React.memo(
 
               <View style={styles.starsRow}>
                 {[1, 2, 3, 4, 5].map((n) => (
-                  <Pressable
+                  <Pulsable
                     key={n}
                     onPress={() => {
                       setValorSel(n);
@@ -91,12 +92,12 @@ export const MovieRatingModal = React.memo(
                       size={36}
                       color={!valorNegativa && n <= valorSel ? '#FFD700' : 'rgba(255,255,255,0.2)'}
                     />
-                  </Pressable>
+                  </Pulsable>
                 ))}
               </View>
 
               <View style={styles.poopBox}>
-                <Pressable
+                <Pulsable
                   style={[styles.poopBtn, valorNegativa && styles.poopBtnOn]}
                   onPress={() => {
                     setValorNegativa(true);
@@ -112,7 +113,7 @@ export const MovieRatingModal = React.memo(
                   >
                     Nefasta
                   </Text>
-                </Pressable>
+                </Pulsable>
               </View>
 
               <SelectorFechaVista
@@ -125,16 +126,16 @@ export const MovieRatingModal = React.memo(
               />
 
               <View style={styles.modalActions}>
-                <Pressable style={styles.modalActionSec} onPress={onClose}>
+                <Pulsable style={styles.modalActionSec} onPress={onClose}>
                   <Text style={{ color: 'rgba(255,255,255,0.65)', fontFamily }}>Cancelar</Text>
-                </Pressable>
+                </Pulsable>
 
                 {/* Guarda como vista sin nota (o le quita la nota). Nunca la quita de la biblioteca. */}
-                <Pressable style={styles.modalActionSec} onPress={() => onGuardar(0, fecha)}>
+                <Pulsable style={styles.modalActionSec} onPress={() => onGuardar(0, fecha)}>
                   <Text style={{ color: 'rgba(255,255,255,0.65)', fontFamily }}>Sin nota</Text>
-                </Pressable>
+                </Pulsable>
 
-                <Pressable
+                <Pulsable
                   onPress={handleGuardar}
                   disabled={valorSel === 0 && !valorNegativa}
                   style={[styles.saveBtnMain, valorSel === 0 && !valorNegativa && { opacity: 0.4 }]}
@@ -142,7 +143,7 @@ export const MovieRatingModal = React.memo(
                   <Text style={{ color: '#fff', fontFamily, fontWeight: '800', fontSize: 16 }}>
                     Guardar
                   </Text>
-                </Pressable>
+                </Pulsable>
               </View>
             </View>
           </View>

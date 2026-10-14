@@ -41,6 +41,7 @@ import { FilterSortMenu } from '../components/FilterSortMenu';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { RatingBadge } from '../components/RatingBadge';
+import { Pulsable } from '../components/common/Pulsable';
 
 const UNA_SEMANA = 1000 * 60 * 60 * 24 * 7;
 
@@ -241,7 +242,7 @@ export function BibliotecaTab({
   function renderCard(p: any) {
     return (
       <View key={p.idPelicula} style={styles.gridItem}>
-        <Pressable
+        <Pulsable
           style={[styles.card, SHADOWS.macLight]}
           onPress={() => onPeliculaClick(p.idPelicula)}
           onLongPress={
@@ -265,7 +266,7 @@ export function BibliotecaTab({
           {seccion === 1 && p.valoracion !== undefined && (
             <RatingBadge rating={p.valoracion} fontFamily={fontFamily} hideText />
           )}
-        </Pressable>
+        </Pulsable>
       </View>
     );
   }
@@ -287,7 +288,7 @@ export function BibliotecaTab({
           <Text style={[styles.titulo, { fontFamily, flex: 1 }]}>Biblioteca</Text>
           <View style={styles.actionsTopRow}>
             {/* Filtro de TV: Abre el modal de plataformas */}
-            <Pressable
+            <Pulsable
               onPress={() => setShowPlatModal(true)}
               style={[styles.iconBtn, platsSeleccionadas.length > 0 && styles.iconBtnOn]}
               hitSlop={8}
@@ -297,37 +298,37 @@ export function BibliotecaTab({
                 size={26}
                 color={platsSeleccionadas.length > 0 ? '#000' : '#fff'}
               />
-            </Pressable>
+            </Pulsable>
             {/* Ordenación: Abre menú contextual */}
-            <Pressable onPress={() => setShowSortMenu(true)} style={styles.iconBtn} hitSlop={8}>
+            <Pulsable onPress={() => setShowSortMenu(true)} style={styles.iconBtn} hitSlop={8}>
               <Ionicons name="swap-vertical-outline" size={26} color="#fff" />
-            </Pressable>
+            </Pulsable>
             {/* Lupa: Activa el buscador local */}
-            <Pressable onPress={() => setBuscar(!buscar)} style={styles.iconBtn} hitSlop={8}>
+            <Pulsable onPress={() => setBuscar(!buscar)} style={styles.iconBtn} hitSlop={8}>
               <Ionicons name="search-outline" size={28} color="#fff" />
-            </Pressable>
+            </Pulsable>
           </View>
         </View>
 
         {/* SELECTOR DE ESTADO (POR VER / VISTAS) */}
         <View style={[styles.tabsContainer, { top: Math.max(insets.top, 12) + 90 }]}>
-          <Pressable
+          <Pulsable
             onPress={() => setSeccion(0)}
             style={[styles.tabBtn, seccion === 0 && styles.tabBtnActive]}
           >
             <Text style={[styles.tabText, { fontFamily }, seccion === 0 && styles.tabTextActive]}>
               POR VER
             </Text>
-          </Pressable>
+          </Pulsable>
           <View style={styles.tabDivider} />
-          <Pressable
+          <Pulsable
             onPress={() => setSeccion(1)}
             style={[styles.tabBtn, seccion === 1 && styles.tabBtnActive]}
           >
             <Text style={[styles.tabText, { fontFamily }, seccion === 1 && styles.tabTextActive]}>
               VISTAS
             </Text>
-          </Pressable>
+          </Pulsable>
         </View>
 
         {buscar && (
@@ -361,13 +362,13 @@ export function BibliotecaTab({
               <Text style={[styles.activeFilterText, { fontFamily }]} numberOfLines={1}>
                 {platsSeleccionadas.join(', ')}
               </Text>
-              <Pressable
+              <Pulsable
                 onPress={() => setPlatsSeleccionadas([])}
                 style={styles.clearFilterBtn}
                 hitSlop={8}
               >
                 <Text style={styles.clearFilterText}>BORRAR</Text>
-              </Pressable>
+              </Pulsable>
             </View>
           )}
           {cargandoBiblioteca ? (
@@ -397,7 +398,7 @@ export function BibliotecaTab({
           <View style={styles.modalContent}>
             <Text style={[styles.modalTitle, { fontFamily }]}>Filtrar plataformas</Text>
             <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 400 }}>
-              <Pressable
+              <Pulsable
                 style={[styles.platItem, platsSeleccionadas.length === 0 && styles.platItemOn]}
                 onPress={() => {
                   setPlatsSeleccionadas([]);
@@ -415,9 +416,9 @@ export function BibliotecaTab({
                 {platsSeleccionadas.length === 0 && (
                   <Ionicons name="checkmark-circle" size={20} color="#000" />
                 )}
-              </Pressable>
+              </Pulsable>
               {userPlats.map((p) => (
-                <Pressable
+                <Pulsable
                   key={p.name}
                   style={[
                     styles.platItem,
@@ -438,12 +439,12 @@ export function BibliotecaTab({
                     size={22}
                     color={platsSeleccionadas.includes(p.name) ? '#000' : 'rgba(255,255,255,0.3)'}
                   />
-                </Pressable>
+                </Pulsable>
               ))}
             </ScrollView>
-            <Pressable style={styles.modalCloseBtn} onPress={() => setShowPlatModal(false)}>
+            <Pulsable style={styles.modalCloseBtn} onPress={() => setShowPlatModal(false)}>
               <Text style={styles.modalCloseText}>LISTO</Text>
-            </Pressable>
+            </Pulsable>
           </View>
         </Pressable>
       </Modal>

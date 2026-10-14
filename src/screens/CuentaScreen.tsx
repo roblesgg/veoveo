@@ -5,7 +5,7 @@
  * identificarse (contraseña o Google) justo antes, como exige Firebase.
  */
 import { useState } from 'react';
-import { Pressable, ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconChevronLeft } from '@tabler/icons-react-native';
@@ -14,6 +14,7 @@ import { borrarMisDatos, exportarMisDatos, type PasoBorrado } from '../services/
 import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
 import { COLORS } from '../theme/colors';
 import { FUENTES } from '../theme/useMontserrat';
+import { Pulsable } from '../components/common/Pulsable';
 
 type Panel = null | 'correo' | 'contrasena' | 'borrar';
 
@@ -136,21 +137,21 @@ export function CuentaScreen() {
   );
 
   const boton = (texto: string, onPress: () => void, activo: boolean, peligro = false) => (
-    <Pressable
+    <Pulsable
       onPress={onPress}
       disabled={!activo}
       style={[styles.boton, peligro && styles.botonPeligro, !activo && { opacity: 0.4 }]}
     >
       <Text style={[styles.botonTexto, peligro && { color: COLORS.text }]}>{texto}</Text>
-    </Pressable>
+    </Pulsable>
   );
 
   return (
     <View style={[styles.flex, { paddingTop: insets.top + 8 }]}>
       <View style={styles.cabecera}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={12} accessibilityLabel="Volver">
+        <Pulsable onPress={() => navigation.goBack()} hitSlop={12} accessibilityLabel="Volver">
           <IconChevronLeft size={28} color={COLORS.text} strokeWidth={2} />
-        </Pressable>
+        </Pulsable>
         <Text style={styles.titulo}>Cuenta</Text>
       </View>
 
@@ -170,9 +171,9 @@ export function CuentaScreen() {
           <Text style={styles.valor}>{user?.email ?? '—'}</Text>
           {conCorreo ? (
             <>
-              <Pressable onPress={() => abrir('correo')}>
+              <Pulsable onPress={() => abrir('correo')}>
                 <Text style={styles.enlace}>Cambiar correo</Text>
-              </Pressable>
+              </Pulsable>
               {panel === 'correo' && (
                 <View style={styles.panel}>
                   {campo(nuevo, setNuevo, 'Nuevo correo')}
@@ -194,9 +195,9 @@ export function CuentaScreen() {
 
         {conCorreo && (
           <View style={styles.tarjeta}>
-            <Pressable onPress={() => abrir('contrasena')}>
+            <Pulsable onPress={() => abrir('contrasena')}>
               <Text style={styles.etiqueta}>Cambiar contraseña</Text>
-            </Pressable>
+            </Pulsable>
             {panel === 'contrasena' && (
               <View style={styles.panel}>
                 {campo(actual, setActual, 'Contraseña actual', true)}
@@ -211,18 +212,18 @@ export function CuentaScreen() {
           </View>
         )}
 
-        <Pressable style={styles.tarjeta} onPress={() => void descargar()}>
+        <Pulsable style={styles.tarjeta} onPress={() => void descargar()}>
           <Text style={styles.etiqueta}>Descargar mis datos</Text>
           <Text style={styles.ayuda}>
             Tu perfil, tu biblioteca, tus amistades, tus mensajes y tus votos en un archivo de texto
             (JSON) que puedes guardar o enviarte.
           </Text>
-        </Pressable>
+        </Pulsable>
 
         <View style={[styles.tarjeta, styles.tarjetaPeligro]}>
-          <Pressable onPress={() => abrir('borrar')}>
+          <Pulsable onPress={() => abrir('borrar')}>
             <Text style={[styles.etiqueta, { color: COLORS.error }]}>Borrar mi cuenta</Text>
-          </Pressable>
+          </Pulsable>
           {panel === 'borrar' && (
             <View style={styles.panel}>
               <Text style={styles.ayuda}>

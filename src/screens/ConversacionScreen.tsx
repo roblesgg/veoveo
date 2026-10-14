@@ -10,7 +10,6 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -65,6 +64,7 @@ import { COLORS } from '../theme/colors';
 import { FUENTES } from '../theme/useMontserrat';
 import { esOtroDia, formatearHora, formatearSeparadorDia } from '../utils/fechas';
 import type { Chat, Message, MiembroChat } from '../types';
+import { Pulsable } from '../components/common/Pulsable';
 
 // Colores para distinguir remitentes en los grupos (contraste suficiente sobre la burbuja oscura)
 const COLORES_REMITENTE = [
@@ -367,12 +367,12 @@ export function ConversacionScreen() {
             </Text>
           </View>
           <Text style={styles.matchTexto}>{m.text}</Text>
-          <Pressable
+          <Pulsable
             style={styles.matchBoton}
             onPress={() => navigation.navigate('MovieMatch', { matchId: m.matchId! })}
           >
             <Text style={styles.matchBotonTexto}>{enCurso ? 'Jugar' : 'Ver coincidencias'}</Text>
-          </Pressable>
+          </Pulsable>
         </View>
       );
     }
@@ -380,7 +380,7 @@ export function ConversacionScreen() {
     return (
       <View style={[styles.filaMensaje, mio ? styles.derecha : styles.izquierda]}>
         {remitente}
-        <Pressable
+        <Pulsable
           onLongPress={() => setSeleccionado(m)}
           delayLongPress={250}
           onPress={
@@ -436,7 +436,7 @@ export function ConversacionScreen() {
             <Text style={[styles.textoMensaje, mio && styles.textoMio]}>{m.text}</Text>
           )}
           {pie}
-        </Pressable>
+        </Pulsable>
       </View>
     );
   };
@@ -449,10 +449,10 @@ export function ConversacionScreen() {
       behavior="padding"
     >
       <View style={[styles.cabecera, { paddingTop: insets.top + 8 }]}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={12} accessibilityLabel="Volver">
+        <Pulsable onPress={() => navigation.goBack()} hitSlop={12} accessibilityLabel="Volver">
           <IconChevronLeft size={28} color={COLORS.text} strokeWidth={2} />
-        </Pressable>
-        <Pressable
+        </Pulsable>
+        <Pulsable
           style={styles.cabeceraCentro}
           onPress={() => {
             if (chat?.type === 'group') navigation.navigate('InfoGrupo', { chatId });
@@ -473,9 +473,9 @@ export function ConversacionScreen() {
             </Text>
             {subtitulo ? <Text style={styles.cabeceraSub}>{subtitulo}</Text> : null}
           </View>
-        </Pressable>
+        </Pulsable>
         {sigoDentro && (
-          <Pressable
+          <Pulsable
             onPress={abrirMatch}
             style={[styles.botonMatch, chat?.activeMatchId && styles.botonMatchActivo]}
             accessibilityLabel={chat?.activeMatchId ? 'Seguir el Movie Match' : 'Nuevo Movie Match'}
@@ -485,7 +485,7 @@ export function ConversacionScreen() {
               color={chat?.activeMatchId ? COLORS.onAccent : COLORS.accent}
               strokeWidth={2}
             />
-          </Pressable>
+          </Pulsable>
         )}
       </View>
 
@@ -521,9 +521,9 @@ export function ConversacionScreen() {
       ) : leBloqueé && otroUid ? (
         <View style={[styles.franja, { paddingBottom: insets.bottom + 12 }]}>
           <Text style={styles.franjaTexto}>Has bloqueado a {nombreDe(otro)}.</Text>
-          <Pressable onPress={() => void desbloquearUsuario(otroUid)}>
+          <Pulsable onPress={() => void desbloquearUsuario(otroUid)}>
             <Text style={styles.franjaEnlace}>Desbloquear</Text>
-          </Pressable>
+          </Pulsable>
         </View>
       ) : (
         <View style={{ paddingBottom: insets.bottom + 8 }}>
@@ -539,7 +539,7 @@ export function ConversacionScreen() {
                   {(editando ?? respondiendo)!.text}
                 </Text>
               </View>
-              <Pressable
+              <Pulsable
                 onPress={() => {
                   setRespondiendo(null);
                   if (editando) setTexto('');
@@ -549,17 +549,17 @@ export function ConversacionScreen() {
                 accessibilityLabel="Cancelar"
               >
                 <IconX size={20} color={COLORS.textMuted} />
-              </Pressable>
+              </Pulsable>
             </View>
           )}
           <View style={styles.entrada}>
-            <Pressable
+            <Pulsable
               onPress={() => setMenuMas((v) => !v)}
               style={styles.botonMas}
               accessibilityLabel="Compartir una peli"
             >
               <IconPlus size={22} color={COLORS.text} strokeWidth={2} />
-            </Pressable>
+            </Pulsable>
             <TextInput
               ref={inputRef}
               value={texto}
@@ -570,7 +570,7 @@ export function ConversacionScreen() {
               multiline
               maxLength={2000}
             />
-            <Pressable
+            <Pulsable
               onPress={() => void enviar()}
               disabled={!texto.trim()}
               style={[styles.botonEnviar, !texto.trim() && { opacity: 0.4 }]}
@@ -581,7 +581,7 @@ export function ConversacionScreen() {
               ) : (
                 <IconSend size={20} color={COLORS.onAccent} strokeWidth={2} />
               )}
-            </Pressable>
+            </Pulsable>
           </View>
         </View>
       )}

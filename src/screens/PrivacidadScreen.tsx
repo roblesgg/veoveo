@@ -5,7 +5,7 @@
  * reglas de Firestore; Vistas en Social y Match, la app (docs/seguridad/limitaciones-conocidas.md).
  */
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react-native';
@@ -14,6 +14,7 @@ import { actualizarPrivacidad, observarUsuario } from '../services/repositorioUs
 import { PRIVACIDAD_POR_DEFECTO, type Privacidad } from '../types';
 import { COLORS } from '../theme/colors';
 import { FUENTES } from '../theme/useMontserrat';
+import { Pulsable } from '../components/common/Pulsable';
 
 type Opcion<T extends string> = { valor: T; texto: string };
 
@@ -29,7 +30,7 @@ function Selector<T extends string>({
   return (
     <View style={styles.selector}>
       {opciones.map((o) => (
-        <Pressable
+        <Pulsable
           key={o.valor}
           onPress={() => onCambio(o.valor)}
           style={[styles.opcion, valor === o.valor && styles.opcionOn]}
@@ -39,7 +40,7 @@ function Selector<T extends string>({
           <Text style={[styles.opcionTexto, valor === o.valor && styles.opcionTextoOn]}>
             {o.texto}
           </Text>
-        </Pressable>
+        </Pulsable>
       ))}
     </View>
   );
@@ -86,9 +87,9 @@ export function PrivacidadScreen() {
   return (
     <View style={[styles.flex, { paddingTop: insets.top + 8 }]}>
       <View style={styles.cabecera}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={12} accessibilityLabel="Volver">
+        <Pulsable onPress={() => navigation.goBack()} hitSlop={12} accessibilityLabel="Volver">
           <IconChevronLeft size={28} color={COLORS.text} strokeWidth={2} />
-        </Pressable>
+        </Pulsable>
         <Text style={styles.titulo}>Privacidad</Text>
       </View>
       {error && <Text style={styles.error}>{error}</Text>}
@@ -166,7 +167,7 @@ export function PrivacidadScreen() {
           </Text>
         </View>
 
-        <Pressable
+        <Pulsable
           style={[styles.tarjeta, styles.fila]}
           onPress={() => navigation.navigate('Bloqueados')}
         >
@@ -177,7 +178,7 @@ export function PrivacidadScreen() {
             </Text>
           </View>
           <IconChevronRight size={20} color={COLORS.textMuted} strokeWidth={2} />
-        </Pressable>
+        </Pulsable>
       </ScrollView>
     </View>
   );

@@ -3,8 +3,9 @@
  * «Antes» no inventa fecha: la peli queda vista sin fecha y no sale en «vistas recientes».
  * La fecha exacta se cambia manteniendo pulsada la peli en la Biblioteca.
  */
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { COLORS } from '../../theme/colors';
+import { Pulsable } from '../common/Pulsable';
 
 const DIA = 24 * 60 * 60 * 1000;
 
@@ -44,7 +45,7 @@ export function SelectorFechaVista({ valor, onCambio, fontFamily }: Props) {
         {OPCIONES.map(({ valor: v, texto }) => {
           const activo = v === valor;
           return (
-            <Pressable
+            <Pulsable
               key={v}
               onPress={() => onCambio(v)}
               style={[styles.segmento, activo && styles.segmentoActivo]}
@@ -54,7 +55,7 @@ export function SelectorFechaVista({ valor, onCambio, fontFamily }: Props) {
               <Text style={[styles.texto, { fontFamily }, activo && styles.textoActivo]}>
                 {texto}
               </Text>
-            </Pressable>
+            </Pulsable>
           );
         })}
       </View>

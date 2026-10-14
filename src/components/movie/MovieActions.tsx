@@ -1,11 +1,12 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { COLORS, GLASS } from '../../theme/colors';
 import { SHADOWS } from '../../theme/theme';
 
 import { LoaderClaqueta } from '../common/LoaderClaqueta';
+import { Pulsable } from '../common/Pulsable';
 
 type Props = {
   user: any;
@@ -43,7 +44,7 @@ export const MovieActions = React.memo(
             </View>
           ) : (
             <View style={styles.rowBotones}>
-              <Pressable
+              <Pulsable
                 style={[styles.btnBib, estadoPelicula === 1 && styles.btnBibActivo]}
                 onPress={onPorVer}
                 disabled={accionBib}
@@ -64,8 +65,8 @@ export const MovieActions = React.memo(
                 >
                   {estadoPelicula === 1 ? 'En Por Ver' : 'Por Ver'}
                 </Text>
-              </Pressable>
-              <Pressable
+              </Pulsable>
+              <Pulsable
                 style={[styles.btnBib, estadoPelicula === 2 && styles.btnBibVista]}
                 onPress={onVista}
                 disabled={accionBib}
@@ -86,7 +87,7 @@ export const MovieActions = React.memo(
                 >
                   {estadoPelicula === 2 ? 'Vista' : 'Vista'}
                 </Text>
-              </Pressable>
+              </Pulsable>
             </View>
           )}
         </View>

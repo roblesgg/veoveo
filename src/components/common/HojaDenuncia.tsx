@@ -28,6 +28,7 @@ import { COLORS } from '../../theme/colors';
 import { FUENTES } from '../../theme/useMontserrat';
 import { LoaderClaqueta } from './LoaderClaqueta';
 import { FondoCristal } from './FondoCristal';
+import { Pulsable } from './Pulsable';
 
 type Props = {
   /** null = cerrada */
@@ -111,9 +112,9 @@ export function HojaDenuncia({ objeto, titulo, nombreBloqueo, onCerrar, onBloque
                 denunciado no sabrá que has sido tú.
                 {bloquear && puedeBloquear ? `\n\nHas bloqueado a ${nombreBloqueo}.` : ''}
               </Text>
-              <Pressable style={styles.boton} onPress={cerrar} accessibilityRole="button">
+              <Pulsable style={styles.boton} onPress={cerrar} accessibilityRole="button">
                 <Text style={styles.botonTexto}>Cerrar</Text>
-              </Pressable>
+              </Pulsable>
             </View>
           ) : (
             <ScrollView keyboardShouldPersistTaps="handled" bounces={false}>
@@ -123,7 +124,7 @@ export function HojaDenuncia({ objeto, titulo, nombreBloqueo, onCerrar, onBloque
                 {MOTIVOS_DENUNCIA.map((m) => {
                   const marcado = motivo === m.id;
                   return (
-                    <Pressable
+                    <Pulsable
                       key={m.id}
                       style={[styles.motivo, marcado && styles.motivoOn]}
                       onPress={() => setMotivo(m.id)}
@@ -132,7 +133,7 @@ export function HojaDenuncia({ objeto, titulo, nombreBloqueo, onCerrar, onBloque
                     >
                       <View style={[styles.radio, marcado && styles.radioOn]} />
                       <Text style={styles.motivoTexto}>{m.texto}</Text>
-                    </Pressable>
+                    </Pulsable>
                   );
                 })}
               </View>
@@ -146,7 +147,7 @@ export function HojaDenuncia({ objeto, titulo, nombreBloqueo, onCerrar, onBloque
                 maxLength={MAX_DETALLE_DENUNCIA}
               />
               {puedeBloquear && (
-                <Pressable
+                <Pulsable
                   style={styles.filaBloqueo}
                   onPress={() => setBloquear((v) => !v)}
                   accessibilityRole="checkbox"
@@ -156,10 +157,10 @@ export function HojaDenuncia({ objeto, titulo, nombreBloqueo, onCerrar, onBloque
                     {bloquear && <IconCheck size={16} color={COLORS.onAccent} strokeWidth={3} />}
                   </View>
                   <Text style={styles.motivoTexto}>Bloquear también a {nombreBloqueo}</Text>
-                </Pressable>
+                </Pulsable>
               )}
               {error && <Text style={styles.error}>{error}</Text>}
-              <Pressable
+              <Pulsable
                 style={[styles.boton, (!motivo || enviando) && { opacity: 0.4 }]}
                 disabled={!motivo || enviando}
                 onPress={() => void enviar()}
@@ -170,7 +171,7 @@ export function HojaDenuncia({ objeto, titulo, nombreBloqueo, onCerrar, onBloque
                 ) : (
                   <Text style={styles.botonTexto}>Enviar denuncia</Text>
                 )}
-              </Pressable>
+              </Pulsable>
             </ScrollView>
           )}
         </View>

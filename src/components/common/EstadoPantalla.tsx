@@ -3,10 +3,11 @@
  * Mismo aspecto en toda la app (marca: Montserrat, celeste para la acción).
  */
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { IconCloudOff } from '@tabler/icons-react-native';
 import { COLORS } from '../../theme/colors';
 import { FUENTES } from '../../theme/useMontserrat';
+import { Pulsable } from './Pulsable';
 
 export function EstadoError({
   texto = 'No hemos podido cargar esto. Revisa la conexión.',
@@ -20,9 +21,9 @@ export function EstadoError({
       <IconCloudOff size={48} color={COLORS.textMuted} strokeWidth={1.5} />
       <Text style={styles.texto}>{texto}</Text>
       {onReintentar && (
-        <Pressable onPress={onReintentar} style={styles.boton} accessibilityRole="button">
+        <Pulsable onPress={onReintentar} style={styles.boton} accessibilityRole="button">
           <Text style={styles.botonTexto}>Reintentar</Text>
-        </Pressable>
+        </Pulsable>
       )}
     </View>
   );

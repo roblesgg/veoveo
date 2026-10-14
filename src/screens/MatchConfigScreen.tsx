@@ -6,7 +6,7 @@
  * tuyas (las de Ajustes) y puedes marcar las de quien juega contigo.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -32,6 +32,7 @@ import { cargarPlataformas } from '../storage/preferences';
 import type { CartaMazo, Chat } from '../types';
 import { COLORS } from '../theme/colors';
 import { FUENTES } from '../theme/useMontserrat';
+import { Pulsable } from '../components/common/Pulsable';
 
 const OBJETIVOS = [1, 2, 3, 4, 5];
 
@@ -148,7 +149,7 @@ export function MatchConfigScreen() {
       <Text style={styles.etiqueta}>¿Cuántas pelis en común buscáis?</Text>
       <View style={styles.objetivos}>
         {OBJETIVOS.map((n) => (
-          <Pressable
+          <Pulsable
             key={n}
             onPress={() => setObjetivo(n)}
             style={[styles.objetivo, objetivo === n && styles.objetivoOn]}
@@ -159,7 +160,7 @@ export function MatchConfigScreen() {
             <Text style={[styles.objetivoTexto, objetivo === n && styles.objetivoTextoOn]}>
               {n}
             </Text>
-          </Pressable>
+          </Pulsable>
         ))}
       </View>
       <Text style={styles.ayuda}>
@@ -170,7 +171,7 @@ export function MatchConfigScreen() {
       <Text style={[styles.etiqueta, { marginTop: 12 }]}>¿Dónde lo veis?</Text>
       <View style={styles.segmentos}>
         {([true, false] as const).map((v) => (
-          <Pressable
+          <Pulsable
             key={String(v)}
             onPress={() => setFiltrar(v)}
             style={[styles.segmento, filtrar === v && styles.segmentoOn]}
@@ -180,7 +181,7 @@ export function MatchConfigScreen() {
             <Text style={[styles.segmentoTexto, filtrar === v && styles.segmentoTextoOn]}>
               {v ? 'Elegir plataformas' : 'Todas'}
             </Text>
-          </Pressable>
+          </Pulsable>
         ))}
       </View>
       {filtrar && (
@@ -189,7 +190,7 @@ export function MatchConfigScreen() {
             {catalogo.map((g) => {
               const on = g.ids.some((id) => marcadas.includes(id));
               return (
-                <Pressable
+                <Pulsable
                   key={g.name}
                   onPress={() => alternarPlataforma(g.ids)}
                   style={[styles.logo, on && styles.logoOn]}
@@ -202,7 +203,7 @@ export function MatchConfigScreen() {
                     style={[styles.logoImagen, !on && { opacity: 0.3 }]}
                     cachePolicy="memory-disk"
                   />
-                </Pressable>
+                </Pulsable>
               );
             })}
           </View>
@@ -219,9 +220,9 @@ export function MatchConfigScreen() {
   return (
     <View style={[styles.flex, { paddingTop: insets.top + 8 }]}>
       <View style={styles.cabecera}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={12} accessibilityLabel="Cerrar">
+        <Pulsable onPress={() => navigation.goBack()} hitSlop={12} accessibilityLabel="Cerrar">
           <IconX size={26} color={COLORS.text} strokeWidth={2} />
-        </Pressable>
+        </Pulsable>
         <Text style={styles.titulo}>Nuevo Movie Match</Text>
       </View>
 
@@ -275,7 +276,7 @@ export function MatchConfigScreen() {
           renderItem={({ item }) => {
             const marcado = elegidos.includes(item.uid);
             return (
-              <Pressable
+              <Pulsable
                 style={styles.fila}
                 onPress={() => alternar(item.uid)}
                 accessibilityRole="checkbox"
@@ -286,7 +287,7 @@ export function MatchConfigScreen() {
                 <View style={[styles.casilla, marcado && styles.casillaOn]}>
                   {marcado && <IconCheck size={16} color={COLORS.onAccent} strokeWidth={3} />}
                 </View>
-              </Pressable>
+              </Pulsable>
             );
           }}
         />
@@ -328,7 +329,7 @@ export function MatchConfigScreen() {
         ]}
       />
       <View style={[styles.pieBoton, { bottom: insets.bottom + 20 }]}>
-        <Pressable
+        <Pulsable
           onPress={() => void empezar()}
           disabled={participantes.length === 0}
           style={[styles.boton, participantes.length === 0 && { opacity: 0.4 }]}
@@ -336,7 +337,7 @@ export function MatchConfigScreen() {
           <Text style={styles.botonTexto}>
             {participantes.length === 0 ? 'Elige al menos un amigo' : 'Empezar'}
           </Text>
-        </Pressable>
+        </Pulsable>
       </View>
     </View>
   );

@@ -4,7 +4,7 @@
  * has enviado tú y siguen pendientes (cancelar).
  */
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconChevronLeft, IconFlag, IconUsers } from '@tabler/icons-react-native';
@@ -21,6 +21,7 @@ import { HojaDenuncia } from '../components/common/HojaDenuncia';
 import type { SolicitudAmistad } from '../types';
 import { COLORS } from '../theme/colors';
 import { FUENTES } from '../theme/useMontserrat';
+import { Pulsable } from '../components/common/Pulsable';
 
 export function SolicitudesScreen() {
   const navigation = useNavigation<any>();
@@ -71,9 +72,9 @@ export function SolicitudesScreen() {
   return (
     <View style={[styles.flex, { paddingTop: insets.top + 8 }]}>
       <View style={styles.cabecera}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={12} accessibilityLabel="Volver">
+        <Pulsable onPress={() => navigation.goBack()} hitSlop={12} accessibilityLabel="Volver">
           <IconChevronLeft size={28} color={COLORS.text} strokeWidth={2} />
-        </Pressable>
+        </Pulsable>
         <Text style={styles.titulo}>Solicitudes</Text>
       </View>
 
@@ -107,7 +108,7 @@ export function SolicitudesScreen() {
             <Text style={styles.nombre} numberOfLines={1}>
               {perfiles[s.deUid]?.username ?? s.deUsername}
             </Text>
-            <Pressable
+            <Pulsable
               style={[styles.boton, styles.botonSi, ocupado === s.id && styles.apagado]}
               disabled={!!ocupado}
               onPress={() =>
@@ -119,8 +120,8 @@ export function SolicitudesScreen() {
               }
             >
               <Text style={styles.botonSiTexto}>Aceptar</Text>
-            </Pressable>
-            <Pressable
+            </Pulsable>
+            <Pulsable
               style={[styles.boton, ocupado === s.id && styles.apagado]}
               disabled={!!ocupado}
               onPress={() =>
@@ -132,14 +133,14 @@ export function SolicitudesScreen() {
               }
             >
               <Text style={styles.botonTexto}>Rechazar</Text>
-            </Pressable>
-            <Pressable
+            </Pulsable>
+            <Pulsable
               onPress={() => setDenunciado(s)}
               hitSlop={8}
               accessibilityLabel={`Denunciar a ${s.deUsername}`}
             >
               <IconFlag size={20} color={COLORS.textMuted} strokeWidth={2} />
-            </Pressable>
+            </Pulsable>
           </View>
         ))}
 
@@ -153,7 +154,7 @@ export function SolicitudesScreen() {
               </Text>
               <Text style={styles.pendiente}>Pendiente</Text>
             </View>
-            <Pressable
+            <Pulsable
               style={[styles.boton, ocupado === uid && styles.apagado]}
               disabled={!!ocupado}
               onPress={() =>
@@ -165,7 +166,7 @@ export function SolicitudesScreen() {
               }
             >
               <Text style={styles.botonTexto}>Cancelar</Text>
-            </Pressable>
+            </Pulsable>
           </View>
         ))}
       </ScrollView>

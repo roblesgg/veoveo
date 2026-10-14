@@ -3,17 +3,7 @@ import { MuestraLoaders } from '../components/common/MuestraLoaders';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState, useEffect, useMemo } from 'react';
-import {
-  Alert,
-  Image,
-  Linking,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Alert, Image, Linking, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { GradientBackground } from '../components/GradientBackground';
@@ -28,6 +18,7 @@ import { URL_NORMAS, URL_PRIVACIDAD } from '../components/common/AvisoLegal';
 import { usePlataformasRegion } from '../hooks/usePlataformasRegion';
 import { COLORS } from '../theme/colors';
 import { LoaderClaqueta } from '../components/common/LoaderClaqueta';
+import { Pulsable } from '../components/common/Pulsable';
 
 export function AjustesScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -80,9 +71,9 @@ export function AjustesScreen() {
         style={[styles.header, { paddingTop: insets.top + 10 }]}
       >
         <View style={styles.headerRow}>
-          <Pressable onPress={() => navigation.goBack()} hitSlop={12} style={styles.backBtn}>
+          <Pulsable onPress={() => navigation.goBack()} hitSlop={12} style={styles.backBtn}>
             <Ionicons name="chevron-back" size={28} color="#fff" />
-          </Pressable>
+          </Pulsable>
           <Text style={[styles.titulo, { fontFamily }]}>Ajustes</Text>
         </View>
       </BlurView>
@@ -95,7 +86,7 @@ export function AjustesScreen() {
         {Constants.expoConfig?.name === 'VeoVeo Test' && <MuestraLoaders />}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { fontFamily }]}>Privacidad y Contenido</Text>
-          <Pressable
+          <Pulsable
             style={[styles.card, SHADOWS.macLight, { marginBottom: 12 }]}
             onPress={() => navigation.navigate('Privacidad')}
           >
@@ -106,7 +97,7 @@ export function AjustesScreen() {
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.5)" />
-          </Pressable>
+          </Pulsable>
           {[
             {
               ruta: 'Cuenta' as const,
@@ -119,7 +110,7 @@ export function AjustesScreen() {
               texto: 'Qué avisos quieres recibir.',
             },
           ].map((f) => (
-            <Pressable
+            <Pulsable
               key={f.ruta}
               style={[styles.card, SHADOWS.macLight, { marginBottom: 12 }]}
               onPress={() => navigation.navigate(f.ruta)}
@@ -129,7 +120,7 @@ export function AjustesScreen() {
                 <Text style={[styles.cardDesc, { fontFamily }]}>{f.texto}</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.5)" />
-            </Pressable>
+            </Pulsable>
           ))}
         </View>
 
@@ -166,7 +157,7 @@ export function AjustesScreen() {
               <LoaderClaqueta tamano="mediano" />
             ) : (
               filteredPlats.map((p) => (
-                <Pressable
+                <Pulsable
                   key={p.name}
                   onPress={() => handleTogglePlataforma(p.ids)}
                   style={[
@@ -182,7 +173,7 @@ export function AjustesScreen() {
                   {p.ids.some((id: number) => misPlataformas.includes(id)) && (
                     <Ionicons name="checkmark-circle" size={16} color="#000" style={styles.check} />
                   )}
-                </Pressable>
+                </Pulsable>
               ))
             )}
           </View>
@@ -203,7 +194,7 @@ export function AjustesScreen() {
               Datos de plataformas: JustWatch.
             </Text>
           </View>
-          <Pressable
+          <Pulsable
             style={[styles.card, SHADOWS.macLight, { marginTop: 12 }]}
             onPress={() => void Linking.openURL(URL_NORMAS)}
           >
@@ -214,9 +205,9 @@ export function AjustesScreen() {
               </Text>
             </View>
             <Ionicons name="open-outline" size={20} color="rgba(255,255,255,0.5)" />
-          </Pressable>
+          </Pulsable>
 
-          <Pressable
+          <Pulsable
             style={[styles.card, SHADOWS.macLight, { marginTop: 12 }]}
             onPress={() => void Linking.openURL(URL_PRIVACIDAD)}
           >
@@ -225,9 +216,9 @@ export function AjustesScreen() {
               <Text style={[styles.cardDesc, { fontFamily }]}>Qué datos guardamos y para qué</Text>
             </View>
             <Ionicons name="open-outline" size={20} color="rgba(255,255,255,0.5)" />
-          </Pressable>
+          </Pulsable>
 
-          <Pressable
+          <Pulsable
             style={[styles.card, SHADOWS.macLight, { marginTop: 12 }]}
             onPress={() =>
               void Linking.openURL(
@@ -242,7 +233,7 @@ export function AjustesScreen() {
               </Text>
             </View>
             <Ionicons name="mail-outline" size={20} color="rgba(255,255,255,0.5)" />
-          </Pressable>
+          </Pulsable>
 
           <Text style={[styles.versionText, { fontFamily }]}>
             VeoVeo {Constants.expoConfig?.version} · Un producto de DripDev · hecho por Álvaro
