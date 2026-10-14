@@ -20,8 +20,11 @@ $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
 # Rutas cortas (gradle en Windows): W: = carpeta proyectos
 if (-not (Test-Path 'W:\')) { subst W: (Split-Path $raiz -Parent) }
 $android = Join-Path 'W:\' (Join-Path (Split-Path $raiz -Leaf) 'android')
-$generados = Join-Path $android 'app\build\generated\assets'
-if (Test-Path $generados) { Remove-Item -Recurse -Force $generados }   # sin bundles viejos
+# Proyecto nativo regenerado desde app.json/app.config.js (versión, permisos, paquete .test).
+# Sin esto, android/ se queda con la versión y los permisos de la última vez que se generó.
+Push-Location (Join-Path 'W:\' (Split-Path $raiz -Leaf))
+try { npx expo prebuild --platform android --clean --no-install | Out-Null; if ($LASTEXITCODE) { throw 'Falló expo prebuild.' } }
+finally { Pop-Location }
 
 Push-Location $android
 try { .\gradlew.bat assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a -q }
@@ -31,4 +34,13 @@ $bundle = Join-Path $android 'app\build\generated\assets\createBundleReleaseJsAn
 if (-not (Select-String -Path $bundle -Pattern 'veoveo-pruebas' -SimpleMatch -Quiet)) { throw 'El bundle no lleva veoveo-pruebas.' }
 if (Select-String -Path $bundle -Pattern 'veoveo-48667' -SimpleMatch -Quiet) { throw 'El bundle lleva el proyecto de PRODUCCIÓN. No se usa.' }
 $apk = Join-Path $android 'app\build\outputs\apk\release\app-release.apk'
-Write-Host "APK de pruebas listo (veoveo-pruebas): $apk"
+
+# La versión del APK tiene que ser la de app.json (si no, el proyecto nativo está desfasado)
+$app = (Get-Content (Join-Path $raiz 'app.json') -Raw | ConvertFrom-Json).expo
+$buildTools = Get-ChildItem "$env:LOCALAPPDATA\Android\Sdk\build-tools" | Sort-Object Name | Select-Object -Last 1
+$badging = & (Join-Path $buildTools.FullName 'aapt.exe') dump badging $apk | Select-String '^package:' | Select-Object -First 1
+if ($badging -notmatch "name='com\.roblesgg\.veoveo\.test'") { throw "El paquete no es com.roblesgg.veoveo.test: $badging" }
+if ($badging -notmatch "versionCode='$($app.android.versionCode)'" -or $badging -notmatch "versionName='$([regex]::Escape($app.version))'") {
+  throw "Versión del APK distinta de app.json ($($app.version) / $($app.android.versionCode)): $badging"
+}
+Write-Host "APK de pruebas listo (veoveo-pruebas, $($app.version) / $($app.android.versionCode)): $apk"

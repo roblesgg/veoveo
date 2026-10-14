@@ -11,6 +11,7 @@ import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persi
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Linking, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 import Constants from 'expo-constants';
 import { BlurView } from 'expo-blur';
@@ -292,6 +293,8 @@ export default function App() {
   return (
     <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
       <GestureHandlerRootView style={{ flex: 1 }}>
+        {/* Arriba del todo: AvisoSinConexion y los avisos están fuera del navegador y usan los márgenes seguros */}
+        <SafeAreaProvider>
         <LanguageProvider>
           <AuthProvider>
             <BibliotecaProvider>
@@ -317,6 +320,7 @@ export default function App() {
             </BibliotecaProvider>
           </AuthProvider>
         </LanguageProvider>
+        </SafeAreaProvider>
       </GestureHandlerRootView>
     </PersistQueryClientProvider>
   );
