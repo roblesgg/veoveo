@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useRef } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -8,6 +8,7 @@ import type { Movie } from '../../types';
 import { RatingBadge } from '../RatingBadge';
 import { marcarHito } from '../../utils/medicionArranque';
 import { usePlataformasPelicula } from '../../hooks/useDescubrir';
+import { abrirConZoom } from '../../utils/zoomCartel';
 
 type Props = {
   /** `motivo` solo en "Recomendado para ti": se enseña debajo del póster. */
@@ -36,11 +37,18 @@ export const PosterItem = memo(
     const isFlatrate = providers?.flatrate.some((p) => misPlataformas.includes(p));
     const isRent = !isFlatrate && providers?.rent.some((p) => misPlataformas.includes(p));
     const uri = posterUrl(item.poster_path, 'w342');
+    // Se mide el cartel al tocarlo: la ficha crece desde aquí y vuelve aquí al salir
+    const refCartel = useRef<View>(null);
 
     return (
       <View style={styles.posterWrapper}>
         <Pressable
-          onPress={() => onPeliculaClick(item.id)}
+          ref={refCartel}
+          onPress={() =>
+            abrirConZoom(refCartel.current, item.id, item.poster_path ?? null, () =>
+              onPeliculaClick(item.id),
+            )
+          }
           style={({ pressed }) => [
             styles.posterCard,
             { transform: [{ scale: pressed ? 0.96 : 1 }] },

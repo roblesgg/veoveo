@@ -71,6 +71,8 @@ export function RootNavigator() {
   // sube como una hoja. Con reducir movimiento, todo con fundido.
   const reducir = useReducedMotion();
   const detalle = { animation: reducir ? ('fade' as const) : ('default' as const) };
+  // La ficha entra con fundido: el movimiento lo pone el cartel que crece desde la lista (zoom)
+  const ficha = { animation: 'fade' as const };
   const hoja = { animation: reducir ? ('fade' as const) : ('slide_from_bottom' as const) };
 
   return (
@@ -125,7 +127,7 @@ export function RootNavigator() {
               />
               <Stack.Screen name="Ajustes" component={AjustesScreen} options={detalle} />
               <Stack.Screen name="Actor" component={ActorScreen} options={detalle} />
-              <Stack.Screen name="Pelicula" component={PeliculaScreen} options={detalle} />
+              <Stack.Screen name="Pelicula" component={PeliculaScreen} options={ficha} />
               <Stack.Screen name="Conversacion" component={ConversacionScreen} options={detalle} />
               <Stack.Screen name="NuevoChat" component={NuevoChatScreen} options={detalle} />
               <Stack.Screen name="InfoGrupo" component={InfoGrupoScreen} options={detalle} />

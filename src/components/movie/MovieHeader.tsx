@@ -13,10 +13,24 @@ type Props = {
   fontFamily: string;
   misPlataformas?: number[];
   providers: WatchProvidersResponse | null;
+  /** Para medir el cartel (zoom desde la lista) */
+  refCartel?: React.Ref<View>;
+  /** Mientras vuela la copia del cartel, el de verdad no se ve */
+  ocultarCartel?: boolean;
+  /** Avisa cuando el cartel ya está colocado (para medirlo) */
+  onCartelColocado?: () => void;
 };
 
 export const MovieHeader = React.memo(
-  ({ detalles, fontFamily, misPlataformas = [], providers }: Props) => {
+  ({
+    detalles,
+    fontFamily,
+    misPlataformas = [],
+    providers,
+    refCartel,
+    ocultarCartel,
+    onCartelColocado,
+  }: Props) => {
     const resES = providers?.results?.['ES'];
     const flatrate = resES?.flatrate?.map((p) => p.provider_id) || [];
     const rent = [...(resES?.rent || []), ...(resES?.buy || [])].map((p) => p.provider_id);
@@ -67,7 +81,12 @@ export const MovieHeader = React.memo(
             />
 
             <View style={[styles.macCardInner, { zIndex: 1 }]}>
-              <View style={styles.posterShadow}>
+              <View
+                ref={refCartel}
+                collapsable={false}
+                onLayout={onCartelColocado}
+                style={[styles.posterShadow, ocultarCartel && { opacity: 0 }]}
+              >
                 <View style={styles.posterClip}>
                   {detalles.poster_path ? (
                     <Image

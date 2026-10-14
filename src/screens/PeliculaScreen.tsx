@@ -47,6 +47,9 @@ import { MovieProviders } from '../components/movie/MovieProviders';
 import { CollectionSaga } from '../components/movie/CollectionSaga';
 import { MovieRatingModal } from '../components/movie/MovieRatingModal';
 import { MovieSocialProof } from '../components/movie/MovieSocialProof';
+import { ZoomCartel } from '../components/movie/ZoomCartel';
+import { origenDe, type Rect } from '../utils/zoomCartel';
+import { useReducedMotion } from 'react-native-reanimated';
 
 export function PeliculaScreen() {
   // Versión de la portada a prueba (Ajustes, solo en el APK de pruebas)
@@ -57,6 +60,59 @@ export function PeliculaScreen() {
   const route = useRoute<RouteProp<RootStackParamList, 'Pelicula'>>();
   const { movieId } = route.params;
   const navigation = useNavigation<any>();
+
+  // ── Zoom desde el cartel de la lista (ida) y de vuelta a su sitio (vuelta) ──
+  const reducirMovimiento = useReducedMotion();
+  const origenZoom = React.useMemo(
+    () => (reducirMovimiento ? null : origenDe(movieId)),
+    [movieId, reducirMovimiento],
+  );
+  const refCartel = React.useRef<View>(null);
+  const desplazado = React.useRef(0);
+  const yaSalimos = React.useRef(false);
+  const idaHecha = React.useRef(false);
+  const [zoom, setZoom] = useState<{ fase: 'ida' | 'vuelta'; destino: Rect } | null>(null);
+  // El cartel de verdad no se ve mientras vuela la copia (ni antes de que salga, para no parpadear)
+  const [cartelOculto, setCartelOculto] = useState(Boolean(origenZoom));
+  const medirDestinoIda = useCallback(() => {
+    if (!origenZoom || idaHecha.current) return;
+    idaHecha.current = true;
+    refCartel.current?.measureInWindow((x, y, width, height) => {
+      if (width > 0) setZoom({ fase: 'ida', destino: { x, y, width, height } });
+    });
+  }, [origenZoom]);
+  // Al volver (botón o gesto atrás): el cartel se encoge hasta su sitio y luego se sale.
+  // Si has bajado y el cartel ya no se ve, sale normal.
+  React.useEffect(() => {
+    if (!origenZoom) return undefined;
+    return navigation.addListener('beforeRemove', (e: any) => {
+      if (yaSalimos.current || desplazado.current > 40 || !refCartel.current) return;
+      e.preventDefault();
+      refCartel.current.measureInWindow((x, y, width, height) => {
+        if (width <= 0) {
+          yaSalimos.current = true;
+          navigation.dispatch(e.data.action);
+          return;
+        }
+        accionSalida.current = e.data.action;
+        setCartelOculto(true);
+        setZoom({ fase: 'vuelta', destino: { x, y, width, height } });
+      });
+    });
+  }, [navigation, origenZoom]);
+  const accionSalida = React.useRef<any>(null);
+  const finZoom = useCallback(
+    (fase: 'ida' | 'vuelta') => {
+      if (fase === 'ida') {
+        setCartelOculto(false);
+        setZoom(null);
+        return;
+      }
+      yaSalimos.current = true;
+      if (accionSalida.current) navigation.dispatch(accionSalida.current);
+    },
+    [navigation],
+  );
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const { fontFamily: ff } = useMontserrat();
@@ -234,6 +290,10 @@ export function PeliculaScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 120 }}
+        onScroll={(e) => {
+          desplazado.current = e.nativeEvent.contentOffset.y;
+        }}
+        scrollEventThrottle={64}
       >
         {/* COMPONENTE: Título, Año, Duración y Logos de Streaming */}
         <MovieHeader
@@ -241,6 +301,9 @@ export function PeliculaScreen() {
           fontFamily={fontFamily}
           misPlataformas={misPlataformas}
           providers={providers}
+          refCartel={refCartel}
+          ocultarCartel={cartelOculto}
+          onCartelColocado={medirDestinoIda}
         />
 
         <View style={styles.body}>
@@ -322,6 +385,17 @@ export function PeliculaScreen() {
           void onMarcarVista(v, fecha);
         }}
       />
+
+      {/* Copia del cartel volando entre la lista y la cabecera (ida y vuelta) */}
+      {origenZoom && zoom ? (
+        <ZoomCartel
+          origen={origenZoom.rect}
+          destino={zoom.destino}
+          poster={origenZoom.poster}
+          fase={zoom.fase}
+          onFin={finZoom}
+        />
+      ) : null}
     </View>
   );
 }
