@@ -38,7 +38,9 @@ export function MuestraLoaders() {
           >
             <Text style={styles.numero}>{i + 1}</Text>
             <Text style={styles.nombre}>
-              {p === 'nitida' ? 'Cartel grande nítido' : 'Fondo desenfocado + cartel'}
+              {p === 'nitida'
+                ? 'Cartel grande nítido · con zoom al abrir'
+                : 'Fondo desenfocado + cartel · sin zoom'}
             </Text>
           </Pressable>
         ))}
