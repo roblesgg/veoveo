@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import { MuestraLoaders } from '../components/common/MuestraLoaders';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState, useEffect, useMemo } from 'react';
@@ -90,6 +91,8 @@ export function AjustesScreen() {
         contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 90, paddingBottom: 100 }]}
         showsVerticalScrollIndicator={false}
       >
+        {/* Solo en el APK de pruebas, para elegir el loader */}
+        {Constants.expoConfig?.name === 'VeoVeo Test' && <MuestraLoaders />}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { fontFamily }]}>Privacidad y Contenido</Text>
           <Pressable
