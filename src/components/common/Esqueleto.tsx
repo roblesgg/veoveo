@@ -26,6 +26,8 @@ type Props = {
 export function Esqueleto({ ancho, alto, aspecto, radio = 16, style }: Props) {
   const reducir = useReducedMotion();
   const avance = useSharedValue(0);
+  // Ancho medido: translateX en porcentaje no existe en la arquitectura antigua de RN (cierra la app)
+  const anchoReal = useSharedValue(0);
 
   useEffect(() => {
     if (reducir) return;
@@ -33,11 +35,14 @@ export function Esqueleto({ ancho, alto, aspecto, radio = 16, style }: Props) {
   }, [reducir, avance]);
 
   const estiloBrillo = useAnimatedStyle(() => ({
-    transform: [{ translateX: `${-100 + avance.value * 200}%` }],
+    transform: [{ translateX: (-1 + avance.value * 2) * anchoReal.value }],
   }));
 
   return (
     <View
+      onLayout={(e) => {
+        anchoReal.value = e.nativeEvent.layout.width;
+      }}
       style={[styles.hueco, { width: ancho, height: alto, aspectRatio: aspecto, borderRadius: radio }, style]}
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
