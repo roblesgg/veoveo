@@ -125,6 +125,7 @@ export type CartaMazo = {
   pv?: string[]; // participantes que la tienen en Por ver
   v?: string[]; // participantes que la han visto (si lo permiten)
   r?: 1; // recomendada para el grupo
+  s?: 1; // les encanta a los amigos de quien crea
 };
 
 export type MovieMatch = {

@@ -29,3 +29,9 @@
 - **Decisión:** se busca por **nombre de usuario exacto** o por **código de amigo**, con una consulta puntual (`limit` pequeño). No hay listado ni búsqueda por prefijo.
 - **Garantía en las reglas:** `list` sobre `usuarios` solo con `limit ≤ 30`, así que nadie puede descargarse la colección entera de una vez.
 - **Lo que no impiden:** alguien muy insistente podría probar nombres uno a uno. El perfil público solo tiene nombre, foto, bio y estado (el correo está en `privado/cuenta`).
+
+## 4. «Solo pelis que no haya visto nadie» no ve las vistas privadas
+
+- **Qué pasa:** en el Movie Match, la opción del grupo «Solo sin ver» quita las pelis que algún participante ha visto, pero solo puede saberlo de quien permite sus vistas en el Match (`vistasEnMatch`). Si alguien las tiene en privado, una peli que ya vio puede colarse.
+- **Por qué se acepta:** la opción del grupo solo puede **quitar**, nunca exponer: la privacidad de cada uno manda sobre su biblioteca. Y no se señala a nadie (nada de «Fulanito no comparte»).
+- **Arreglo con presupuesto:** que una Cloud Function genere el mazo con acceso a todas las bibliotecas sin enseñárselas a nadie.

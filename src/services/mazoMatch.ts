@@ -16,6 +16,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import type { CartaMazo, Movie, PeliculaUsuario } from '../types';
 import { dbOrThrow } from './firebase';
 import { obtenerPerfilUsuarioPorUid } from './repositorioUsuarios';
+import { obtenerFavoritasDeAmigos } from './repositorioSocial';
 import { tmdbApi } from './tmdbClient';
 
 export const TAMANO_MAZO = 60;
@@ -102,6 +103,8 @@ export function componerMazo(
   recomendadas: Movie[],
   extra: Movie[],
   tamano = TAMANO_MAZO,
+  /** Favoritas de los amigos de quien crea (fuente social) */
+  deAmigos: CartaMazo[] = [],
 ): CartaMazo[] {
   const cartas = new Map<number, CartaMazo>();
   const anotar = (p: PeliculaUsuario, uid: string, campo: 'pv' | 'v') => {
@@ -149,9 +152,10 @@ export function componerMazo(
   }
 
   // 3. Luego, por turnos: recomendaciones para el grupo, las Vistas permitidas y lo que quede
-  //    del Por ver
+  //    del Por ver; también lo que les encanta a los amigos
   const colas: CartaMazo[][] = [
     recomendadas.map((m) => cartas.get(m.id) ?? desdeTmdb(m, true)),
+    deAmigos.map((c) => cartas.get(c.id) ?? c),
     ...bibliotecas.map((b) => barajar(b.vistas.map((p) => cartas.get(p.idPelicula)!))),
     ...colasPorVer,
   ];
@@ -162,6 +166,21 @@ export function componerMazo(
   // 4. Relleno (tendencias y populares) solo si no llega
   extra.forEach((m) => meter(desdeTmdb(m, false)));
   return mazo;
+}
+
+/** Lo que les encanta a los amigos de quien crea (las mismas que «A tus amigos les encanta»). */
+async function favoritasDeLosAmigos(): Promise<CartaMazo[]> {
+  try {
+    const favoritas = await obtenerFavoritasDeAmigos();
+    return barajar(favoritas).map((f) => ({
+      id: f.idPelicula,
+      t: f.titulo,
+      p: f.rutaPoster,
+      s: 1 as const,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 /** Por debajo de esto, con filtro de plataformas, se avisa antes de jugar. */
@@ -197,14 +216,32 @@ async function rellenoEnPlataformas(plataformas: number[]): Promise<Movie[]> {
 export async function generarMazo(
   participantes: string[],
   plataformas?: number[] | null,
+  opciones?: { incluirVistas?: boolean },
 ): Promise<CartaMazo[]> {
   const bibliotecas = await leerBibliotecas(participantes);
-  const recomendadas = await recomendarAlGrupo(bibliotecas);
+  // Las recomendaciones salen de las vistas mejor valoradas: se calculan antes de quitarlas
+  const recomendadasTodas = await recomendarAlGrupo(bibliotecas);
+
+  // «Solo pelis que no haya visto nadie»: fuera las vistas y todo lo que alguien ya vio. Solo
+  // cuentan las vistas que cada uno permite (vistasEnMatch): el interruptor del grupo quita,
+  // nunca expone. Una peli vista por quien las tiene en privado puede colarse (no se señala a nadie).
+  const incluirVistas = opciones?.incluirVistas ?? true;
+  const vistasDeAlguien = new Set(bibliotecas.flatMap((b) => b.vistas.map((p) => p.idPelicula)));
+  const vale = (id: number) => incluirVistas || !vistasDeAlguien.has(id);
+  if (!incluirVistas) {
+    bibliotecas.forEach((b) => {
+      b.vistas = [];
+      b.porVer = b.porVer.filter((p) => vale(p.idPelicula));
+    });
+  }
+  const recomendadas = recomendadasTodas.filter((m) => vale(m.id));
+  const deAmigos = (await favoritasDeLosAmigos()).filter((c) => vale(c.id));
 
   if (!plataformas?.length) {
-    const parcial = componerMazo(bibliotecas, recomendadas, []);
+    const parcial = componerMazo(bibliotecas, recomendadas, [], TAMANO_MAZO, deAmigos);
     if (parcial.length >= TAMANO_MAZO) return parcial;
-    return componerMazo(bibliotecas, recomendadas, await relleno());
+    const extra = (await relleno()).filter((m) => vale(m.id));
+    return componerMazo(bibliotecas, recomendadas, extra, TAMANO_MAZO, deAmigos);
   }
 
   const elegidas = new Set(plataformas);
@@ -214,7 +251,7 @@ export async function generarMazo(
       if (p.providers?.flatrate) guardadas.set(p.idPelicula, p.providers.flatrate);
     }),
   );
-  const candidatas = componerMazo(bibliotecas, recomendadas, [], CANDIDATAS_CON_FILTRO);
+  const candidatas = componerMazo(bibliotecas, recomendadas, [], CANDIDATAS_CON_FILTRO, deAmigos);
   const mazo: CartaMazo[] = [];
   for (let i = 0; i < candidatas.length && mazo.length < TAMANO_MAZO; i += LOTE_DONDE_VER) {
     const lote = candidatas.slice(i, i + LOTE_DONDE_VER);
@@ -230,7 +267,7 @@ export async function generarMazo(
   const usadas = new Set(mazo.map((c) => c.id));
   for (const m of await rellenoEnPlataformas(plataformas)) {
     if (mazo.length >= TAMANO_MAZO) break;
-    if (usadas.has(m.id) || !m.poster_path) continue;
+    if (usadas.has(m.id) || !m.poster_path || !vale(m.id)) continue;
     usadas.add(m.id);
     mazo.push({
       id: m.id,

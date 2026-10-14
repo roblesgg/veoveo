@@ -133,6 +133,7 @@ function motivoCarta(
   };
   if (c.pv?.length) return `En el Por ver de ${nombres(c.pv)}`;
   if (c.r) return 'Recomendada para el grupo';
+  if (c.s) return 'A tus amigos les encanta';
   if (c.v?.length)
     return `${c.v.length === 1 && c.v[0] === yo ? 'Ya la viste' : `Ya la vio ${nombres(c.v)}`}`;
   return 'Popular estos días';

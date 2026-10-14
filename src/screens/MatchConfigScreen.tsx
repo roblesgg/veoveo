@@ -55,6 +55,8 @@ export function MatchConfigScreen() {
   const [filtrar, setFiltrar] = useState(false);
   const [marcadas, setMarcadas] = useState<number[]>([]);
   const [mazoCorto, setMazoCorto] = useState<CartaMazo[] | null>(null);
+  // ¿Entran las pelis que alguien ya ha visto? (cada uno decide si las suyas cuentan: vistasEnMatch)
+  const [incluirVistas, setIncluirVistas] = useState(true);
 
   useEffect(() => {
     void cargarPlataformas().then((ids) => {
@@ -113,17 +115,18 @@ export function MatchConfigScreen() {
     }
   };
 
-  // Con filtro: el mazo se genera antes para avisar si sale corto, en vez de una baraja vacía
+  // El mazo se genera aquí (con las plataformas y las vistas elegidas) para avisar si sale corto,
+  // en vez de enseñar una baraja vacía
   const empezar = async () => {
     if (!user || participantes.length === 0 || creando) return;
-    if (!filtrar || marcadas.length === 0) {
-      void crear();
-      return;
-    }
     setCreando(true);
     setError(null);
     try {
-      const mazo = await generarMazo([user.uid, ...participantes], marcadas);
+      const mazo = await generarMazo(
+        [user.uid, ...participantes],
+        filtrar && marcadas.length > 0 ? marcadas : null,
+        { incluirVistas },
+      );
       if (mazo.length < MINIMO_MAZO) {
         setCreando(false);
         setMazoCorto(mazo);
@@ -213,6 +216,25 @@ export function MatchConfigScreen() {
           </Text>
         </>
       )}
+      <Text style={[styles.etiqueta, { marginTop: 12 }]}>¿Y las que alguien ya ha visto?</Text>
+      <View style={styles.segmentos}>
+        {([true, false] as const).map((v) => (
+          <Pulsable
+            key={String(v)}
+            onPress={() => setIncluirVistas(v)}
+            style={[styles.segmento, incluirVistas === v && styles.segmentoOn]}
+            accessibilityRole="radio"
+            accessibilityState={{ selected: incluirVistas === v }}
+          >
+            <Text style={[styles.segmentoTexto, incluirVistas === v && styles.segmentoTextoOn]}>
+              {v ? 'También entran' : 'Solo sin ver'}
+            </Text>
+          </Pulsable>
+        ))}
+      </View>
+      <Text style={styles.ayuda}>
+        Cada uno decide en su Privacidad si sus vistas cuentan para el Match.
+      </Text>
       <Text style={[styles.etiqueta, { marginTop: 12 }]}>{chatId ? 'Jugáis' : '¿Con quién?'}</Text>
     </View>
   );
@@ -294,7 +316,7 @@ export function MatchConfigScreen() {
       )}
 
       {error && <Text style={styles.error}>{error}</Text>}
-      {/* Mazo corto con el filtro: se avisa y se elige, en vez de enseñar una baraja vacía */}
+      {/* Mazo corto con los filtros: se avisa y se elige, en vez de enseñar una baraja vacía */}
       <HojaAcciones
         visible={Boolean(mazoCorto)}
         onCerrar={() => setMazoCorto(null)}
@@ -302,18 +324,21 @@ export function MatchConfigScreen() {
           <View style={styles.avisoCorto}>
             <Text style={styles.etiqueta}>
               {mazoCorto?.length
-                ? `Con esas plataformas solo hay ${mazoCorto.length} ${mazoCorto.length === 1 ? 'peli' : 'pelis'}`
-                : 'Con esas plataformas no hay pelis'}
+                ? `Con estas opciones solo hay ${mazoCorto.length} ${mazoCorto.length === 1 ? 'peli' : 'pelis'}`
+                : 'Con estas opciones no hay pelis'}
             </Text>
-            <Text style={styles.ayuda}>Puedes quitar el filtro o marcar más plataformas.</Text>
+            <Text style={styles.ayuda}>
+              Puedes quitar los filtros, marcar más plataformas o permitir las ya vistas.
+            </Text>
           </View>
         }
         acciones={[
           {
-            texto: 'Quitar el filtro',
+            texto: 'Quitar los filtros',
             icono: (c) => <IconFilterOff size={22} color={c} />,
             onPress: () => {
               setFiltrar(false);
+              setIncluirVistas(true);
               void crear();
             },
           },
