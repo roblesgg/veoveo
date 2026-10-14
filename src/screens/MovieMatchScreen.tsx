@@ -521,10 +521,15 @@ export function MovieMatchScreen() {
 
       <View style={styles.participantes}>
         {match.participants.map((uid) => (
-          <View key={uid} style={styles.participante}>
+          <View
+            key={uid}
+            style={styles.participante}
+            accessible
+            accessibilityLabel={`${uid === yo ? 'Tú' : nombreDe(perfiles[uid], true)}: ${progreso(uid)} de ${mazo.length}`}
+          >
             <Avatar uri={perfiles[uid]?.fotoPerfil} nombre={perfiles[uid]?.username} tamano={28} />
             <Text style={styles.participanteTexto}>
-              {uid === yo ? 'Tú' : nombreDe(perfiles[uid], true)} · {progreso(uid)}/{mazo.length}
+              {progreso(uid)}/{mazo.length}
             </Text>
           </View>
         ))}
