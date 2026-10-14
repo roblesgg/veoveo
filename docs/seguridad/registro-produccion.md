@@ -8,6 +8,7 @@ Los datos personales no se apuntan aquí (norma 28).
 | 13-10-2026 | Creadas 3 cuentas de Auth con el correo verificado: `veoveo.prueba1@`, `prueba2@` y `prueba3@dripdev.dev` (`scripts/crear-cuentas-prueba.mjs`). Contraseñas en `DripDev/_copias/veoveo/`. | Agente VeoVeo | Álvaro, en el chat del agente |
 | 13-10-2026 | Simulación de la migración 3.0 en **solo lectura** (sin escrituras). | Agente VeoVeo | Álvaro, en el chat del agente |
 | 13-10-2026 | Firestore `(default)`: **protección contra borrado activada** (`deleteProtectionState = DELETE_PROTECTION_ENABLED`). | Jefe de Proyectos | Álvaro, expreso |
+| 14-10-2026 | Borradas `prueba1` y `prueba2` (Auth; no tenían datos). `prueba3` pasa a cuenta de revisión de Play: perfil «Revisor VeoVeo» (sin solicitudes) y biblioteca de ejemplo (`scripts/cuentas-prueba-produccion.mjs`). | Agente VeoVeo | Álvaro, en el chat del agente |
 
 ## Decisiones que no son cambios
 
@@ -18,8 +19,6 @@ Los datos personales no se apuntan aquí (norma 28).
 
 ## Pendiente (cada uno necesita el OK de Álvaro en su momento)
 
-- Borrar `prueba1` y `prueba2` antes de publicar. **`prueba3` NO se borra:** es la cuenta para
-  los revisores de Google Play (contraseña nueva y datos de ejemplo, sin datos de nadie real).
 - Migración 3.0, reglas e índices, y `min_version`: solo en el orden de
   `docs/encargos/2026-10-13-veoveo-3.md` → «Secuencia de publicación».
 - Borrar la copia de seguridad de la migración **30 días después** de ejecutarla (fecha exacta en

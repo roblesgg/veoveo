@@ -1,12 +1,19 @@
-# Cuentas de prueba (producción)
+# Cuentas de prueba
 
-Creadas el 13-10-2026 con el OK de Álvaro (`scripts/crear-cuentas-prueba.mjs`). Solo usuarios de Auth con el correo verificado; el perfil lo crea la app al entrar por primera vez.
+## Producción (`veoveo-48667`): solo la cuenta de revisión
 
-| Correo | Nombre | uid |
-|---|---|---|
-| veoveo.prueba1@dripdev.dev | Prueba 1 | bdPZXDOhsnPWUHcpXN3mIEO5AhT2 |
-| veoveo.prueba2@dripdev.dev | Prueba 2 | y4FpPa3VSOWvr4IF6bd4hL4j4pq1 |
-| veoveo.prueba3@dripdev.dev | Prueba 3 | mkg264KS8dQxvNYfL2YIiwFk4Bg2 |
+| Correo | Nombre | uid | Para qué |
+|---|---|---|---|
+| veoveo.prueba3@dripdev.dev | Revisor VeoVeo | mkg264KS8dQxvNYfL2YIiwFk4Bg2 | Revisores de Google Play. **No se borra.** |
 
-- **Contraseñas:** en `DripDev/_copias/veoveo/cuentas-prueba.txt`, fuera de cualquier repositorio. Nunca en git ni en un chat.
-- **Antes de publicar en Google Play:** borrarlas. Lo más limpio es entrar con cada una y usar *Ajustes → Cuenta → Borrar mi cuenta*, que además prueba el borrado.
+- Tiene perfil (no acepta solicitudes de amistad) y una biblioteca de ejemplo: 6 vistas con nota y
+  4 por ver (`scripts/cuentas-prueba-produccion.mjs`, 14-10-2026).
+- `prueba1` y `prueba2` se crearon el 13-10-2026 y se borraron el 14-10-2026 (OK de Álvaro): no
+  tenían perfil, amigos, chats ni solicitudes.
+- **Contraseña:** en `DripDev/_copias/veoveo/cuentas-prueba.txt`, fuera de cualquier repositorio.
+  Nunca en git ni en un chat.
+
+## Pruebas (`veoveo-pruebas`)
+
+Ana, Beto y Carla (`*@veoveo-pruebas.test`), con datos de ejemplo. Ver `docs/entornos.md`.
+Contraseñas en `DripDev/_copias/veoveo/cuentas-pruebas.txt`.
