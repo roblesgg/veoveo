@@ -16,4 +16,9 @@
 ## Pruebas (`veoveo-pruebas`)
 
 Alvaro, Beto y Manoli (`*@veoveo-pruebas.test`), con datos de ejemplo. Ver `docs/entornos.md`.
-Contraseñas en `DripDev/_copias/veoveo/cuentas-pruebas.txt`.
+Contraseñas en `DripDev/_copias/veoveo/cuentas-pruebas.txt`. En el APK de pruebas basta con escribir
+`alvaro` o `manoli` como usuario: la app añade `@veoveo-pruebas.test`.
+
+> **Contraseñas débiles: SOLO en `veoveo-pruebas`.** Las de Alvaro y Manoli son triviales a
+> propósito, porque ese entorno no tiene ni un dato real y es desechable. **En producción, jamás:**
+> ni para cuentas de prueba ni para la de revisión de Play, que llevan contraseñas aleatorias.

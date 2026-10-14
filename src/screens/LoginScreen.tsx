@@ -101,7 +101,11 @@ export function LoginScreen() {
             setErrorMessage('');
             setLoading(true);
             try {
-              await login(email, password);
+              // Solo en el APK de pruebas: «alvaro» vale por alvaro@veoveo-pruebas.test
+              const esPruebas = Constants.expoConfig?.name === 'VeoVeo Test';
+              const correo =
+                esPruebas && !email.includes('@') ? `${email.trim()}@veoveo-pruebas.test` : email;
+              await login(correo, password);
             } catch (e) {
               setErrorMessage(e instanceof Error ? e.message : 'Error al iniciar sesión');
             } finally {
