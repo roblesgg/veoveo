@@ -8,7 +8,8 @@ import { IconoClaqueta } from './iconos/IconosPropios';
 import { COLORS } from '../theme/colors';
 import { FUENTES } from '../theme/useMontserrat';
 
-const BAR_HEIGHT = 66;
+// Solo iconos: la cabecera de cada pantalla ya dice dónde estás. La etiqueta queda para lectores de pantalla.
+const BAR_HEIGHT = 58;
 
 type Props = {
   onTabChange: (index: number) => void;
@@ -77,14 +78,14 @@ export function LiquidBottomBar({ onTabChange, paginaActual, noLeidos = 0 }: Pro
         <Animated.View
           style={[
             styles.indicator,
-            { width: TAB_WIDTH * 0.84, left: (TAB_WIDTH - TAB_WIDTH * 0.84) / 2 },
+            { width: TAB_WIDTH * 0.7, left: (TAB_WIDTH - TAB_WIDTH * 0.7) / 2 },
             indicatorStyle,
           ]}
         />
 
         {PESTANAS.map(({ index, etiqueta, Icono }) => {
           const activa = paginaActual === index;
-          const color = activa ? COLORS.primary : COLORS.textMuted;
+          const color = activa ? COLORS.primary : 'rgba(148,163,184,0.75)';
           return (
             <Pressable
               key={index}
@@ -93,17 +94,18 @@ export function LiquidBottomBar({ onTabChange, paginaActual, noLeidos = 0 }: Pro
               hitSlop={8}
               accessibilityRole="tab"
               accessibilityState={{ selected: activa }}
-              accessibilityLabel={index === 2 && noLeidos > 0 ? `${etiqueta}, ${noLeidos} sin leer` : etiqueta}
+              accessibilityLabel={
+                index === 2 && noLeidos > 0 ? `${etiqueta}, ${noLeidos} sin leer` : etiqueta
+              }
             >
               <View>
-                {Icono({ size: 24, color, strokeWidth: 2 })}
+                {Icono({ size: activa ? 27 : 25, color, strokeWidth: activa ? 2.2 : 1.8 })}
                 {index === 2 && noLeidos > 0 && (
                   <View style={styles.contador}>
                     <Text style={styles.contadorTexto}>{noLeidos > 99 ? '99+' : noLeidos}</Text>
                   </View>
                 )}
               </View>
-              <Text style={[styles.etiqueta, { color }]}>{etiqueta}</Text>
             </Pressable>
           );
         })}
@@ -135,8 +137,10 @@ const styles = StyleSheet.create({
   },
   indicator: {
     position: 'absolute',
-    height: 52,
-    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    height: 44,
+    backgroundColor: 'rgba(56, 189, 248, 0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.22)',
     borderRadius: 999,
   },
   tabBtn: {
@@ -144,10 +148,8 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 3,
     zIndex: 10,
   },
-  etiqueta: { fontSize: 11, fontFamily: FUENTES.texto },
   contador: {
     position: 'absolute',
     top: -6,
