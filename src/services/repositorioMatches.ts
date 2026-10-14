@@ -21,7 +21,7 @@ import {
   where,
   addDoc,
 } from 'firebase/firestore';
-import type { Chat, MovieMatch, VotosMatch } from '../types';
+import type { CartaMazo, Chat, MovieMatch, VotosMatch } from '../types';
 import { dbOrThrow, uidOrThrow } from './firebase';
 import { generarMazo } from './mazoMatch';
 import { enlazarMatch, enviarMensaje, obtenerChat } from './repositorioChats';
@@ -42,10 +42,12 @@ export async function crearMatch(opciones: {
   participantes: string[];
   objetivo: number;
   nombreCreador: string;
+  /** Mazo ya generado (la pantalla lo genera antes para avisar si sale corto) */
+  mazo?: CartaMazo[];
 }): Promise<string> {
   const yo = uidOrThrow();
   const participantes = [...new Set([yo, ...opciones.participantes])];
-  const mazo = await generarMazo(participantes);
+  const mazo = opciones.mazo ?? (await generarMazo(participantes));
   const ref = await addDoc(collection(dbOrThrow(), 'matches'), {
     ...(opciones.chat ? { chatId: opciones.chat.id } : {}),
     creatorId: yo,

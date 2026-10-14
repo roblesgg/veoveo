@@ -151,11 +151,80 @@ export function componerMazo(
   return mazo;
 }
 
-/** Genera el mazo de un Match nuevo. Unas 6 llamadas a TMDB como mucho. */
-export async function generarMazo(participantes: string[]): Promise<CartaMazo[]> {
+/** Por debajo de esto, con filtro de plataformas, se avisa antes de jugar. */
+export const MINIMO_MAZO = 15;
+const CANDIDATAS_CON_FILTRO = 160;
+const LOTE_DONDE_VER = 10;
+
+/** Plataformas (de suscripción, en España) donde se puede ver una peli. */
+async function plataformasDe(id: number): Promise<number[]> {
+  try {
+    const r = await tmdbApi.obtenerDondeVerConCache(id);
+    return (r.results?.ES?.flatrate ?? []).map((p) => p.provider_id);
+  } catch {
+    return [];
+  }
+}
+
+/** Relleno ya filtrado por plataformas (discover filtra en la misma llamada). */
+async function rellenoEnPlataformas(plataformas: number[]): Promise<Movie[]> {
+  const filtros = `with_watch_providers=${plataformas.join('|')}&watch_region=ES&watch_monetization_types=flatrate&sort_by=popularity.desc`;
+  const paginas = await Promise.all(
+    [1, 2].map((p) => tmdbApi.descubrirPeliculas(filtros, 'es-ES', p).catch(() => null)),
+  );
+  return barajar(paginas.flatMap((p) => p?.results ?? []));
+}
+
+/**
+ * Genera el mazo de un Match nuevo. Sin filtro, unas 6 llamadas a TMDB como mucho.
+ * Con `plataformas`, solo entran pelis que se puedan ver en alguna de ellas: las de las
+ * bibliotecas usan las plataformas que ya tienen guardadas y solo se pregunta a TMDB por las que
+ * no (en lotes, con caché, hasta llenar el mazo); el relleno sale de discover ya filtrado.
+ */
+export async function generarMazo(
+  participantes: string[],
+  plataformas?: number[] | null,
+): Promise<CartaMazo[]> {
   const bibliotecas = await leerBibliotecas(participantes);
   const recomendadas = await recomendarAlGrupo(bibliotecas);
-  const parcial = componerMazo(bibliotecas, recomendadas, []);
-  if (parcial.length >= TAMANO_MAZO) return parcial;
-  return componerMazo(bibliotecas, recomendadas, await relleno());
+
+  if (!plataformas?.length) {
+    const parcial = componerMazo(bibliotecas, recomendadas, []);
+    if (parcial.length >= TAMANO_MAZO) return parcial;
+    return componerMazo(bibliotecas, recomendadas, await relleno());
+  }
+
+  const elegidas = new Set(plataformas);
+  const guardadas = new Map<number, number[]>();
+  bibliotecas.forEach((b) =>
+    [...b.porVer, ...b.vistas].forEach((p) => {
+      if (p.providers?.flatrate) guardadas.set(p.idPelicula, p.providers.flatrate);
+    }),
+  );
+  const candidatas = componerMazo(bibliotecas, recomendadas, [], CANDIDATAS_CON_FILTRO);
+  const mazo: CartaMazo[] = [];
+  for (let i = 0; i < candidatas.length && mazo.length < TAMANO_MAZO; i += LOTE_DONDE_VER) {
+    const lote = candidatas.slice(i, i + LOTE_DONDE_VER);
+    const donde = await Promise.all(
+      lote.map((c) => (guardadas.has(c.id) ? guardadas.get(c.id)! : plataformasDe(c.id))),
+    );
+    lote.forEach((c, j) => {
+      if (mazo.length < TAMANO_MAZO && donde[j].some((id) => elegidas.has(id))) mazo.push(c);
+    });
+  }
+  if (mazo.length >= TAMANO_MAZO) return mazo;
+
+  const usadas = new Set(mazo.map((c) => c.id));
+  for (const m of await rellenoEnPlataformas(plataformas)) {
+    if (mazo.length >= TAMANO_MAZO) break;
+    if (usadas.has(m.id) || !m.poster_path) continue;
+    usadas.add(m.id);
+    mazo.push({
+      id: m.id,
+      t: m.title,
+      p: m.poster_path,
+      ...(anio(m.release_date) ? { a: anio(m.release_date) } : {}),
+    });
+  }
+  return mazo;
 }
