@@ -8,7 +8,7 @@ import type { Movie } from '../../types';
 import { RatingBadge } from '../RatingBadge';
 import { marcarHito } from '../../utils/medicionArranque';
 import { usePlataformasPelicula } from '../../hooks/useDescubrir';
-import { abrirConZoom } from '../../utils/zoomCartel';
+import { abrirConZoom, useCartelOculto } from '../../utils/zoomCartel';
 
 type Props = {
   /** `motivo` solo en "Recomendado para ti": se enseña debajo del póster. */
@@ -39,11 +39,12 @@ export const PosterItem = memo(
     const uri = posterUrl(item.poster_path, 'w342');
     // Se mide el cartel al tocarlo: la ficha crece desde aquí y vuelve aquí al salir
     const refCartel = useRef<View>(null);
+    // Mientras su copia vuela hacia la ficha (o vuelve), este cartel no se ve: sin doble imagen
+    const oculto = useCartelOculto(refCartel);
 
     return (
-      <View style={styles.posterWrapper}>
+      <View ref={refCartel} collapsable={false} style={styles.posterWrapper}>
         <Pressable
-          ref={refCartel}
           onPress={() =>
             abrirConZoom(refCartel.current, item.id, item.poster_path ?? null, () =>
               onPeliculaClick(item.id),
@@ -52,6 +53,7 @@ export const PosterItem = memo(
           style={({ pressed }) => [
             styles.posterCard,
             { transform: [{ scale: pressed ? 0.96 : 1 }] },
+            oculto && { opacity: 0 },
           ]}
         >
           {uri ? (

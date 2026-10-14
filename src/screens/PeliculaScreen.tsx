@@ -17,6 +17,7 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -48,8 +49,22 @@ import { CollectionSaga } from '../components/movie/CollectionSaga';
 import { MovieRatingModal } from '../components/movie/MovieRatingModal';
 import { MovieSocialProof } from '../components/movie/MovieSocialProof';
 import { ZoomCartel } from '../components/movie/ZoomCartel';
-import { origenDe, type Rect } from '../utils/zoomCartel';
-import { useReducedMotion } from 'react-native-reanimated';
+import { ocultarOrigen, origenDe, type Rect } from '../utils/zoomCartel';
+import Animated, {
+  Easing,
+  Extrapolation,
+  interpolate,
+  runOnJS,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+
+// La portada grande ocupa arriba toda la anchura y 750 de alto (destino del zoom)
+const ALTO_PORTADA = 750;
+// Curva de iOS para hojas y zoom: arranca rápido y frena suave
+const CURVA_ZOOM = Easing.bezier(0.32, 0.72, 0, 1);
 
 export function PeliculaScreen() {
   // Versión de la portada a prueba (Ajustes, solo en el APK de pruebas)
@@ -61,58 +76,6 @@ export function PeliculaScreen() {
   const { movieId } = route.params;
   const navigation = useNavigation<any>();
 
-  // ── Zoom desde el cartel de la lista (ida) y de vuelta a su sitio (vuelta) ──
-  const reducirMovimiento = useReducedMotion();
-  const origenZoom = React.useMemo(
-    () => (reducirMovimiento ? null : origenDe(movieId)),
-    [movieId, reducirMovimiento],
-  );
-  const refCartel = React.useRef<View>(null);
-  const desplazado = React.useRef(0);
-  const yaSalimos = React.useRef(false);
-  const idaHecha = React.useRef(false);
-  const [zoom, setZoom] = useState<{ fase: 'ida' | 'vuelta'; destino: Rect } | null>(null);
-  // El cartel de verdad no se ve mientras vuela la copia (ni antes de que salga, para no parpadear)
-  const [cartelOculto, setCartelOculto] = useState(Boolean(origenZoom));
-  const medirDestinoIda = useCallback(() => {
-    if (!origenZoom || idaHecha.current) return;
-    idaHecha.current = true;
-    refCartel.current?.measureInWindow((x, y, width, height) => {
-      if (width > 0) setZoom({ fase: 'ida', destino: { x, y, width, height } });
-    });
-  }, [origenZoom]);
-  // Al volver (botón o gesto atrás): el cartel se encoge hasta su sitio y luego se sale.
-  // Si has bajado y el cartel ya no se ve, sale normal.
-  React.useEffect(() => {
-    if (!origenZoom) return undefined;
-    return navigation.addListener('beforeRemove', (e: any) => {
-      if (yaSalimos.current || desplazado.current > 40 || !refCartel.current) return;
-      e.preventDefault();
-      refCartel.current.measureInWindow((x, y, width, height) => {
-        if (width <= 0) {
-          yaSalimos.current = true;
-          navigation.dispatch(e.data.action);
-          return;
-        }
-        accionSalida.current = e.data.action;
-        setCartelOculto(true);
-        setZoom({ fase: 'vuelta', destino: { x, y, width, height } });
-      });
-    });
-  }, [navigation, origenZoom]);
-  const accionSalida = React.useRef<any>(null);
-  const finZoom = useCallback(
-    (fase: 'ida' | 'vuelta') => {
-      if (fase === 'ida') {
-        setCartelOculto(false);
-        setZoom(null);
-        return;
-      }
-      yaSalimos.current = true;
-      if (accionSalida.current) navigation.dispatch(accionSalida.current);
-    },
-    [navigation],
-  );
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const { fontFamily: ff } = useMontserrat();
@@ -128,6 +91,78 @@ export function PeliculaScreen() {
     coleccion,
     recargar,
   } = useMovieData(movieId);
+
+  const detallesListos = Boolean(detalles);
+  // ── Entrada y salida de la ficha (pantalla transparente) con zoom desde el cartel ──
+  // Un solo progreso: 0 = se ve la lista de detrás, 1 = la ficha entera. Con zoom, la copia del
+  // cartel crece desde su sitio hasta la portada grande mientras el fondo se funde y el texto
+  // entra detrás; al volver, al revés. Sin zoom (otro origen, portada desenfocada o reducir
+  // movimiento), un fundido corto.
+  const reducirMovimiento = useReducedMotion();
+  const { width: anchoPantalla } = useWindowDimensions();
+  const origenZoom = React.useMemo(
+    () => (reducirMovimiento ? null : origenDe(movieId)),
+    [movieId, reducirMovimiento],
+  );
+  const destinoZoom: Rect = { x: 0, y: 0, width: anchoPantalla, height: ALTO_PORTADA };
+  const aparicion = useSharedValue(0);
+  const desplazado = React.useRef(0);
+  const yaSalimos = React.useRef(false);
+  const entrada = React.useRef(false);
+  // La copia del cartel está a la vista (la portada de verdad espera debajo, oculta)
+  const [volando, setVolando] = useState(false);
+
+  const terminarIda = useCallback(() => setVolando(false), []);
+  // La ficha arranca cuando ya tiene datos que enseñar
+  React.useEffect(() => {
+    if (!detallesListos || entrada.current) return;
+    entrada.current = true;
+    const conZoom = Boolean(origenZoom) && portada === 'nitida';
+    if (conZoom) {
+      ocultarOrigen(true);
+      setVolando(true);
+      aparicion.value = withTiming(1, { duration: 300, easing: CURVA_ZOOM }, (fin) => {
+        if (fin) runOnJS(terminarIda)();
+      });
+    } else {
+      aparicion.value = withTiming(1, { duration: reducirMovimiento ? 120 : 200 });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detallesListos]);
+
+  // Al volver (botón o gesto atrás): la animación al revés y luego se sale.
+  // Con zoom solo si la portada aún se ve (no has bajado); si no, fundido.
+  React.useEffect(
+    () =>
+      navigation.addListener('beforeRemove', (e: any) => {
+        if (yaSalimos.current) return;
+        e.preventDefault();
+        const accion = e.data.action;
+        const salir = () => {
+          yaSalimos.current = true;
+          ocultarOrigen(false);
+          navigation.dispatch(accion);
+        };
+        const conZoom = Boolean(origenZoom) && portada === 'nitida' && desplazado.current < 40;
+        if (conZoom) setVolando(true);
+        aparicion.value = withTiming(
+          0,
+          { duration: conZoom ? 260 : 160, easing: CURVA_ZOOM },
+          (fin) => {
+            if (fin) runOnJS(salir)();
+          },
+        );
+      }),
+    [navigation, origenZoom, portada, aparicion],
+  );
+  // Si la ficha se cierra por otro camino, el cartel original vuelve a verse
+  React.useEffect(() => () => ocultarOrigen(false), []);
+
+  const estiloFondo = useAnimatedStyle(() => ({ opacity: aparicion.value }));
+  // El texto entra cuando el cartel ya ha hecho buena parte del camino (no compite con él)
+  const estiloContenido = useAnimatedStyle(() => ({
+    opacity: interpolate(aparicion.value, [0.45, 1], [0, 1], Extrapolation.CLAMP),
+  }));
 
   // HOOK: Verifica si el usuario ya tiene esta peli en su biblioteca y gestiona acciones
   const { peliculaBib, bibCargando, accionBib, userError, onPorVer, onMarcarVista, onQuitar } =
@@ -196,10 +231,18 @@ export function PeliculaScreen() {
   const estadoPelicula = !peliculaBib ? 0 : peliculaBib.estado === 'por_ver' ? 1 : 2;
 
   return (
-    <View style={[styles.flex, { backgroundColor: GradientBottom }]}>
+    <View style={styles.flex}>
+      {/* Fondo de la ficha: se funde sobre la lista de detrás (pantalla transparente) */}
+      <Animated.View
+        style={[StyleSheet.absoluteFill, { backgroundColor: GradientBottom }, estiloFondo]}
+        pointerEvents="none"
+      />
       {/* 🖼️ FONDO: Poster desenfocado con gradiente envolvente */}
       {(detalles.backdrop_path || detalles.poster_path) && (
-        <View style={styles.fixedBackdrop} pointerEvents="none">
+        <Animated.View
+          style={[styles.fixedBackdrop, estiloFondo, volando && { opacity: 0 }]}
+          pointerEvents="none"
+        >
           {/* Portada grande que cubre, en buena calidad. Se usa el CARTEL (vertical, hasta
               2000×3000), no el fondo apaisado: estirar el fondo w1280 a una caja alta lo
               ampliaba ×3 y se veía borroso. Dos versiones a prueba (Ajustes, solo pruebas):
@@ -225,7 +268,7 @@ export function PeliculaScreen() {
             <View
               style={
                 detalles.poster_path
-                  ? { width: '100%', height: 750 }
+                  ? { width: '100%', height: ALTO_PORTADA }
                   : { width: '100%', aspectRatio: 16 / 9 }
               }
             >
@@ -257,11 +300,13 @@ export function PeliculaScreen() {
               />
             </View>
           )}
-        </View>
+        </Animated.View>
       )}
 
       {/* 🧭 CABECERA DE NAVEGACIÓN (Floating) */}
-      <View style={[styles.navHeader, { top: Math.max(insets.top, 12) + 8 }]}>
+      <Animated.View
+        style={[styles.navHeader, { top: Math.max(insets.top, 12) + 8 }, estiloContenido]}
+      >
         <Pressable onPress={() => navigation.goBack()} hitSlop={12} style={styles.iconBtn}>
           <BlurView intensity={50} tint="dark" style={styles.blurBtn}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
@@ -285,9 +330,10 @@ export function PeliculaScreen() {
             </BlurView>
           </Pressable>
         </View>
-      </View>
+      </Animated.View>
 
-      <ScrollView
+      <Animated.ScrollView
+        style={estiloContenido}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 120 }}
         onScroll={(e) => {
@@ -301,9 +347,6 @@ export function PeliculaScreen() {
           fontFamily={fontFamily}
           misPlataformas={misPlataformas}
           providers={providers}
-          refCartel={refCartel}
-          ocultarCartel={cartelOculto}
-          onCartelColocado={medirDestinoIda}
         />
 
         <View style={styles.body}>
@@ -370,7 +413,7 @@ export function PeliculaScreen() {
             <MovieProviders providers={providers} fontFamily={fontFamily} />
           ) : null}
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
 
       {/* MODAL: Selector de estrellas para valorar la película */}
       <MovieRatingModal
@@ -387,13 +430,12 @@ export function PeliculaScreen() {
       />
 
       {/* Copia del cartel volando entre la lista y la cabecera (ida y vuelta) */}
-      {origenZoom && zoom ? (
+      {origenZoom && volando ? (
         <ZoomCartel
           origen={origenZoom.rect}
-          destino={zoom.destino}
+          destino={destinoZoom}
           poster={origenZoom.poster}
-          fase={zoom.fase}
-          onFin={finZoom}
+          progreso={aparicion}
         />
       ) : null}
     </View>

@@ -71,8 +71,9 @@ export function RootNavigator() {
   // sube como una hoja. Con reducir movimiento, todo con fundido.
   const reducir = useReducedMotion();
   const detalle = { animation: reducir ? ('fade' as const) : ('default' as const) };
-  // La ficha entra con fundido: el movimiento lo pone el cartel que crece desde la lista (zoom)
-  const ficha = { animation: 'fade' as const };
+  // La ficha es transparente y se anima ella misma: el cartel crece desde la lista hasta su
+  // portada mientras el fondo se funde sobre lo de detrás (zoom). Sin transición del sistema.
+  const ficha = { presentation: 'transparentModal' as const, animation: 'none' as const };
   const hoja = { animation: reducir ? ('fade' as const) : ('slide_from_bottom' as const) };
 
   return (

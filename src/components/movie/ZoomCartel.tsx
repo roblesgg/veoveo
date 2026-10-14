@@ -1,60 +1,36 @@
 /**
- * Copia del cartel que vuela entre su sitio en una lista y la cabecera de la ficha.
- * «ida»: del origen al destino; «vuelta»: del destino al origen. Muelles cortos y en el hilo de UI.
+ * Copia del cartel que crece desde su sitio en una lista hasta la portada grande de la ficha, y
+ * vuelve. La mueve un único progreso (0 = en la lista, 1 = portada) que también funde el fondo y
+ * el contenido de la ficha, así todo va a la vez. Esquinas de 16 (como en la lista) a 0 (portada).
+ * Misma imagen (w342, ya en caché del carrusel) y mismo recorte «cover» que origen y destino.
  * Es un elemento absoluto fuera del flujo: animar su caja no recoloca nada más.
  */
-import { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
-import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 import { posterUrl } from '../../services/tmdbClient';
 import type { Rect } from '../../utils/zoomCartel';
+
+const RADIO_LISTA = 16;
 
 type Props = {
   origen: Rect;
   destino: Rect;
   poster: string | null;
-  fase: 'ida' | 'vuelta';
-  onFin: (fase: 'ida' | 'vuelta') => void;
+  progreso: SharedValue<number>;
 };
 
-export function ZoomCartel({ origen, destino, poster, fase, onFin }: Props) {
-  const desde = fase === 'ida' ? origen : destino;
-  const hasta = fase === 'ida' ? destino : origen;
-  const x = useSharedValue(desde.x);
-  const y = useSharedValue(desde.y);
-  const ancho = useSharedValue(desde.width);
-  const alto = useSharedValue(desde.height);
-
-  useEffect(() => {
-    const muelle =
-      fase === 'ida'
-        ? { duration: 420, dampingRatio: 0.86 }
-        : { duration: 380, dampingRatio: 0.92 };
-    x.value = desde.x;
-    y.value = desde.y;
-    ancho.value = desde.width;
-    alto.value = desde.height;
-    x.value = withSpring(hasta.x, muelle, (fin) => {
-      if (fin) runOnJS(onFin)(fase);
-    });
-    y.value = withSpring(hasta.y, muelle);
-    ancho.value = withSpring(hasta.width, muelle);
-    alto.value = withSpring(hasta.height, muelle);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fase]);
-
-  const estilo = useAnimatedStyle(() => ({
-    left: x.value,
-    top: y.value,
-    width: ancho.value,
-    height: alto.value,
-  }));
+export function ZoomCartel({ origen, destino, poster, progreso }: Props) {
+  const estilo = useAnimatedStyle(() => {
+    const p = progreso.value;
+    return {
+      left: origen.x + (destino.x - origen.x) * p,
+      top: origen.y + (destino.y - origen.y) * p,
+      width: origen.width + (destino.width - origen.width) * p,
+      height: origen.height + (destino.height - origen.height) * p,
+      borderRadius: RADIO_LISTA * (1 - p),
+    };
+  });
 
   return (
     <Animated.View style={[styles.cartel, estilo]} pointerEvents="none">
@@ -69,11 +45,5 @@ export function ZoomCartel({ origen, destino, poster, fase, onFin }: Props) {
 }
 
 const styles = StyleSheet.create({
-  cartel: {
-    position: 'absolute',
-    borderRadius: 16,
-    overflow: 'hidden',
-    zIndex: 50,
-    elevation: 50,
-  },
+  cartel: { position: 'absolute', overflow: 'hidden', zIndex: 50, elevation: 50 },
 });
