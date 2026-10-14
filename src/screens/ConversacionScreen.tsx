@@ -445,7 +445,9 @@ export function ConversacionScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      // Android con pantalla completa (edge-to-edge) ya no encoge la ventana con el teclado:
+      // hay que apartarse también ahí
+      behavior="padding"
     >
       <View style={[styles.cabecera, { paddingTop: insets.top + 8 }]}>
         <Pressable onPress={() => navigation.goBack()} hitSlop={12} accessibilityLabel="Volver">

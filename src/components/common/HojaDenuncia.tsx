@@ -93,7 +93,9 @@ export function HojaDenuncia({ objeto, titulo, nombreBloqueo, onCerrar, onBloque
     >
       <Pressable style={styles.fondo} onPress={cerrar} accessibilityLabel="Cerrar" />
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        // Android con pantalla completa (edge-to-edge) ya no encoge la ventana con el teclado:
+        // hay que apartarse también ahí
+        behavior="padding"
         style={styles.zona}
         pointerEvents="box-none"
       >
