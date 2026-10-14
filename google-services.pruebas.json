@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "888518938551",
+    "project_id": "veoveo-pruebas",
+    "storage_bucket": "veoveo-pruebas.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:888518938551:android:259c070f94ccc81c426232",
+        "android_client_info": {
+          "package_name": "com.roblesgg.veoveo.test"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "888518938551-901b8l00ji0o63u6q9lcdp1ko497o51b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYkC7JaQ0TZ610HnmTn5aoriYYYdBrzTA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "888518938551-901b8l00ji0o63u6q9lcdp1ko497o51b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

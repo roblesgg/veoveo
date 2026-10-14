@@ -50,6 +50,13 @@ module.exports = {
     package: IS_TEST ? 'com.roblesgg.veoveo.test' : appJson.expo.android.package,
     // Los enlaces https de veoveo.dripdev.dev solo los abre la app de Play (assetlinks.json)
     intentFilters: IS_TEST ? [] : appJson.expo.android.intentFilters,
+    // Avisos push en Android (FCM): cada variante con el google-services.json de su proyecto.
+    // Solo identificadores públicos de cliente; sin claves privadas.
+    googleServicesFile: IS_TEST
+      ? './google-services.pruebas.json'
+      : require('fs').existsSync(require('path').join(__dirname, 'google-services.json'))
+        ? './google-services.json'
+        : undefined,
   },
   scheme: IS_TEST ? 'veoveotest' : 'veoveo',
   plugins: [...(appJson.expo.plugins || [])],
