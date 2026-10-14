@@ -34,9 +34,9 @@ function caminoEstrella(): string {
   const puntos = Array.from({ length: 10 }, (_, i) => {
     const r = i % 2 === 0 ? exterior : interior;
     const a = -Math.PI / 2 + (i * Math.PI) / 5;
-    return `{(cx + r * Math.cos(a)).toFixed(2)} {(cy + r * Math.sin(a)).toFixed(2)}`;
+    return `${(cx + r * Math.cos(a)).toFixed(2)} ${(cy + r * Math.sin(a)).toFixed(2)}`;
   });
-  return `M{puntos.join('L')}Z`;
+  return `M${puntos.join('L')}Z`;
 }
 const ESTRELLA = caminoEstrella();
 
