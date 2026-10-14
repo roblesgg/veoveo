@@ -5,8 +5,9 @@
  */
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import type { PeliculaUsuario } from '../../types';
+import { Destello } from '../common/Destello';
+import { COLOR_DESTELLO, COLOR_DESTELLO_APAGADO } from '../common/Cargando';
 
 type Props = {
   peliculaUsuario: PeliculaUsuario | null;
@@ -26,11 +27,10 @@ export const MovieRatingButton = React.memo(({ peliculaUsuario, onPress, fontFam
     ) : valoracion > 0 ? (
       <View style={styles.estrellas}>
         {[1, 2, 3, 4, 5].map((n) => (
-          <Ionicons
+          <Destello
             key={n}
-            name={n <= valoracion ? 'star' : 'star-outline'}
-            size={20}
-            color={n <= valoracion ? ORO : 'rgba(255,215,0,0.3)'}
+            lado={22}
+            color={n <= valoracion ? COLOR_DESTELLO : COLOR_DESTELLO_APAGADO}
           />
         ))}
       </View>

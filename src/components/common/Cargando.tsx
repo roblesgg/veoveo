@@ -13,6 +13,10 @@ import { LoaderCaida, type ColorLoader } from './LoaderCaida';
 
 // Forma: estrellas. Color: el morado original de la referencia (Álvaro, 14-10; se revisa al verlo)
 export const COLOR_LOADER: ColorLoader = 'morado';
+/** Color del destello lleno (loader y valorar: un solo color en toda la app) */
+export const COLOR_DESTELLO = COLOR_LOADER === 'morado' ? '#5c3d99' : '#69DFD9';
+/** Destello vacío (sin valorar) */
+export const COLOR_DESTELLO_APAGADO = 'rgba(255,255,255,0.16)';
 
 // Lado de una pieza en su punto más grande. El grande es el del original (caja de 100 a escala 0,5).
 const TAMANOS = { pequeno: 16, mediano: 30, grande: 50 } as const;

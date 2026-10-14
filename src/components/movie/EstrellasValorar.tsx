@@ -1,5 +1,6 @@
 /**
- * Estrellas para valorar: se tocan o se arrastra el dedo por la fila y se van llenando.
+ * Valorar con destellos (el mismo dibujo que el loader, Destello.tsx): se tocan o se arrastra el
+ * dedo por la fila y se van llenando.
  * - La que está bajo el dedo crece (1,25) mientras arrastras; al soltar, todas se asientan.
  * - Las que se llenan dan un pequeño rebote escalonado (30 ms entre una y otra).
  * - Un toque háptico ligero al pasar a otra estrella (es una decisión, no un roce).
@@ -7,7 +8,8 @@
  */
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Destello } from '../common/Destello';
+import { COLOR_DESTELLO, COLOR_DESTELLO_APAGADO } from '../common/Cargando';
 import * as Haptics from 'expo-haptics';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
@@ -23,7 +25,6 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 
-const ORO = '#FFD700';
 const TAMANO = 36;
 const HUECO = 8;
 
@@ -56,11 +57,7 @@ function Estrella({
   });
   return (
     <Animated.View style={[styles.estrella, estilo]}>
-      <Ionicons
-        name={llena ? 'star' : 'star-outline'}
-        size={TAMANO}
-        color={llena ? ORO : 'rgba(255,255,255,0.2)'}
-      />
+      <Destello lado={TAMANO} color={llena ? COLOR_DESTELLO : COLOR_DESTELLO_APAGADO} />
     </Animated.View>
   );
 }

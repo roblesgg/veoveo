@@ -1,5 +1,5 @@
 /**
- * Loader de la app: tres estrellas que caen escalonadas, con escala y giro, y se desvanecen abajo.
+ * Loader de la app: tres destellos (el original de Uiverse, Destello.tsx) que caen escalonadas, con escala y giro, y se desvanecen abajo.
  * Reproduce fielmente el loader de referencia de Álvaro (Uiverse.io, andrew-manzyk), con el CSS
  * original en docs/diseno/loader-referencia.md: bucle de 1 s lineal, retrasos 0 / 0,3 / 0,6 s y los
  * mismos fotogramas clave. Las distancias, pensadas para una caja de 100 px a escala 0,5, se
@@ -19,26 +19,7 @@ import Animated, {
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
-import Svg, { Path } from 'react-native-svg';
-
-/**
- * Estrella de 5 puntas, maciza, en una caja de 100 × 100 (el símbolo de VeoVeo: valorar).
- * Radio interior generoso (0,5 del exterior) para que a 16-22 px siga leyéndose como estrella;
- * las esquinas se redondean con un trazo del mismo color y unión redonda.
- */
-function caminoEstrella(): string {
-  const cx = 50;
-  const cy = 53;
-  const exterior = 44;
-  const interior = 22;
-  const puntos = Array.from({ length: 10 }, (_, i) => {
-    const r = i % 2 === 0 ? exterior : interior;
-    const a = -Math.PI / 2 + (i * Math.PI) / 5;
-    return `${(cx + r * Math.cos(a)).toFixed(2)} ${(cy + r * Math.sin(a)).toFixed(2)}`;
-  });
-  return `M${puntos.join('L')}Z`;
-}
-const ESTRELLA = caminoEstrella();
+import { Destello } from './Destello';
 
 const COLORES = {
   turquesa: { relleno: '#69DFD9', brillo: '#69DFD933' },
@@ -73,25 +54,14 @@ const PIEZAS = [
 ];
 const OPACIDAD = [0, 1, 1, 1, 0];
 
-function Silueta({
-  color,
-  lado,
-  propio,
-}: {
-  color: ColorLoader;
-  lado: number;
-  /** Color propio (dentro de un botón de color), en vez del de la paleta del loader */
-  propio?: string;
-}) {
-  const relleno = propio ?? COLORES[color].relleno;
-  const brillo = propio ? 'transparent' : COLORES[color].brillo;
+/** El destello de VeoVeo (Destello.tsx) con su halo; dentro de un botón, en su color y sin halo. */
+function Silueta({ color, lado, propio }: { color: ColorLoader; lado: number; propio?: string }) {
   return (
-    <Svg width={lado} height={lado} viewBox="0 0 100 100">
-      {/* Halo (el drop-shadow del original) detrás de la estrella */}
-      <Path d={ESTRELLA} fill="none" stroke={brillo} strokeWidth={22} strokeLinejoin="round" />
-      {/* Relleno + trazo del mismo color con unión redonda: esquinas suaves, que no pinchen */}
-      <Path d={ESTRELLA} fill={relleno} stroke={relleno} strokeWidth={9} strokeLinejoin="round" />
-    </Svg>
+    <Destello
+      lado={lado}
+      color={propio ?? COLORES[color].relleno}
+      brillo={propio ? undefined : COLORES[color].brillo}
+    />
   );
 }
 
