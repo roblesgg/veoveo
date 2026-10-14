@@ -23,10 +23,12 @@ import { SocialTab } from './SocialTab';
 import { ChatsTab } from './ChatsTab';
 import { useChats } from '../context/ChatsContext';
 import { Bienvenida, bienvenidaPendiente } from '../components/Bienvenida';
+import Animated, { FadeIn, useReducedMotion } from 'react-native-reanimated';
 
 const PESTANA = { descubrir: 0, biblioteca: 1, chats: 2, social: 3 } as const;
 
 export function MainScreen() {
+  const reducirMovimiento = useReducedMotion();
   const { user } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { fontFamily, loaded } = useMontserrat();
@@ -105,7 +107,13 @@ export function MainScreen() {
 
   return (
     <LinearGradient colors={[GradientTop, GradientBottom]} style={styles.flex}>
-      <View style={styles.flex}>
+      {/* Cambio de pestaña: la nueva entra con un fundido de 110 ms que empieza al tocar; la
+          anterior desaparece al momento (no se espera a nada). Con reducir movimiento, sin fundido. */}
+      <Animated.View
+        key={paginaActual}
+        entering={reducirMovimiento ? undefined : FadeIn.duration(110)}
+        style={styles.flex}
+      >
         {paginaActual === PESTANA.descubrir ? (
           <DiscoverTab
             fontFamily={ff}
@@ -151,7 +159,7 @@ export function MainScreen() {
             userFoto={userFoto}
           />
         ) : null}
-      </View>
+      </Animated.View>
 
       <LiquidBottomBar
         onTabChange={handleTabPress}
