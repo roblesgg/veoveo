@@ -4,9 +4,14 @@
  * has enviado tú y siguen pendientes (cancelar).
  */
 import { useCallback, useEffect, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeOut, LinearTransition, useReducedMotion } from 'react-native-reanimated';
+import {
+  DestelloRefresco,
+  RefrescoDestello,
+  useArrastreRefresco,
+} from '../components/common/RefrescoDestello';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconChevronLeft, IconFlag, IconUsers } from '@tabler/icons-react-native';
@@ -30,6 +35,7 @@ const recolocar = LinearTransition.springify().damping(22).stiffness(220);
 export function SolicitudesScreen() {
   // La fila que se va sale con un fundido y las demás suben (en vez de saltar)
   const reducir = useReducedMotion();
+  const { arrastre, alDesplazar } = useArrastreRefresco();
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
   const [recibidas, setRecibidas] = useState<SolicitudAmistad[]>([]);
@@ -86,16 +92,12 @@ export function SolicitudesScreen() {
 
       {error && <Text style={styles.error}>{error}</Text>}
 
-      <ScrollView
+      <DestelloRefresco refrescando={cargando} arrastre={arrastre} arriba={insets.top + 48} />
+      <Animated.ScrollView
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 40 }}
-        refreshControl={
-          <RefreshControl
-            refreshing={cargando}
-            onRefresh={cargar}
-            tintColor={COLORS.primary}
-            colors={[COLORS.primary]}
-          />
-        }
+        onScroll={alDesplazar}
+        scrollEventThrottle={16}
+        refreshControl={<RefrescoDestello refrescando={cargando} onRefrescar={cargar} />}
       >
         {vacio && (
           <View style={styles.vacio}>
@@ -188,7 +190,7 @@ export function SolicitudesScreen() {
             </Pulsable>
           </Animated.View>
         ))}
-      </ScrollView>
+      </Animated.ScrollView>
       <HojaDenuncia
         objeto={
           denunciado ? { tipo: 'usuario', contra: denunciado.deUid, ref: denunciado.id } : null

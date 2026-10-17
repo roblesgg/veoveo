@@ -14,7 +14,6 @@ import {
   FlatList,
   Image,
   Pressable,
-  RefreshControl,
   StyleSheet,
   Text,
   TextInput,
@@ -26,6 +25,11 @@ import {
 import { Image as ExpoImage } from 'expo-image';
 import DraggableFlatList, { ScaleDecorator } from 'react-native-draggable-flatlist';
 import Animated, { FadeInDown, FadeIn, FadeOut } from 'react-native-reanimated';
+import {
+  DestelloRefresco,
+  RefrescoDestello,
+  useArrastreRefresco,
+} from '../components/common/RefrescoDestello';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 
@@ -131,6 +135,7 @@ export function DiscoverTab({
   resetToken?: number;
 }) {
   const insets = useSafeAreaInsets();
+  const { arrastre, alDesplazar } = useArrastreRefresco();
   const { t } = useLanguage();
   const { useAuth: useAuthLocal } = require('../context/AuthContext');
   const { user } = useAuthLocal();
@@ -348,10 +353,12 @@ export function DiscoverTab({
             />
           ) : (
             /* MODO EXPLORACIÓN: Lista optimizada de carruseles con carga bajo demanda */
-            <FlatList
+            <Animated.FlatList
               ref={mainListRef}
               data={carruselesActivos}
-              keyExtractor={(item) => item}
+              keyExtractor={(item: string) => item}
+              onScroll={alDesplazar}
+              scrollEventThrottle={16}
               // Solo se montan (y piden datos) los carruseles visibles y el siguiente
               initialNumToRender={3}
               maxToRenderPerBatch={2}
@@ -374,10 +381,9 @@ export function DiscoverTab({
                 />
               )}
               refreshControl={
-                <RefreshControl
-                  refreshing={cargando}
-                  onRefresh={recargarTodos}
-                  tintColor="#fff"
+                <RefrescoDestello
+                  refrescando={cargando}
+                  onRefrescar={recargarTodos}
                   progressViewOffset={100}
                 />
               }
@@ -388,6 +394,8 @@ export function DiscoverTab({
               keyboardDismissMode="on-drag"
             />
           )}
+          {/* Nuestro loader al tirar hacia abajo (el del sistema va transparente) */}
+          <DestelloRefresco refrescando={cargando} arrastre={arrastre} arriba={insets.top + 90} />
         </View>
       </View>
 

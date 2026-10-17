@@ -4,7 +4,7 @@
  * de amigo) y las solicitudes pendientes. El muro de actividad de los amigos llega en D4.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FlatList, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { FlatList, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useMuro } from '../hooks/social/useMuro';
 import { MuroAmigos } from '../components/social/MuroAmigos';
 import { useFocusEffect } from '@react-navigation/native';
@@ -26,6 +26,12 @@ import { FUENTES } from '../theme/useMontserrat';
 import { Pulsable } from '../components/common/Pulsable';
 import { BotonPrincipal, Segmentos } from '../components/common/Botones';
 import { CampoBusqueda } from '../components/common/Campos';
+import Animated from 'react-native-reanimated';
+import {
+  DestelloRefresco,
+  RefrescoDestello,
+  useArrastreRefresco,
+} from '../components/common/RefrescoDestello';
 
 type Props = {
   fontFamily: string;
@@ -50,6 +56,7 @@ export function SocialTab({
 }: Props) {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
+  const { arrastre, alDesplazar } = useArrastreRefresco();
   const [seccion, setSeccion] = useState<'muro' | 'amigos' | 'buscar'>('muro');
   const [filtro, setFiltro] = useState('');
   const [miCodigo, setMiCodigo] = useState<string | null>(null);
@@ -144,45 +151,45 @@ export function SocialTab({
       />
 
       {seccion === 'muro' ? (
-        <ScrollView
-          contentContainerStyle={{ paddingBottom: 140 }}
-          refreshControl={
-            <RefreshControl
-              refreshing={refrescando}
-              onRefresh={() => void recargarMuro()}
-              tintColor={COLORS.primary}
-              colors={[COLORS.primary]}
+        <>
+          <DestelloRefresco refrescando={refrescando} arrastre={arrastre} arriba={8} />
+          <Animated.ScrollView
+            contentContainerStyle={{ paddingBottom: 140 }}
+            onScroll={alDesplazar}
+            scrollEventThrottle={16}
+            refreshControl={
+              <RefrescoDestello refrescando={refrescando} onRefrescar={() => void recargarMuro()} />
+            }
+          >
+            {/* Matches en curso: solo si hay alguno (nada de huecos vacíos) */}
+            {matches.length > 0 && (
+              <View style={styles.match}>
+                {matches.map((m) => (
+                  <Pulsable
+                    key={m.id}
+                    style={styles.matchEnCurso}
+                    onPress={() => onAbrirMatch(m.id)}
+                    accessibilityLabel="Seguir el Movie Match en curso"
+                  >
+                    <View style={styles.punto} />
+                    <Text style={styles.matchEnCursoTexto} numberOfLines={1}>
+                      Match en curso · {m.participants.length} personas · {m.coincidencias.length}/
+                      {m.objetivo}
+                    </Text>
+                    <Text style={styles.matchSeguir}>Seguir</Text>
+                  </Pulsable>
+                ))}
+              </View>
+            )}
+            <MuroAmigos
+              muro={muro}
+              categorias={categorias}
+              cargando={cargandoMuro}
+              perfiles={perfilesAmigos}
+              onPeli={onPeliClick}
             />
-          }
-        >
-          {/* Matches en curso: solo si hay alguno (nada de huecos vacíos) */}
-          {matches.length > 0 && (
-            <View style={styles.match}>
-              {matches.map((m) => (
-                <Pulsable
-                  key={m.id}
-                  style={styles.matchEnCurso}
-                  onPress={() => onAbrirMatch(m.id)}
-                  accessibilityLabel="Seguir el Movie Match en curso"
-                >
-                  <View style={styles.punto} />
-                  <Text style={styles.matchEnCursoTexto} numberOfLines={1}>
-                    Match en curso · {m.participants.length} personas · {m.coincidencias.length}/
-                    {m.objetivo}
-                  </Text>
-                  <Text style={styles.matchSeguir}>Seguir</Text>
-                </Pulsable>
-              ))}
-            </View>
-          )}
-          <MuroAmigos
-            muro={muro}
-            categorias={categorias}
-            cargando={cargandoMuro}
-            perfiles={perfilesAmigos}
-            onPeli={onPeliClick}
-          />
-        </ScrollView>
+          </Animated.ScrollView>
+        </>
       ) : seccion === 'amigos' ? (
         <FlatList
           data={amigosFiltrados}
