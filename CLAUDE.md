@@ -11,6 +11,9 @@
   - encuentres algo que contradiga el encargo.
 
   Las conversaciones con Álvaro siguen siendo en tu propio chat.
+
+  **Cómo encontrarle:** los nombres de sesión (`documents-xx`) los pone Claude Code y **cambian al reiniciar VS Code**. La agenda está en `C:\Users\roble\Documents\DripDev\SESIONES.md`. Nada más arrancar: ejecuta `ListAgents`, **actualiza tu fila** en ese archivo con tu nombre de hoy, y lee las demás para saber a quién escribir. Si el nombre que figura ya no existe, repite `ListAgents`, preséntate al candidato y corrige la tabla.
+
 - **Tú:** el agente que desarrolla VeoVeo. Haces lo que dice el encargo vigente. Si algo no está claro o choca con este documento, **para y pregunta**.
 
 Contexto general de la marca, el dominio y las normas de DripDev: `C:\Users\roble\Documents\DripDev\_marca\drip-garage-recursos\CONTEXTO-IA.md`. Identidad visual de VeoVeo: `…\_marca\drip-garage-recursos\manual-productos\veoveo.md`.
@@ -44,7 +47,7 @@ Expo SDK 54 · React Native 0.81 · React 19 · TypeScript · React Navigation 7
 - **Ramas:** `main` es lo que está publicado. Trabaja en `play/<tema>` y fusiona cuando esté probado.
 - **Commits:** en español, una línea que diga qué cambia. Identidad: `Alvaro DripDev <Alvaro@dripdev.dev>`.
 - **Antes de decir "hecho":** `npm run typecheck` y `npm run lint` en verde, y probado en el móvil con `android:test`.
-- **Git LFS:** el repositorio usa LFS para los `.apk`. Si `git push` falla con *"fork: Resource temporarily unavailable"* en el hook, no te lo saltes: pide a Álvaro que haga el push desde su terminal.
+- **Git LFS:** el repositorio usa LFS para los `.apk`. Si `git push` falla con _"fork: Resource temporarily unavailable"_ en el hook, no te lo saltes: pide a Álvaro que haga el push desde su terminal.
 - **Al cerrar un encargo:** rellena su "Informe de cierre" y actualiza el README (apartado "Camino a Google Play").
 
 ## Cómo hablar con Álvaro
