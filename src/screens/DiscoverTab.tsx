@@ -25,11 +25,7 @@ import {
 import { Image as ExpoImage } from 'expo-image';
 import DraggableFlatList, { ScaleDecorator } from 'react-native-draggable-flatlist';
 import Animated, { FadeInDown, FadeIn, FadeOut } from 'react-native-reanimated';
-import {
-  DestelloRefresco,
-  RefrescoDestello,
-  useArrastreRefresco,
-} from '../components/common/RefrescoDestello';
+import { TirarParaRefrescar, useArrastreRefresco } from '../components/common/RefrescoDestello';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 
@@ -135,7 +131,7 @@ export function DiscoverTab({
   resetToken?: number;
 }) {
   const insets = useSafeAreaInsets();
-  const { arrastre, alDesplazar } = useArrastreRefresco();
+  const { desplazamiento, alDesplazar } = useArrastreRefresco();
   const { t } = useLanguage();
   const { useAuth: useAuthLocal } = require('../context/AuthContext');
   const { user } = useAuthLocal();
@@ -354,49 +350,47 @@ export function DiscoverTab({
             />
           ) : (
             /* MODO EXPLORACIÓN: Lista optimizada de carruseles con carga bajo demanda */
-            <Animated.FlatList
-              ref={mainListRef}
-              data={carruselesActivos}
-              keyExtractor={(item: string) => item}
-              onScroll={alDesplazar}
-              scrollEventThrottle={16}
-              // Solo se montan (y piden datos) los carruseles visibles y el siguiente
-              initialNumToRender={3}
-              maxToRenderPerBatch={2}
-              windowSize={3}
-              // Qué carruseles llevan medio segundo en pantalla (para pedir plataformas solo de esos)
-              onViewableItemsChanged={alCambiarVisibles.current}
-              viewabilityConfig={VISIBILIDAD_CARRUSEL}
-              renderItem={({ item }) => (
-                <CarruselPeliculas
-                  id={item}
-                  enPantalla={carruselesEnPantalla.has(item)}
-                  onPeliculaClick={onPeliculaClick}
-                  misPlataformas={misPlataformas}
-                  fontFamily={fontFamily}
-                  modoEdicion={false}
-                  onEliminar={() => {}}
-                  drag={() => {}}
-                  isActive={false}
-                  libraryMap={libraryMap}
-                />
-              )}
-              refreshControl={
-                <RefrescoDestello
-                  refrescando={cargando}
-                  onRefrescar={recargarTodos}
-                  progressViewOffset={100}
-                />
-              }
-              contentContainerStyle={{
-                paddingTop: insets.top + (buscarAtiva ? 230 : 90),
-                paddingBottom: 140,
-              }}
-              keyboardDismissMode="on-drag"
-            />
+            <TirarParaRefrescar
+              refrescando={cargando}
+              onRefrescar={recargarTodos}
+              desplazamiento={desplazamiento}
+              arriba={insets.top + 90}
+            >
+              <Animated.FlatList
+                ref={mainListRef}
+                data={carruselesActivos}
+                keyExtractor={(item: string) => item}
+                onScroll={alDesplazar}
+                scrollEventThrottle={16}
+                // Solo se montan (y piden datos) los carruseles visibles y el siguiente
+                initialNumToRender={3}
+                maxToRenderPerBatch={2}
+                windowSize={3}
+                // Qué carruseles llevan medio segundo en pantalla (para pedir plataformas solo de esos)
+                onViewableItemsChanged={alCambiarVisibles.current}
+                viewabilityConfig={VISIBILIDAD_CARRUSEL}
+                renderItem={({ item }) => (
+                  <CarruselPeliculas
+                    id={item}
+                    enPantalla={carruselesEnPantalla.has(item)}
+                    onPeliculaClick={onPeliculaClick}
+                    misPlataformas={misPlataformas}
+                    fontFamily={fontFamily}
+                    modoEdicion={false}
+                    onEliminar={() => {}}
+                    drag={() => {}}
+                    isActive={false}
+                    libraryMap={libraryMap}
+                  />
+                )}
+                contentContainerStyle={{
+                  paddingTop: insets.top + (buscarAtiva ? 230 : 90),
+                  paddingBottom: 140,
+                }}
+                keyboardDismissMode="on-drag"
+              />
+            </TirarParaRefrescar>
           )}
-          {/* Nuestro loader al tirar hacia abajo (el del sistema va transparente) */}
-          <DestelloRefresco refrescando={cargando} arrastre={arrastre} arriba={insets.top + 90} />
         </View>
       </View>
 

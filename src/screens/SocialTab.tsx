@@ -27,11 +27,7 @@ import { Pulsable } from '../components/common/Pulsable';
 import { BotonPrincipal, Segmentos } from '../components/common/Botones';
 import { CampoBusqueda } from '../components/common/Campos';
 import Animated from 'react-native-reanimated';
-import {
-  DestelloRefresco,
-  RefrescoDestello,
-  useArrastreRefresco,
-} from '../components/common/RefrescoDestello';
+import { TirarParaRefrescar, useArrastreRefresco } from '../components/common/RefrescoDestello';
 
 type Props = {
   fontFamily: string;
@@ -56,7 +52,7 @@ export function SocialTab({
 }: Props) {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
-  const { arrastre, alDesplazar } = useArrastreRefresco();
+  const { desplazamiento, alDesplazar } = useArrastreRefresco();
   const [seccion, setSeccion] = useState<'muro' | 'amigos' | 'buscar'>('muro');
   const [filtro, setFiltro] = useState('');
   const [miCodigo, setMiCodigo] = useState<string | null>(null);
@@ -151,15 +147,15 @@ export function SocialTab({
       />
 
       {seccion === 'muro' ? (
-        <>
-          <DestelloRefresco refrescando={refrescando} arrastre={arrastre} arriba={8} />
+        <TirarParaRefrescar
+          refrescando={refrescando}
+          onRefrescar={() => void recargarMuro()}
+          desplazamiento={desplazamiento}
+        >
           <Animated.ScrollView
             contentContainerStyle={{ paddingBottom: 140 }}
             onScroll={alDesplazar}
             scrollEventThrottle={16}
-            refreshControl={
-              <RefrescoDestello refrescando={refrescando} onRefrescar={() => void recargarMuro()} />
-            }
           >
             {/* Matches en curso: solo si hay alguno (nada de huecos vacíos) */}
             {matches.length > 0 && (
@@ -189,7 +185,7 @@ export function SocialTab({
               onPeli={onPeliClick}
             />
           </Animated.ScrollView>
-        </>
+        </TirarParaRefrescar>
       ) : seccion === 'amigos' ? (
         <FlatList
           data={amigosFiltrados}

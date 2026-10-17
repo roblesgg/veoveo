@@ -7,11 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeOut, LinearTransition, useReducedMotion } from 'react-native-reanimated';
-import {
-  DestelloRefresco,
-  RefrescoDestello,
-  useArrastreRefresco,
-} from '../components/common/RefrescoDestello';
+import { TirarParaRefrescar, useArrastreRefresco } from '../components/common/RefrescoDestello';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconChevronLeft, IconFlag, IconUsers } from '@tabler/icons-react-native';
@@ -35,7 +31,7 @@ const recolocar = LinearTransition.springify().damping(22).stiffness(220);
 export function SolicitudesScreen() {
   // La fila que se va sale con un fundido y las demás suben (en vez de saltar)
   const reducir = useReducedMotion();
-  const { arrastre, alDesplazar } = useArrastreRefresco();
+  const { desplazamiento, alDesplazar } = useArrastreRefresco();
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
   const [recibidas, setRecibidas] = useState<SolicitudAmistad[]>([]);
@@ -92,105 +88,113 @@ export function SolicitudesScreen() {
 
       {error && <Text style={styles.error}>{error}</Text>}
 
-      <DestelloRefresco refrescando={cargando} arrastre={arrastre} arriba={insets.top + 48} />
-      <Animated.ScrollView
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 40 }}
-        onScroll={alDesplazar}
-        scrollEventThrottle={16}
-        refreshControl={<RefrescoDestello refrescando={cargando} onRefrescar={cargar} />}
+      <TirarParaRefrescar
+        refrescando={cargando}
+        onRefrescar={cargar}
+        desplazamiento={desplazamiento}
       >
-        {vacio && (
-          <View style={styles.vacio}>
-            <IconUsers size={56} color={COLORS.textMuted} strokeWidth={1.5} />
-            <Text style={styles.vacioTitulo}>Nada pendiente</Text>
-            <Text style={styles.vacioTexto}>
-              Aquí verás quién quiere ser tu amigo y las solicitudes que has enviado.
-            </Text>
-          </View>
-        )}
-
-        {recibidas.length > 0 && <Text style={styles.seccion}>Te han enviado</Text>}
-        {recibidas.map((s) => (
-          <Animated.View
-            key={s.id}
-            style={styles.fila}
-            exiting={FadeOut.duration(180)}
-            layout={reducir ? undefined : recolocar}
-          >
-            <Avatar uri={perfiles[s.deUid]?.fotoPerfil} nombre={s.deUsername} tamano={44} />
-            <Text style={styles.nombre} numberOfLines={1}>
-              {perfiles[s.deUid]?.username ?? s.deUsername}
-            </Text>
-            <Pulsable
-              style={[styles.boton, styles.botonSi, ocupado === s.id && styles.apagado]}
-              disabled={!!ocupado}
-              onPress={() =>
-                void accion(
-                  s.id,
-                  async () => {
-                    await aceptarSolicitud(s.id);
-                    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                  },
-                  'No hemos podido aceptar la solicitud.',
-                )
-              }
-            >
-              <Text style={styles.botonSiTexto}>Aceptar</Text>
-            </Pulsable>
-            <Pulsable
-              style={[styles.boton, ocupado === s.id && styles.apagado]}
-              disabled={!!ocupado}
-              onPress={() =>
-                void accion(
-                  s.id,
-                  () => rechazarSolicitud(s.id),
-                  'No hemos podido rechazar la solicitud.',
-                )
-              }
-            >
-              <Text style={styles.botonTexto}>Rechazar</Text>
-            </Pulsable>
-            <Pulsable
-              onPress={() => setDenunciado(s)}
-              hitSlop={8}
-              accessibilityLabel={`Denunciar a ${s.deUsername}`}
-            >
-              <IconFlag size={20} color={COLORS.textMuted} strokeWidth={2} />
-            </Pulsable>
-          </Animated.View>
-        ))}
-
-        {enviadas.length > 0 && <Text style={styles.seccion}>Has enviado</Text>}
-        {enviadas.map((uid) => (
-          <Animated.View
-            key={uid}
-            style={styles.fila}
-            exiting={FadeOut.duration(180)}
-            layout={reducir ? undefined : recolocar}
-          >
-            <Avatar uri={perfiles[uid]?.fotoPerfil} nombre={perfiles[uid]?.username} tamano={44} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.nombre} numberOfLines={1}>
-                {nombreDe(perfiles[uid], !perfiles[uid])}
+        <Animated.ScrollView
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 40 }}
+          onScroll={alDesplazar}
+          scrollEventThrottle={16}
+        >
+          {vacio && (
+            <View style={styles.vacio}>
+              <IconUsers size={56} color={COLORS.textMuted} strokeWidth={1.5} />
+              <Text style={styles.vacioTitulo}>Nada pendiente</Text>
+              <Text style={styles.vacioTexto}>
+                Aquí verás quién quiere ser tu amigo y las solicitudes que has enviado.
               </Text>
-              <Text style={styles.pendiente}>Pendiente</Text>
             </View>
-            <Pulsable
-              style={[styles.boton, ocupado === uid && styles.apagado]}
-              disabled={!!ocupado}
-              onPress={() =>
-                void accion(
-                  uid,
-                  () => cancelarSolicitud(uid),
-                  'No hemos podido cancelar la solicitud.',
-                )
-              }
+          )}
+
+          {recibidas.length > 0 && <Text style={styles.seccion}>Te han enviado</Text>}
+          {recibidas.map((s) => (
+            <Animated.View
+              key={s.id}
+              style={styles.fila}
+              exiting={FadeOut.duration(180)}
+              layout={reducir ? undefined : recolocar}
             >
-              <Text style={styles.botonTexto}>Cancelar</Text>
-            </Pulsable>
-          </Animated.View>
-        ))}
-      </Animated.ScrollView>
+              <Avatar uri={perfiles[s.deUid]?.fotoPerfil} nombre={s.deUsername} tamano={44} />
+              <Text style={styles.nombre} numberOfLines={1}>
+                {perfiles[s.deUid]?.username ?? s.deUsername}
+              </Text>
+              <Pulsable
+                style={[styles.boton, styles.botonSi, ocupado === s.id && styles.apagado]}
+                disabled={!!ocupado}
+                onPress={() =>
+                  void accion(
+                    s.id,
+                    async () => {
+                      await aceptarSolicitud(s.id);
+                      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                    },
+                    'No hemos podido aceptar la solicitud.',
+                  )
+                }
+              >
+                <Text style={styles.botonSiTexto}>Aceptar</Text>
+              </Pulsable>
+              <Pulsable
+                style={[styles.boton, ocupado === s.id && styles.apagado]}
+                disabled={!!ocupado}
+                onPress={() =>
+                  void accion(
+                    s.id,
+                    () => rechazarSolicitud(s.id),
+                    'No hemos podido rechazar la solicitud.',
+                  )
+                }
+              >
+                <Text style={styles.botonTexto}>Rechazar</Text>
+              </Pulsable>
+              <Pulsable
+                onPress={() => setDenunciado(s)}
+                hitSlop={8}
+                accessibilityLabel={`Denunciar a ${s.deUsername}`}
+              >
+                <IconFlag size={20} color={COLORS.textMuted} strokeWidth={2} />
+              </Pulsable>
+            </Animated.View>
+          ))}
+
+          {enviadas.length > 0 && <Text style={styles.seccion}>Has enviado</Text>}
+          {enviadas.map((uid) => (
+            <Animated.View
+              key={uid}
+              style={styles.fila}
+              exiting={FadeOut.duration(180)}
+              layout={reducir ? undefined : recolocar}
+            >
+              <Avatar
+                uri={perfiles[uid]?.fotoPerfil}
+                nombre={perfiles[uid]?.username}
+                tamano={44}
+              />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.nombre} numberOfLines={1}>
+                  {nombreDe(perfiles[uid], !perfiles[uid])}
+                </Text>
+                <Text style={styles.pendiente}>Pendiente</Text>
+              </View>
+              <Pulsable
+                style={[styles.boton, ocupado === uid && styles.apagado]}
+                disabled={!!ocupado}
+                onPress={() =>
+                  void accion(
+                    uid,
+                    () => cancelarSolicitud(uid),
+                    'No hemos podido cancelar la solicitud.',
+                  )
+                }
+              >
+                <Text style={styles.botonTexto}>Cancelar</Text>
+              </Pulsable>
+            </Animated.View>
+          ))}
+        </Animated.ScrollView>
+      </TirarParaRefrescar>
       <HojaDenuncia
         objeto={
           denunciado ? { tipo: 'usuario', contra: denunciado.deUid, ref: denunciado.id } : null
