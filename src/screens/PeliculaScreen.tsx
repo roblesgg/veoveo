@@ -243,12 +243,13 @@ export function PeliculaScreen() {
           style={[styles.fixedBackdrop, estiloFondo, volando && { opacity: 0 }]}
           pointerEvents="none"
         >
-          {/* Portada grande que cubre, en buena calidad. Se usa el CARTEL (vertical, hasta
-              2000×3000), no el fondo apaisado: estirar el fondo w1280 a una caja alta lo
-              ampliaba ×3 y se veía borroso. Dos versiones a prueba (Ajustes, solo pruebas):
-              «nitida» = cartel original cubriendo arriba; «desenfocada» = cartel pequeño
-              desenfocado cubriendo todo, con el cartel nítido de la tarjeta delante (pesa poco).
-              Carga progresiva: la w342 se pinta al momento y la grande entra con un fundido. */}
+          {/* Portada grande que cubre, en buena calidad: la FOTO DE FONDO de la peli (apaisada,
+              distinta del cartel). En tamaño `original` (TMDB solo ofrece w300, w780, w1280 y
+              original para fondos; w1280 estirado a una caja alta se veía borroso).
+              Si la peli no tiene foto de fondo, se usa el cartel.
+              Dos versiones a prueba (Ajustes, solo pruebas): «nitida» = la foto cubriendo arriba;
+              «desenfocada» = cartel pequeño desenfocado al fondo.
+              Carga progresiva: la w300 se pinta al momento y la grande entra con un fundido. */}
           {detalles.poster_path && portada === 'desenfocada' ? (
             <>
               <ExpoImage
@@ -265,21 +266,13 @@ export function PeliculaScreen() {
               />
             </>
           ) : (
-            <View
-              style={
-                detalles.poster_path
-                  ? { width: '100%', height: ALTO_PORTADA }
-                  : { width: '100%', aspectRatio: 16 / 9 }
-              }
-            >
+            <View style={{ width: '100%', height: ALTO_PORTADA }}>
               <ExpoImage
                 source={{
-                  uri: detalles.poster_path
-                    ? posterUrl(detalles.poster_path, 'original')!
-                    : posterUrl(detalles.backdrop_path, 'w1280')!,
+                  uri: posterUrl(detalles.backdrop_path || detalles.poster_path, 'original')!,
                 }}
                 placeholder={{
-                  uri: posterUrl(detalles.poster_path || detalles.backdrop_path, 'w342')!,
+                  uri: posterUrl(detalles.backdrop_path || detalles.poster_path, 'w300')!,
                 }}
                 placeholderContentFit="cover"
                 contentFit="cover"
