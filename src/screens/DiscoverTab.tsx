@@ -169,6 +169,7 @@ export function DiscoverTab({
     error: errorBusqueda,
     reintentar: reintentarBusqueda,
     sinResultados,
+    corregido,
     tipoBusqueda,
     setTipoBusqueda,
   } = useDiscoverSearch();
@@ -440,6 +441,14 @@ export function DiscoverTab({
                 paddingTop: insets.top + (buscarAtiva ? 230 : 95),
                 paddingBottom: 140,
               }}
+              // Cuando la búsqueda se arregla sola, se dice qué se buscó de verdad
+              ListHeaderComponent={
+                corregido ? (
+                  <Text style={[styles.avisoCorregido, { fontFamily }]}>
+                    Resultados de <Text style={styles.corregidoFuerte}>{corregido}</Text>
+                  </Text>
+                ) : null
+              }
               onScrollBeginDrag={() => Keyboard.dismiss()}
               renderItem={({ item }) =>
                 tipoBusqueda === 'movie' ? (
@@ -476,6 +485,13 @@ export function DiscoverTab({
 }
 
 const styles = StyleSheet.create({
+  avisoCorregido: {
+    color: 'rgba(148,163,184,0.9)',
+    fontSize: 13,
+    textAlign: 'center',
+    paddingVertical: 10,
+  },
+  corregidoFuerte: { color: '#F8FAFC', fontWeight: '700' },
   flex: { flex: 1, backgroundColor: '#020617' },
   webCenteringWrapper: {
     width: '100%',

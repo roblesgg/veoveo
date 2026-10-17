@@ -8,12 +8,15 @@
 import { useState, useEffect } from 'react';
 import { tmdbApi } from '../services/tmdbClient';
 import type { Movie } from '../types';
+import { corregir } from '../utils/busquedaLista';
+import { apuntarTitulos, vocabularioTitulos } from '../services/vocabularioTitulos';
 
 export function useDiscoverSearch() {
   const [textoBuscar, setTextoBuscar] = useState('');
   const [resultadosBusqueda, setResultadosBusqueda] = useState<any[]>([]);
   const [buscando, setBuscando] = useState(false);
   const [error, setError] = useState(false);
+  const [corregido, setCorregido] = useState<string | null>(null);
   const [buscado, setBuscado] = useState(''); // Texto de la última búsqueda terminada
   const [intento, setIntento] = useState(0); // Se incrementa para repetir la búsqueda
   const [tipoBusqueda, setTipoBusqueda] = useState<'movie' | 'person'>('movie');
@@ -33,10 +36,24 @@ export function useDiscoverSearch() {
     const timer = setTimeout(async () => {
       setBuscando(true);
       setError(false);
+      setCorregido(null);
       try {
         if (tipoBusqueda === 'movie') {
           // 🎬 BÚSQUEDA DE PELÍCULAS
-          const res = await tmdbApi.buscarPeliculas(textoBuscar, 'es-ES');
+          let res = await tmdbApi.buscarPeliculas(textoBuscar, 'es-ES');
+          // Si no hay nada, se corrigen las faltas con los títulos ya vistos y se reintenta:
+          // «forest gamp» → «forrest gump»
+          if (res.results.length === 0) {
+            const arreglado = corregir(textoBuscar, vocabularioTitulos());
+            if (arreglado) {
+              const otra = await tmdbApi.buscarPeliculas(arreglado, 'es-ES');
+              if (otra.results.length > 0) {
+                res = otra;
+                setCorregido(arreglado);
+              }
+            }
+          }
+          apuntarTitulos(res.results.map((m: Movie) => m.title));
 
           /** Enriquecimiento: Para cada resultado de búsqueda, consultamos
            * sus plataformas de streaming para mostrar los iconos de una vez.
@@ -58,8 +75,19 @@ export function useDiscoverSearch() {
           );
           setResultadosBusqueda(moviesWithProviders);
         } else {
-          // 👤 BÚSQUEDA DE ACTORES
-          const res = await tmdbApi.buscarActores(textoBuscar, 'es-ES');
+          // 👤 BÚSQUEDA DE ACTORES (también perdona faltas en el nombre)
+          let res = await tmdbApi.buscarActores(textoBuscar, 'es-ES');
+          if (res.results.length === 0) {
+            const arreglado = corregir(textoBuscar, vocabularioTitulos());
+            if (arreglado) {
+              const otra = await tmdbApi.buscarActores(arreglado, 'es-ES');
+              if (otra.results.length > 0) {
+                res = otra;
+                setCorregido(arreglado);
+              }
+            }
+          }
+          apuntarTitulos(res.results.map((p: { name?: string }) => p.name));
           setResultadosBusqueda(res.results);
         }
       } catch {
@@ -83,6 +111,8 @@ export function useDiscoverSearch() {
     buscando,
     error,
     reintentar,
+    /** Si la búsqueda se arregló sola: el texto que se buscó de verdad */
+    corregido,
     sinResultados:
       buscado === textoBuscar && textoBuscar.length >= 3 && resultadosBusqueda.length === 0,
     tipoBusqueda,

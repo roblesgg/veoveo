@@ -27,6 +27,8 @@ import { useBiblioteca } from '../context/BibliotecaContext';
 import { EsqueletoRejillaPosters } from '../components/common/Esqueleto';
 import { IconoPalomitas } from '../components/iconos/IconosPropios';
 import { fechaDeVista } from '../services/repositorioPeliculasUsuario';
+import { distancia, normalizar } from '../utils/busquedaLista';
+import { apuntarTitulos } from '../services/vocabularioTitulos';
 import { HojaCuandoVista } from '../components/movie/HojaCuandoVista';
 import * as Haptics from 'expo-haptics';
 import { useQueries } from '@tanstack/react-query';
@@ -170,8 +172,16 @@ export function BibliotecaTab({
 
     // FILTRO 2: Búsqueda por Texto
     if (textoBuscar.trim()) {
-      const q = textoBuscar.toLowerCase().trim();
-      raw = raw.filter((p) => p.titulo.toLowerCase().includes(q));
+      // Perdona faltas y tildes: «el padrino» encuentra «El Padrino»; «gladiador» y «gladiator»
+      // se parecen lo bastante
+      const q = normalizar(textoBuscar);
+      const coincide = (titulo: string) => {
+        const t = normalizar(titulo);
+        if (t.includes(q)) return true;
+        // Por palabras: alguna del título se parece a lo escrito
+        return t.split(' ').some((palabra) => distancia(palabra, q, q.length <= 4 ? 1 : 2) <= 2);
+      };
+      raw = raw.filter((p) => coincide(p.titulo));
     }
 
     // ORDENACIÓN

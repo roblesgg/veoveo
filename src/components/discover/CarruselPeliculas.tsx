@@ -6,7 +6,7 @@
  * y estados de biblioteca (visto/por ver) integrados en los carteles.
  */
 
-import React, { memo, useRef, useState } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View, type ViewToken } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInRight } from 'react-native-reanimated';
@@ -18,6 +18,7 @@ import { useCarrusel, useRecomendaciones } from '../../hooks/useDescubrir';
 import { obtenerCarrusel } from '../../constants/carruseles';
 import { EsqueletoFilaPosters } from '../common/Esqueleto';
 import { Cargando } from '../common/Cargando';
+import { apuntarTitulos } from '../../services/vocabularioTitulos';
 
 /** Un póster está "quieto" si lleva medio segundo con el 60 % a la vista. */
 const VISIBILIDAD_POSTER = { itemVisiblePercentThreshold: 60, minimumViewTime: 500 };
@@ -68,6 +69,10 @@ export const CarruselPeliculas = memo(
     const peliculas: (Movie & { motivo?: string })[] = esParaTi
       ? (recomendaciones.data ?? [])
       : catalogo.peliculas;
+    // Los títulos que se ven alimentan el vocabulario del buscador (perdona faltas)
+    useEffect(() => {
+      apuntarTitulos(peliculas.map((p) => p.title));
+    }, [peliculas]);
     const cargando = esParaTi ? recomendaciones.isLoading : catalogo.isLoading;
     const error = esParaTi ? recomendaciones.isError : catalogo.isError;
     if (peliculas.length > 0) marcarHito('primera fila con datos');
