@@ -4,7 +4,7 @@
  * La fecha exacta se cambia manteniendo pulsada la peli en la Biblioteca.
  */
 import { StyleSheet, Text, View } from 'react-native';
-import { Segmentos } from '../common/Botones';
+import { SegmentosVertical } from '../common/Botones';
 
 const DIA = 24 * 60 * 60 * 1000;
 
@@ -40,7 +40,12 @@ export function SelectorFechaVista({ valor, onCambio, fontFamily }: Props) {
   return (
     <View style={styles.contenedor}>
       <Text style={[styles.etiqueta, { fontFamily }]}>¿Cuándo la viste?</Text>
-      <Segmentos opciones={OPCIONES} valor={valor} onCambio={onCambio} estilo={styles.segmentos} />
+      <SegmentosVertical
+        opciones={OPCIONES}
+        valor={valor}
+        onCambio={onCambio}
+        estilo={styles.segmentos}
+      />
     </View>
   );
 }
