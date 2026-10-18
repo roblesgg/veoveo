@@ -17,7 +17,8 @@ import { marcarHito } from '../../utils/medicionArranque';
 import { useCarrusel, useRecomendaciones } from '../../hooks/useDescubrir';
 import { obtenerCarrusel } from '../../constants/carruseles';
 import { EsqueletoFilaPosters } from '../common/Esqueleto';
-import { Cargando } from '../common/Cargando';
+import { Cargando, COLOR_DESTELLO } from '../common/Cargando';
+import { Destello } from '../common/Destello';
 import { apuntarTitulos } from '../../services/vocabularioTitulos';
 
 /** Un póster está "quieto" si lleva medio segundo con el 60 % a la vista. */
@@ -117,16 +118,16 @@ export const CarruselPeliculas = memo(
           <EsqueletoFilaPosters />
         ) : !cargando && peliculas.length === 0 ? (
           <Pressable onPress={error ? reintentar : undefined} style={styles.avisoCard}>
-            <Ionicons
-              name={error ? 'cloud-offline-outline' : 'sparkles-outline'}
-              size={22}
-              color={COLORS.primary}
-            />
+            {error ? (
+              <Ionicons name="cloud-offline-outline" size={22} color={COLORS.primary} />
+            ) : (
+              <Destello lado={26} color={COLOR_DESTELLO} />
+            )}
             <Text style={[styles.avisoTexto, { fontFamily }]}>
               {error
                 ? 'No hemos podido cargar las pelis. Toca para reintentar.'
                 : esParaTi
-                  ? 'Valora con 4 o 5 estrellas las pelis que hayas visto y aquí te recomendaremos otras.'
+                  ? 'Aún no hay recomendaciones para ti. Valora con 4 o 5 destellos las pelis que ya has visto y aquí aparecerán otras que te gusten.'
                   : 'No hay pelis en esta lista ahora mismo.'}
             </Text>
           </Pressable>
@@ -191,7 +192,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: GLASS.border,
   },
-  avisoTexto: { flex: 1, color: COLORS.textMuted, fontSize: 14, lineHeight: 20 },
+  avisoTexto: { flex: 1, color: COLORS.text, fontSize: 15, lineHeight: 22 },
   footerCard: {
     width: 100,
     height: 150,

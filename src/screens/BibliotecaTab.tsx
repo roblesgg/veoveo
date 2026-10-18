@@ -299,17 +299,29 @@ export function BibliotecaTab({
         <View style={[styles.headerRow, { top: Math.max(insets.top, 12) + 12 }]}>
           <Text style={[styles.titulo, { fontFamily, flex: 1 }]}>Biblioteca</Text>
           <View style={styles.actionsTopRow}>
-            {/* Filtro de TV: Abre el modal de plataformas */}
+            {/* Filtro por plataforma (Netflix, Prime…): se ve qué es con una etiqueta */}
             <Pulsable
               onPress={() => setShowPlatModal(true)}
-              style={[styles.iconBtn, platsSeleccionadas.length > 0 && styles.iconBtnOn]}
+              style={[styles.filtroPlat, platsSeleccionadas.length > 0 && styles.filtroPlatOn]}
               hitSlop={8}
+              accessibilityLabel="Filtrar por plataforma de streaming"
             >
               <Ionicons
-                name="tv-outline"
-                size={26}
+                name="options-outline"
+                size={20}
                 color={platsSeleccionadas.length > 0 ? '#000' : '#fff'}
               />
+              <Text
+                style={[
+                  styles.filtroPlatTexto,
+                  { fontFamily },
+                  platsSeleccionadas.length > 0 && { color: '#000' },
+                ]}
+              >
+                {platsSeleccionadas.length > 0
+                  ? `Plataformas · ${platsSeleccionadas.length}`
+                  : 'Plataformas'}
+              </Text>
             </Pulsable>
             {/* Ordenación: Abre menú contextual */}
             <Pulsable onPress={() => setShowSortMenu(true)} style={styles.iconBtn} hitSlop={8}>
@@ -528,6 +540,19 @@ const styles = StyleSheet.create({
   actionsTopRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   iconBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   iconBtnOn: { backgroundColor: COLORS.primary, borderRadius: 12 },
+  filtroPlat: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    height: 36,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.22)',
+  },
+  filtroPlatOn: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  filtroPlatTexto: { color: '#fff', fontSize: 13, fontWeight: '600' },
   tabsContainer: {
     position: 'absolute',
     left: 0,
