@@ -111,11 +111,8 @@ export function TirarParaRefrescar({
     transform: [{ translateY: tirado.value - ALTO_LOADER + ESTRELLA / 2 }],
   }));
 
-  // El contenido acompaña al dedo mientras se tira
-  const estiloContenido = useAnimatedStyle(() => ({
-    transform: [{ translateY: tirado.value }],
-  }));
-
+  // El contenido NO se mueve: arriba del todo no hay nada más que enseñar, así que solo baja
+  // la estrella (y luego el loader)
   return (
     <View style={styles.flex}>
       <View style={[styles.zona, { top: arriba }]} pointerEvents="none">
@@ -127,7 +124,7 @@ export function TirarParaRefrescar({
         </Animated.View>
       </View>
       <GestureDetector gesture={gesto}>
-        <Animated.View style={[styles.flex, estiloContenido]}>{children}</Animated.View>
+        <View style={styles.flex}>{children}</View>
       </GestureDetector>
     </View>
   );

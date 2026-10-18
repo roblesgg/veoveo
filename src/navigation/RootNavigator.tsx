@@ -73,7 +73,8 @@ export function RootNavigator() {
   const detalle = { animation: reducir ? ('fade' as const) : ('default' as const) };
   // La ficha es transparente y se anima ella misma: el cartel crece desde la lista hasta su
   // portada mientras el fondo se funde sobre lo de detrás (zoom). Sin transición del sistema.
-  const ficha = { presentation: 'transparentModal' as const, animation: 'none' as const };
+  // La ficha vuelve a la transición del sistema (el zoom se retiró el 18-10)
+  const ficha = detalle;
   const hoja = { animation: reducir ? ('fade' as const) : ('slide_from_bottom' as const) };
 
   return (

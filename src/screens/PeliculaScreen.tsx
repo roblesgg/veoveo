@@ -48,8 +48,7 @@ import { MovieProviders } from '../components/movie/MovieProviders';
 import { CollectionSaga } from '../components/movie/CollectionSaga';
 import { MovieRatingModal } from '../components/movie/MovieRatingModal';
 import { MovieSocialProof } from '../components/movie/MovieSocialProof';
-import { ZoomCartel } from '../components/movie/ZoomCartel';
-import { ocultarOrigen, origenDe, type Rect } from '../utils/zoomCartel';
+import { ocultarOrigen } from '../utils/zoomCartel';
 import Animated, {
   Easing,
   Extrapolation,
@@ -93,69 +92,23 @@ export function PeliculaScreen() {
   } = useMovieData(movieId);
 
   const detallesListos = Boolean(detalles);
-  // ── Entrada y salida de la ficha (pantalla transparente) con zoom desde el cartel ──
-  // Un solo progreso: 0 = se ve la lista de detrás, 1 = la ficha entera. Con zoom, la copia del
-  // cartel crece desde su sitio hasta la portada grande mientras el fondo se funde y el texto
-  // entra detrás; al volver, al revés. Sin zoom (otro origen, portada desenfocada o reducir
-  // movimiento), un fundido corto.
+  // ── Entrada de la ficha ──
+  // El zoom desde el cartel se retiró (Álvaro, 18-10): la copia que volaba era el cartel y la
+  // portada es la foto apaisada, así que nunca encajaban. Ahora: transición del sistema y un
+  // fundido corto del contenido cuando ya hay datos.
   const reducirMovimiento = useReducedMotion();
-  const { width: anchoPantalla } = useWindowDimensions();
-  const origenZoom = React.useMemo(
-    () => (reducirMovimiento ? null : origenDe(movieId)),
-    [movieId, reducirMovimiento],
-  );
-  const destinoZoom: Rect = { x: 0, y: 0, width: anchoPantalla, height: ALTO_PORTADA };
   const aparicion = useSharedValue(0);
   const desplazado = React.useRef(0);
-  const yaSalimos = React.useRef(false);
   const entrada = React.useRef(false);
-  // La copia del cartel está a la vista (la portada de verdad espera debajo, oculta)
-  const [volando, setVolando] = useState(false);
 
-  const terminarIda = useCallback(() => setVolando(false), []);
-  // La ficha arranca cuando ya tiene datos que enseñar
   React.useEffect(() => {
     if (!detallesListos || entrada.current) return;
     entrada.current = true;
-    const conZoom = Boolean(origenZoom) && portada === 'nitida';
-    if (conZoom) {
-      ocultarOrigen(true);
-      setVolando(true);
-      aparicion.value = withTiming(1, { duration: 300, easing: CURVA_ZOOM }, (fin) => {
-        if (fin) runOnJS(terminarIda)();
-      });
-    } else {
-      aparicion.value = withTiming(1, { duration: reducirMovimiento ? 120 : 200 });
-    }
+    aparicion.value = withTiming(1, { duration: reducirMovimiento ? 120 : 200 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detallesListos]);
 
-  // Al volver (botón o gesto atrás): la animación al revés y luego se sale.
-  // Con zoom solo si la portada aún se ve (no has bajado); si no, fundido.
-  React.useEffect(
-    () =>
-      navigation.addListener('beforeRemove', (e: any) => {
-        if (yaSalimos.current) return;
-        e.preventDefault();
-        const accion = e.data.action;
-        const salir = () => {
-          yaSalimos.current = true;
-          ocultarOrigen(false);
-          navigation.dispatch(accion);
-        };
-        const conZoom = Boolean(origenZoom) && portada === 'nitida' && desplazado.current < 40;
-        if (conZoom) setVolando(true);
-        aparicion.value = withTiming(
-          0,
-          { duration: conZoom ? 260 : 160, easing: CURVA_ZOOM },
-          (fin) => {
-            if (fin) runOnJS(salir)();
-          },
-        );
-      }),
-    [navigation, origenZoom, portada, aparicion],
-  );
-  // Si la ficha se cierra por otro camino, el cartel original vuelve a verse
+  // El cartel de la lista vuelve a verse al salir (por si quedó oculto de una versión anterior)
   React.useEffect(() => () => ocultarOrigen(false), []);
 
   const estiloFondo = useAnimatedStyle(() => ({ opacity: aparicion.value }));
@@ -239,10 +192,7 @@ export function PeliculaScreen() {
       />
       {/* 🖼️ FONDO: Poster desenfocado con gradiente envolvente */}
       {(detalles.backdrop_path || detalles.poster_path) && (
-        <Animated.View
-          style={[styles.fixedBackdrop, estiloFondo, volando && { opacity: 0 }]}
-          pointerEvents="none"
-        >
+        <Animated.View style={[styles.fixedBackdrop, estiloFondo]} pointerEvents="none">
           {/* Portada grande que cubre, en buena calidad: la FOTO DE FONDO de la peli (apaisada,
               distinta del cartel). En tamaño `original` (TMDB solo ofrece w300, w780, w1280 y
               original para fondos; w1280 estirado a una caja alta se veía borroso).
@@ -271,8 +221,10 @@ export function PeliculaScreen() {
                 source={{
                   uri: posterUrl(detalles.backdrop_path || detalles.poster_path, 'original')!,
                 }}
+                // La mediana se ve enseguida y ya es nítida; la grande entra encima al llegar.
+                // (Con solo la grande, 1,7 MB, se quedaba el degradado a la vista.)
                 placeholder={{
-                  uri: posterUrl(detalles.backdrop_path || detalles.poster_path, 'w300')!,
+                  uri: posterUrl(detalles.backdrop_path || detalles.poster_path, 'w780')!,
                 }}
                 placeholderContentFit="cover"
                 contentFit="cover"
@@ -421,16 +373,6 @@ export function PeliculaScreen() {
           void onMarcarVista(v, fecha);
         }}
       />
-
-      {/* Copia del cartel volando entre la lista y la cabecera (ida y vuelta) */}
-      {origenZoom && volando ? (
-        <ZoomCartel
-          origen={origenZoom.rect}
-          destino={destinoZoom}
-          poster={origenZoom.poster}
-          progreso={aparicion}
-        />
-      ) : null}
     </View>
   );
 }
