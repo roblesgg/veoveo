@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { cargarPortada, guardarPortada, type Portada } from '../../storage/pruebasDiseno';
+import { olvidarBienvenida } from '../Bienvenida';
 import { LoaderCaida, type ColorLoader } from './LoaderCaida';
 import { COLORS } from '../../theme/colors';
 import { FUENTES } from '../../theme/useMontserrat';
@@ -17,6 +18,7 @@ const OPCIONES: { color: ColorLoader; nombre: string }[] = [
 
 export function MuestraLoaders() {
   const [portada, setPortada] = useState<Portada>('nitida');
+  const [bienvenidaLista, setBienvenidaLista] = useState(false);
   useEffect(() => {
     void cargarPortada().then(setPortada);
   }, []);
@@ -46,6 +48,20 @@ export function MuestraLoaders() {
         ))}
       </View>
       <Text style={styles.nombre}>Elige una y abre cualquier peli para verla.</Text>
+      <Pressable
+        onPress={() => {
+          void olvidarBienvenida();
+          setBienvenidaLista(true);
+        }}
+        style={[styles.botonPortada, { marginHorizontal: 0 }]}
+        accessibilityRole="button"
+      >
+        <Text style={styles.nombre}>
+          {bienvenidaLista
+            ? 'Listo: cierra la app y vuelve a abrirla'
+            : 'Ver otra vez la bienvenida'}
+        </Text>
+      </Pressable>
       <Text style={styles.titulo}>Elige el color del loader (solo pruebas)</Text>
       <View style={styles.rejilla}>
         {OPCIONES.map((o, i) => (

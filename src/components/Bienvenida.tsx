@@ -14,6 +14,11 @@ import { FUENTES } from '../theme/useMontserrat';
 
 export const CLAVE_BIENVENIDA = 'veoveo_bienvenida_3_vista';
 
+/** Solo para el APK de pruebas: volver a ver la bienvenida al reabrir la app. */
+export async function olvidarBienvenida(): Promise<void> {
+  await AsyncStorage.removeItem(CLAVE_BIENVENIDA).catch(() => undefined);
+}
+
 export async function bienvenidaPendiente(): Promise<boolean> {
   try {
     return (await AsyncStorage.getItem(CLAVE_BIENVENIDA)) !== '1';
@@ -62,9 +67,13 @@ export function Bienvenida({ onTerminar }: { onTerminar: () => void }) {
     <View
       style={[styles.fondo, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 24 }]}
     >
-      <Pressable onPress={terminar} style={styles.saltar} hitSlop={12} accessibilityRole="button">
-        <Text style={styles.saltarTexto}>Saltar</Text>
-      </Pressable>
+      <View style={styles.cabecera}>
+        {/* La marca, como en el inicio de sesión: es lo primero que se ve de la app */}
+        <Text style={styles.marca}>VeoVeo</Text>
+        <Pressable onPress={terminar} style={styles.saltar} hitSlop={12} accessibilityRole="button">
+          <Text style={styles.saltarTexto}>Saltar</Text>
+        </Pressable>
+      </View>
       <ScrollView
         ref={scroll}
         horizontal
@@ -96,7 +105,14 @@ export function Bienvenida({ onTerminar }: { onTerminar: () => void }) {
 
 const styles = StyleSheet.create({
   fondo: { ...StyleSheet.absoluteFillObject, zIndex: 900, backgroundColor: COLORS.background },
-  saltar: { alignSelf: 'flex-end', paddingHorizontal: 20, paddingVertical: 8 },
+  cabecera: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingLeft: 24,
+  },
+  marca: { color: COLORS.text, fontSize: 28, fontFamily: FUENTES.portada },
+  saltar: { paddingHorizontal: 20, paddingVertical: 8 },
   saltarTexto: { color: COLORS.textMuted, fontSize: 15, fontFamily: FUENTES.seminegrita },
   pantalla: {
     flex: 1,
