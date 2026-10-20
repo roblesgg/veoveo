@@ -1,0 +1,20 @@
+// Init script de Gradle: firma el release con la upload key (rutas y claves por variables de entorno).
+allprojects {
+    afterEvaluate { p ->
+        if (p.plugins.hasPlugin('com.android.application') && System.getenv('VEOVEO_KS')) {
+            p.android {
+                signingConfigs {
+                    upload {
+                        storeFile p.file(System.getenv('VEOVEO_KS'))
+                        storePassword System.getenv('VEOVEO_KS_PASS')
+                        keyAlias System.getenv('VEOVEO_KS_ALIAS')
+                        keyPassword System.getenv('VEOVEO_KEY_PASS')
+                    }
+                }
+                buildTypes {
+                    release { signingConfig signingConfigs.upload }
+                }
+            }
+        }
+    }
+}
