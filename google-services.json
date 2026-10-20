@@ -1,0 +1,113 @@
+{
+  "project_info": {
+    "project_number": "646471274766",
+    "project_id": "veoveo-48667",
+    "storage_bucket": "veoveo-48667.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:646471274766:android:ee8ffa111133bff431875f",
+        "android_client_info": {
+          "package_name": "com.example.veoveo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "646471274766-fo9via1cvtnn2hef1ppu3hbsdmclo43m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_aIn9L-uzjnh0JaB8NWTyR3jpfaZNTVs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "646471274766-fo9via1cvtnn2hef1ppu3hbsdmclo43m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:646471274766:android:ec0262e082b7e14a31875f",
+        "android_client_info": {
+          "package_name": "com.roblesgg.veoveo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "646471274766-f37rkm8u6hk2jh3ri34g4o81032gr22n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.roblesgg.veoveo",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "646471274766-fo9via1cvtnn2hef1ppu3hbsdmclo43m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_aIn9L-uzjnh0JaB8NWTyR3jpfaZNTVs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "646471274766-fo9via1cvtnn2hef1ppu3hbsdmclo43m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:646471274766:android:ac2a9434b995d52631875f",
+        "android_client_info": {
+          "package_name": "com.roblesgg.veoveo.test"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "646471274766-9q2slihm5nlo1f8456d2r1rtn6irc039.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.roblesgg.veoveo.test",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "646471274766-fo9via1cvtnn2hef1ppu3hbsdmclo43m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_aIn9L-uzjnh0JaB8NWTyR3jpfaZNTVs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "646471274766-fo9via1cvtnn2hef1ppu3hbsdmclo43m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
