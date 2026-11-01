@@ -69,7 +69,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center',
-    paddingBottom: 24,
+    // Por encima de la barra inferior (bottom 40 + 58 de alto): no debe tapar las pestañas.
+    paddingBottom: 114,
     zIndex: 9999,
     pointerEvents: 'box-none' as any,
   },

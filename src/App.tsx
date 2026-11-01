@@ -23,6 +23,7 @@ import { LanguageProvider } from './context/LanguageContext';
 import { RootNavigator } from './navigation/RootNavigator';
 import { abrirEnlaceAviso } from './utils/enlaces';
 import { COLORS } from './theme/colors';
+import { fuenteBaseWeb } from './theme/fuenteWeb';
 import { getFirestoreDb } from './services/firebase';
 import { observarConfiguracionApp } from './services/repositorioConfiguracion';
 import { guardarPushToken } from './services/repositorioUsuarios';
@@ -214,6 +215,7 @@ export default function App() {
            src: url('https://cdn.jsdelivr.net/npm/@expo/vector-icons@15.0.3/build/vendor/react-native-vector-icons/Fonts/MaterialIcons.ttf') format('truetype');
            font-display: block;
          }
+         ${fuenteBaseWeb()}
          [data-contents="true"], .rn-view, .rn-text {
            font-family: 'Montserrat', sans-serif;
          }
