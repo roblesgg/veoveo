@@ -21,6 +21,7 @@ import { Cargando } from '../components/common/Cargando';
 import { BotonPrincipal } from '../components/common/Botones';
 import { CampoTexto } from '../components/common/Campos';
 import { Pulsable } from '../components/common/Pulsable';
+import { mensajeErrorAuth } from '../utils/mensajesAuth';
 
 export function RegisterScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -104,7 +105,7 @@ export function RegisterScreen() {
               // El método register también crea el perfil inicial en Firestore
               await register(email, password);
             } catch (e) {
-              setErrorMessage(e instanceof Error ? e.message : 'Error al crear cuenta');
+              setErrorMessage(mensajeErrorAuth(e, 'correo') ?? 'Error al crear cuenta');
             } finally {
               setLoading(false);
             }

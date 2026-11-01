@@ -7,6 +7,8 @@ const MENSAJES: Record<string, string> = {
   'auth/user-not-found': 'El correo o la contraseña no son correctos.',
   'auth/invalid-email': 'Ese correo no parece válido. Revísalo.',
   'auth/missing-password': 'Escribe tu contraseña.',
+  'auth/email-already-in-use': 'Ya hay una cuenta con ese correo. Prueba a iniciar sesión.',
+  'auth/weak-password': 'La contraseña es demasiado débil. Usa al menos 6 caracteres.',
   'auth/too-many-requests': 'Demasiados intentos. Espera unos minutos y vuelve a probar.',
   'auth/network-request-failed': 'No hay conexión. Revisa tu internet y vuelve a probar.',
   NETWORK_ERROR: 'No hay conexión. Revisa tu internet y vuelve a probar.',

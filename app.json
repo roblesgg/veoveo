@@ -24,7 +24,7 @@
         "backgroundImage": "./assets/adaptive-icon-fondo.png"
       },
       "predictiveBackGestureEnabled": false,
-      "versionCode": 44,
+      "versionCode": 45,
       "blockedPermissions": [
         "android.permission.SYSTEM_ALERT_WINDOW",
         "android.permission.READ_EXTERNAL_STORAGE",

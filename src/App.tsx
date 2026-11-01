@@ -134,7 +134,8 @@ function VersionShield() {
         minVersionName && compareVersions(currentVersion, String(minVersionName).trim()) === -1;
       setNeedsUpdate(Boolean(updateNeeded));
 
-      if (nextDownloadUrl && isTest) setDownloadUrl(String(nextDownloadUrl).trim());
+      // Adónde manda el aviso lo decide configuracion/app: la web de descarga para el APK, Play cuando esté.
+      if (nextDownloadUrl) setDownloadUrl(String(nextDownloadUrl).trim());
 
       if (updateNeeded && lastNotifiedVersion.current !== String(minVersionName).trim()) {
         lastNotifiedVersion.current = String(minVersionName).trim();
@@ -143,7 +144,7 @@ function VersionShield() {
             title: 'Nueva actualización disponible',
             body: `VeoVeo ${String(minVersionName).trim()} ya está lista para descargar.`,
             sound: 'default',
-            data: { url: (isTest && nextDownloadUrl) || downloadUrl },
+            data: { url: nextDownloadUrl || downloadUrl },
           },
           trigger: null,
         });
