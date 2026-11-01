@@ -1,440 +1,416 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VeoVeo | Cine sin dramas</title>
-    <meta
-      name="description"
-      content="La app definitiva para descubrir películas y series. Haz match con tus amigos y decide qué ver esta noche."
-    />
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&display=swap"
-      rel="stylesheet"
-    />
-
-    <style>
-      :root {
-        --primary: #0ea5e9;
-        --secondary: #6366f1;
-        --bg: #020617;
-        --surface: rgba(255, 255, 255, 0.04);
-        --border: rgba(255, 255, 255, 0.08);
-        --text: #f8fafc;
-        --accent-gradient: linear-gradient(135deg, #0ea5e9, #6366f1);
-      }
-
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: 'Outfit', sans-serif;
-        background-color: var(--bg);
-        color: var(--text);
-        line-height: 1.6;
-        overflow-x: hidden;
-      }
-
-      /* Animated Background Blobs */
-      .blob-container {
-        position: fixed;
-        width: 100vw;
-        height: 100vh;
-        z-index: -1;
-        overflow: hidden;
-        filter: blur(80px);
-      }
-
-      .blob {
-        position: absolute;
-        width: 500px;
-        height: 500px;
-        border-radius: 50%;
-        opacity: 0.15;
-        animation: float 20s infinite alternate;
-      }
-
-      .blob-1 {
-        background: var(--primary);
-        top: -10%;
-        left: -10%;
-      }
-
-      .blob-2 {
-        background: var(--secondary);
-        bottom: -10%;
-        right: -10%;
-        animation-delay: -5s;
-      }
-
-      @keyframes float {
-        0% { transform: translate(0, 0) scale(1); }
-        100% { transform: translate(100px, 50px) scale(1.2); }
-      }
-
-      .container {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 0 24px;
-      }
-
-      /* Navbar */
-      .header-container {
-        position: relative;
-        z-index: 1000;
-        width: 100%;
-        height: 120px;
-        transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
-      }
-
-      nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 40px 0;
-        width: 100%;
-        max-width: 1100px;
-        margin: 0 auto;
-        transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
-      }
-
-      .logo {
-        font-size: 2rem;
-        font-weight: 900;
-        letter-spacing: -1px;
-        background: var(--accent-gradient);
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        transition: all 0.6s cubic-bezier(0.2, 0, 0, 1);
-      }
-
-      /* Sticky State */
-      .header-container.sticky {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 70px;
-        width: 100%;
-        background: rgba(2, 6, 23, 0.7);
-        backdrop-filter: blur(20px);
-        border-bottom: 1px solid var(--border);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      }
-
-      .header-container.sticky nav {
-        padding: 15px 24px;
-        justify-content: center;
-      }
-
-      .header-container.sticky .logo {
-        font-size: 1.4rem;
-        letter-spacing: 2px;
-        transform: translateY(0);
-      }
-
-      /* Hero Section */
-      .hero {
-        padding: 100px 0;
-        text-align: center;
-        min-height: 80vh;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-      }
-
-      h1 {
-        font-size: clamp(3.5rem, 10vw, 6rem);
-        font-weight: 900;
-        line-height: 0.9;
-        margin-bottom: 24px;
-        letter-spacing: -3px;
-        background: linear-gradient(to bottom, #fff, rgba(255,255,255,0.6));
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-
-      .hero p {
-        font-size: 1.25rem;
-        color: rgba(255, 255, 255, 0.5);
-        max-width: 600px;
-        margin-bottom: 48px;
-        animation: fadeIn 1s ease-out;
-      }
-
-      .download-btn {
-        position: relative;
-        display: inline-flex;
-        padding: 20px 48px;
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: white;
-        text-decoration: none;
-        background: var(--accent-gradient);
-        border-radius: 100px;
-        transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-        box-shadow: 0 20px 40px -10px rgba(14, 165, 233, 0.4);
-        overflow: hidden;
-      }
-
-      .download-btn:hover {
-        transform: translateY(-5px) scale(1.02);
-        box-shadow: 0 30px 60px -10px rgba(14, 165, 233, 0.6);
-      }
-
-      .download-btn::after {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: rgba(255,255,255,0.1);
-        transform: rotate(45deg);
-        transition: 0.5s;
-        opacity: 0;
-      }
-
-      .download-btn:hover::after {
-        opacity: 1;
-        left: 100%;
-      }
-
-      .nav-btn {
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.1);
-        box-shadow: none;
-      }
-
-      .buttons-container {
-        display: flex;
-        gap: 20px;
-        justify-content: center;
-        align-items: center;
-        flex-wrap: wrap;
-      }
-
-      /* Features Grid */
-      .features {
-        padding: 100px 0;
-      }
-
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 32px;
-      }
-
-      .card {
-        position: relative;
-        padding: 48px;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 40px;
-        backdrop-filter: blur(12px);
-        transition: all 0.5s cubic-bezier(0.2, 0, 0, 1);
-        overflow: hidden;
-      }
-
-      .card:hover {
-        transform: translateY(-10px);
-        background: rgba(255, 255, 255, 0.08);
-        border-color: rgba(255, 255, 255, 0.2);
-      }
-
-      .card-icon {
-        font-size: 3rem;
-        margin-bottom: 24px;
-        display: block;
-      }
-
-      .card h3 {
-        font-size: 1.5rem;
-        font-weight: 800;
-        margin-bottom: 12px;
-        color: #fff;
-      }
-
-      .card p {
-        color: rgba(255,255,255,0.5);
-        font-weight: 500;
-      }
-
-      /* Floating Mockup */
-      .mockup {
-        margin-top: -10vh;
-        margin-bottom: 15vh;
-        position: relative;
-        z-index: 2;
-      }
-
-      .mockup img {
-        width: 100%;
-        max-width: 400px;
-        filter: drop-shadow(0 50px 100px rgba(0,0,0,0.8));
-        animation: floatImg 6s infinite ease-in-out;
-      }
-
-      @keyframes floatImg {
-        0%, 100% { transform: translateY(0) rotate(-2deg); }
-        50% { transform: translateY(-20px) rotate(2deg); }
-      }
-
-      /* Suggestions Section */
-      .suggestions {
-        padding: 100px 0;
-        text-align: center;
-      }
-
-      .glass-panel {
-        background: rgba(14, 165, 233, 0.03);
-        border: 1px solid rgba(14, 165, 233, 0.1);
-        padding: 80px 40px;
-        border-radius: 50px;
-        backdrop-filter: blur(20px);
-      }
-
-      .suggestions h2 {
-        font-size: 3rem;
-        font-weight: 800;
-        margin-bottom: 20px;
-      }
-
-      /* Animations */
-      .reveal {
-        opacity: 0;
-        transform: translateY(40px);
-        transition: all 1s cubic-bezier(0.2, 0, 0, 1);
-      }
-
-      .reveal.active {
-        opacity: 1;
-        transform: translateY(0);
-      }
-
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-
-      footer {
-        padding: 60px 0;
-        text-align: center;
-        border-top: 1px solid var(--border);
-        color: rgba(255, 255, 255, 0.2);
-        font-size: 0.9rem;
-      }
-
-      @media (max-width: 768px) {
-        h1 { font-size: 3.5rem; }
-        .grid { gap: 16px; }
-        .card { padding: 32px; }
-        .header-container.sticky nav { justify-content: center; }
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Background Blobs -->
-    <div class="blob-container">
-      <div class="blob blob-1"></div>
-      <div class="blob blob-2"></div>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <meta name="description" content="Organiza tu biblioteca de películas, valora tus pelis, habla con tus amigos y elegid juntos con Movie Match.">
+  <title>VeoVeo — Pelis para compartir</title>
+  <script>document.documentElement.classList.add('js');</script>
+  <style>
+    @font-face { font-family: "Montserrat"; font-weight: 500; font-style: normal; font-display: swap; src: url("/fuentes/Montserrat_500Medium.ttf") format("truetype"); }
+    @font-face { font-family: "Montserrat"; font-weight: 600; font-style: normal; font-display: swap; src: url("/fuentes/Montserrat_600SemiBold.ttf") format("truetype"); }
+    @font-face { font-family: "Montserrat"; font-weight: 700; font-style: normal; font-display: swap; src: url("/fuentes/Montserrat_700Bold.ttf") format("truetype"); }
+    @font-face { font-family: "Montserrat"; font-weight: 800; font-style: normal; font-display: swap; src: url("/fuentes/Montserrat_800ExtraBold.ttf") format("truetype"); }
+    :root {
+      color-scheme: dark;
+      --bg: #07111f;
+      --bg-deep: #050c17;
+      --surface: #0d1a2a;
+      --surface-raised: #102137;
+      --line: rgba(192, 215, 241, .12);
+      --text: #f4f8fc;
+      --muted: #a8b7c9;
+      --subtle: #778ba2;
+      --accent: #38BDF8;
+      --accent-strong: #64ceff;
+      --content: 1160px;
+      --ease: cubic-bezier(.2,.75,.25,1);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { min-width: 320px; scroll-behavior: smooth; scroll-padding-top: 92px; background: var(--bg); }
+    body {
+      min-width: 320px;
+      margin: 0;
+      overflow-x: hidden;
+      overflow-x: clip;
+      background:
+        radial-gradient(ellipse 58% 43% at 82% 16%, rgba(27, 102, 160, .16), transparent 74%),
+        radial-gradient(ellipse 47% 36% at 4% 48%, rgba(32, 105, 147, .12), transparent 75%),
+        linear-gradient(180deg, #07111f 0%, #081321 56%, #07111f 100%);
+      color: var(--text);
+      font-family: "Montserrat", sans-serif;
+      font-weight: 500;
+      font-size: 15px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    a { color: inherit; }
+    button { font: inherit; }
+    svg { display: block; }
+    .container { width: min(var(--content), calc(100% - 48px)); margin-inline: auto; }
+    .site-header {
+      position: sticky;
+      z-index: 20;
+      top: 0;
+      border-bottom: 1px solid transparent;
+      background: rgba(7, 17, 31, .78);
+      transition: background-color .2s ease, border-color .2s ease;
+      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(14px);
+    }
+    .site-header.is-scrolled { border-color: var(--line); background: rgba(7, 17, 31, .94); }
+    .nav { display: flex; min-height: 74px; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 11px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -.045em;
+    }
+    .brand-mark {
+      display: grid;
+      width: 35px;
+      height: 35px;
+      place-items: center;
+      border: 1px solid rgba(56,189,248,.3);
+      border-radius: 11px;
+      background: linear-gradient(145deg, rgba(56,189,248,.22), rgba(56,189,248,.07));
+      color: var(--accent-strong);
+      box-shadow: inset 0 1px rgba(255,255,255,.1), 0 5px 20px rgba(10,111,170,.12);
+    }
+    .brand-mark { overflow: hidden; }
+    .brand-mark img { display: block; width: 100%; height: 100%; }
+    .nav-links { display: flex; align-items: center; gap: clamp(16px, 3vw, 34px); }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 600; transition: color .18s ease; }
+    .nav-links a:hover { color: var(--text); }
+    .menu-toggle { display: none; }
+    .button {
+      position: relative;
+      display: inline-flex;
+      min-height: 50px;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 20px;
+      border: 1px solid transparent;
+      border-radius: 14px;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.2;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      transition: color .16s ease, background-color .16s ease, border-color .16s ease, box-shadow .16s ease, transform .16s var(--ease);
+    }
+    .button:focus { outline: none; }
+    .button:focus-visible, .brand:focus-visible, .nav-links a:focus-visible, .menu-toggle:focus-visible, .footer-links a:focus-visible {
+      outline: 3px solid var(--accent-strong);
+      outline-offset: 4px;
+    }
+    .button-primary { color: #03111c; background: var(--accent); box-shadow: 0 8px 24px rgba(56,189,248,.16), inset 0 1px rgba(255,255,255,.35); }
+    .button-primary:hover { transform: translateY(-2px); background: #62ceff; box-shadow: 0 12px 30px rgba(56,189,248,.25), inset 0 1px rgba(255,255,255,.44); }
+    .button-primary:active { transform: translateY(1px) scale(.98); background: #1fa9e5; box-shadow: inset 0 2px 5px rgba(0,30,50,.2); }
+    .button-secondary { border-color: rgba(187,215,241,.2); background: rgba(255,255,255,.035); color: var(--text); }
+    .button-secondary:hover { transform: translateY(-2px); border-color: rgba(150,213,245,.45); background: rgba(56,189,248,.08); }
+    .button-secondary:active { transform: translateY(1px) scale(.98); border-color: rgba(56,189,248,.38); background: rgba(56,189,248,.14); }
+    .button svg { width: 16px; height: 16px; flex: 0 0 auto; }
+    .hero { display: grid; min-height: 670px; grid-template-columns: minmax(0, 1.05fr) minmax(270px, .95fr); align-items: center; gap: clamp(30px, 7vw, 90px); padding-block: 72px 83px; }
+    .hero-copy { min-width: 0; padding-block: 22px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 9px; color: #9edfff; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .eyebrow::before { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 13px rgba(56,189,248,.6); content: ""; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1, h2, h3 { font-family: "Montserrat", sans-serif; }
+    h1 { max-width: 650px; margin: 20px 0 20px; font-size: clamp(39px, 6.4vw, 76px); font-weight: 800; line-height: 1.035; letter-spacing: -.067em; }
+    .accent-text { color: var(--accent); }
+    .hero-copy > p { max-width: 525px; margin: 0 0 28px; color: var(--muted); font-size: clamp(14px, 1.55vw, 17px); line-height: 1.8; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 11px; }
+    .hero-actions .button { min-height: 52px; }
+    .hero-note { display: flex; align-items: flex-start; gap: 9px; margin-top: 20px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .hero-note svg { width: 15px; height: 15px; flex: 0 0 auto; margin-top: 1px; color: var(--accent); }
+    .video-side { position: relative; display: grid; min-width: 0; min-height: 570px; place-items: center; isolation: isolate; }
+    .video-glow { position: absolute; z-index: -1; width: min(88%, 440px); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(27,128,189,.24), rgba(21,86,136,.12) 42%, transparent 72%); filter: blur(16px); }
+    .video-orbit { position: absolute; z-index: -1; width: min(100%, 470px); aspect-ratio: 1; border: 1px solid rgba(111,189,230,.1); border-radius: 50%; transform: scaleY(.77); }
+    .video-frame {
+      position: relative;
+      margin: 0;
+      width: clamp(220px, 28vw, 330px);
+      aspect-ratio: 9 / 16;
+      overflow: hidden;
+      border: 1px solid rgba(196,225,246,.3);
+      border-radius: 30px;
+      background: #0b1726;
+      box-shadow: 0 34px 80px rgba(0,0,0,.48), 0 0 50px rgba(56,189,248,.1), inset 0 1px rgba(255,255,255,.2);
+      transform: rotate(1.2deg);
+      animation: frame-drift 7s ease-in-out infinite;
+    }
+    .video-frame::after { position: absolute; inset: 0; border: 5px solid rgba(6,15,27,.2); border-radius: inherit; content: ""; pointer-events: none; }
+    .video-frame video { display: block; width: 100%; height: 100%; background: #0b1726; object-fit: cover; }
+    .video-label { position: absolute; right: -7px; bottom: 65px; display: flex; align-items: center; gap: 10px; padding: 12px 15px; border: 1px solid rgba(197,223,242,.16); border-radius: 15px; background: rgba(10,22,37,.92); box-shadow: 0 15px 40px rgba(0,0,0,.35); color: var(--text); font-size: 13px; font-weight: 700; animation: label-drift 5s ease-in-out infinite; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+    .video-label-icon { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 10px; background: rgba(56,189,248,.13); color: var(--accent); }
+    .video-label-icon svg { width: 16px; height: 16px; }
+    .section { padding-block: 92px; }
+    .section-heading { max-width: 650px; margin: 0 auto 40px; text-align: center; }
+    .section-heading .eyebrow { justify-content: center; }
+    h2 { margin: 14px 0 12px; font-size: clamp(27px, 4.3vw, 46px); font-weight: 800; line-height: 1.14; letter-spacing: -.06em; }
+    .section-heading > p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.8; }
+    .feature-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; }
+    .feature-card { min-width: 0; min-height: 220px; padding: 23px 20px; border: 1px solid var(--line); border-radius: 19px; background: linear-gradient(145deg, rgba(16,33,55,.76), rgba(11,24,40,.8)); transition: transform .22s var(--ease), border-color .22s ease, background-color .22s ease; }
+    .feature-card:hover { transform: translateY(-4px); border-color: rgba(56,189,248,.33); background: linear-gradient(145deg, rgba(18,42,68,.9), rgba(11,24,40,.9)); }
+    .feature-icon { display: grid; width: 42px; height: 42px; margin-bottom: 19px; place-items: center; border: 1px solid rgba(56,189,248,.2); border-radius: 13px; background: rgba(56,189,248,.09); color: var(--accent); }
+    .feature-icon svg { width: 20px; height: 20px; }
+    .feature-card h3 { margin: 0 0 8px; font-size: 16px; font-weight: 700; line-height: 1.45; letter-spacing: -.025em; }
+    .feature-card p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.8; }
+    .download-section { padding-top: 35px; }
+    .download-panel { position: relative; overflow: hidden; padding: clamp(27px, 5vw, 50px); border: 1px solid rgba(56,189,248,.2); border-radius: 26px; background: linear-gradient(112deg, rgba(14,48,75,.7), rgba(12,29,50,.9) 54%, rgba(14,37,60,.85)); }
+    .download-panel::before { position: absolute; top: -180px; right: -70px; width: 390px; height: 390px; border-radius: 50%; background: rgba(56,189,248,.09); filter: blur(48px); content: ""; pointer-events: none; }
+    .download-content { position: relative; max-width: 790px; }
+    .download-content h2 { margin: 11px 0 10px; font-size: clamp(27px, 4vw, 41px); }
+    .download-content > p { max-width: 670px; margin: 0 0 20px; color: var(--muted); font-size: 15px; }
+    .download-actions { display: flex; flex-wrap: wrap; gap: 11px; margin-bottom: 19px; }
+    .install-note { margin: 0; padding: 13px 15px; border: 1px solid rgba(236,194,120,.19); border-radius: 12px; background: rgba(172,112,35,.08); color: #e4d1b4; font-size: 14px; line-height: 1.75; }
+    .iphone-note { margin: 15px 0 0; color: #b9c6d7; font-size: 14px; line-height: 1.7; }
+    .iphone-note a { color: var(--accent-strong); text-underline-offset: 3px; }
+    .site-footer { margin-top: 76px; border-top: 1px solid var(--line); }
+    .footer-inner { display: flex; min-height: 87px; align-items: center; justify-content: space-between; gap: 20px; color: var(--muted); font-size: 13px; }
+    .footer-brand { color: var(--muted); font-weight: 700; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 18px; }
+    .footer-links a { color: var(--muted); text-decoration: none; transition: color .18s ease; }
+    .footer-links a:hover { color: var(--text); }
+    .js .reveal { opacity: 0; transform: translateY(18px); transition: opacity .58s var(--ease), transform .58s var(--ease); }
+    .js .reveal.is-visible { opacity: 1; transform: translateY(0); }
+    @keyframes frame-drift { 0%, 100% { translate: 0 0; } 50% { translate: 0 -8px; } }
+    @keyframes label-drift { 0%, 100% { translate: 0 0; } 50% { translate: 0 -5px; } }
+    @media (max-width: 920px) {
+      .hero { min-height: 600px; gap: 32px; }
+      .video-side { min-height: 500px; }
+      .video-frame { width: clamp(210px, 31vw, 290px); }
+      .feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 680px) {
+      .container { width: min(100% - 36px, 540px); }
+      .nav { min-height: 66px; gap: 10px; }
+      .brand { gap: 8px; font-size: 16px; }
+      .brand-mark { width: 32px; height: 32px; }
+      .nav-links { position: absolute; top: 60px; right: 18px; left: 18px; display: none; align-items: stretch; gap: 0; padding: 8px; border: 1px solid var(--line); border-radius: 15px; background: rgba(7,17,31,.98); box-shadow: 0 20px 45px rgba(0,0,0,.4); }
+      .nav-links.is-open { display: grid; }
+      .nav-links a { padding: 12px; border-radius: 9px; }
+      .nav-links a:hover { background: rgba(56,189,248,.08); }
+      .menu-toggle { display: grid; width: 41px; height: 41px; flex: 0 0 auto; place-items: center; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.035); color: var(--text); cursor: pointer; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+      .menu-toggle:active { background: rgba(56,189,248,.13); }
+      .menu-toggle svg { width: 19px; height: 19px; }
+      .nav > .button { min-height: 41px; padding-inline: 12px; font-size: 13px; }
+      .nav > .button svg { display: none; }
+      .hero { display: flex; min-height: auto; flex-direction: column; align-items: stretch; gap: 5px; padding-block: 55px 37px; }
+      .hero-copy { padding: 0; }
+      h1 { max-width: 540px; margin: 16px 0; font-size: clamp(38px, 10.8vw, 62px); }
+      .hero-copy > p { max-width: 520px; margin-bottom: 21px; font-size: 15px; }
+      .hero-actions { gap: 9px; }
+      .hero-actions .button { min-height: 49px; flex: 1 1 180px; padding-inline: 13px; font-size: 14px; }
+      .hero-note { margin-top: 15px; font-size: 13px; }
+      .video-side { min-height: 0; padding-block: 35px 40px; }
+      .video-frame { width: min(68vw, 285px); border-radius: 25px; }
+      .video-label { right: max(calc((100% - min(68vw, 285px)) / 2 - 23px), -2px); bottom: 69px; padding: 10px 12px; font-size: 12px; }
+      .video-glow { width: 95%; }
+      .video-orbit { width: min(100%, 410px); }
+      .section { padding-block: 66px; }
+      .section-heading { margin-bottom: 27px; }
+      .section-heading > p { font-size: 14px; }
+      .feature-grid { gap: 9px; }
+      .feature-card { min-height: 193px; padding: 18px 15px; border-radius: 16px; }
+      .feature-icon { width: 37px; height: 37px; margin-bottom: 15px; border-radius: 11px; }
+      .feature-card h3 { font-size: 15px; }
+      .feature-card p { font-size: 13px; line-height: 1.6; }
+      .download-section { padding-top: 10px; }
+      .download-panel { padding: 25px 20px; border-radius: 20px; }
+      .download-actions { display: grid; grid-template-columns: 1fr; }
+      .download-actions .button { width: 100%; }
+      .install-note { font-size: 13px; }
+      .iphone-note { font-size: 13px; }
+      .site-footer { margin-top: 48px; }
+      .footer-inner { min-height: 0; align-items: flex-start; flex-direction: column; padding-block: 22px; }
+    }
+    @media (max-width: 370px) {
+      .container { width: calc(100% - 28px); }
+      .nav { gap: 7px; }
+      .nav > .button { display: none; }
+      .hero-actions { display: grid; grid-template-columns: 1fr; }
+      .hero-actions .button { width: 100%; }
+      .video-frame { width: min(76vw, 275px); }
+      .video-label { right: -3px; }
+      .feature-card { min-height: 205px; padding: 16px 12px; }
+      .footer-links { gap: 14px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+      .js .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header" id="site-header">
+    <div class="container nav">
+      <a class="brand" href="#inicio" aria-label="VeoVeo, inicio">
+        <span class="brand-mark" aria-hidden="true"><img src="/icono-veoveo.png" alt="" width="35" height="35"></span>
+        <span>VeoVeo</span>
+      </a>
+      <nav class="nav-links" id="nav-links" aria-label="Navegación principal">
+        <a href="#funciones">Funciones</a>
+        <a href="#descargar">Descargar</a>
+      </nav>
+      <a class="button button-primary" href="/">Usar en el navegador <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      <button class="menu-toggle" id="menu-toggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-links"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
     </div>
+  </header>
 
-    <div class="container">
-      <div class="header-container" id="header">
-        <nav>
-          <div class="logo">VEOVEO</div>
-        </nav>
+  <main id="inicio">
+    <section class="container hero" aria-labelledby="hero-title">
+      <div class="hero-copy reveal">
+        <span class="eyebrow">Vuestras pelis, en un mismo sitio</span>
+        <h1 id="hero-title">Menos vueltas.<br>Más <span class="accent-text">película.</span></h1>
+        <p>Organiza tu biblioteca, valora las películas y comparte el plan con tus amigos. Y cuando no sepáis qué ver, probad Movie Match.</p>
+        <div class="hero-actions">
+          <a href="/" class="button button-primary">Usar en el navegador <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+          <a href="https://github.com/roblesgg/VeoVeo/releases/latest/download/veoveo-latest.apk" class="button button-secondary" download>Descargar APK <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 16v3h14v-3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </div>
+        <div class="hero-note"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v18m-8-9h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Biblioteca, valoraciones, amigos, chats y Movie Match.</div>
       </div>
-
-      <section class="hero">
-        <h1 class="reveal">Cine sin dramas.</h1>
-        <p class="reveal">Encuentra qué ver con tus amigos en segundos. La app definitiva para el Match cinematográfico.</p>
-        <div class="reveal buttons-container">
-          <a href="/" class="download-btn">Usar en el Navegador</a>
-          <a href="https://github.com/roblesgg/VeoVeo/releases/latest/download/veoveo-latest.apk" class="download-btn" download>Descargar APK</a>
-          <p style="margin-top: 15px; font-size: 0.9rem; color: rgba(255,255,255,0.4);">
-            Última versión disponible | Los usuarios de iPhone pueden usar la versión web.<br /><strong style="color: rgba(255,255,255,0.75);">¿Tenías una versión anterior? Desinstálala antes de instalar esta, o Android dirá «Aplicación no instalada». Tus datos están en tu cuenta y no se pierden.</strong>
-          </p>
-        </div>
-      </section>
-
-      <div class="mockup reveal" style="text-align: center;">
-        <img src="./assets/mockup_v15.png" alt="App Preview" onerror="this.src='https://via.placeholder.com/400x800?text=VeoVeo+App'" />
+      <div class="video-side reveal" aria-label="Vídeo de VeoVeo">
+        <div class="video-glow" aria-hidden="true"></div>
+        <div class="video-orbit" aria-hidden="true"></div>
+        <figure class="video-frame">
+          <video src="/demos/veoveo.mp4" autoplay muted loop playsinline></video>
+        </figure>
+        <div class="video-label"><span class="video-label-icon"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 6 9 6-9 6V6Z" fill="currentColor"/></svg></span>VeoVeo en acción</div>
       </div>
+    </section>
 
-      <section class="features">
-        <div class="grid">
-          <div class="card reveal">
-            <span class="card-icon">📁</span>
-            <h3>Watchlist Pro</h3>
-            <p>Guarda todas las pelis que quieres ver y organízalas por plataformas.</p>
+    <section class="container section" id="funciones" aria-labelledby="features-title">
+      <div class="section-heading reveal">
+        <span class="eyebrow">El cine, con tu gente</span>
+        <h2 id="features-title">Todo lo que necesitas<br>para <span class="accent-text">compartir películas.</span></h2>
+        <p>Tu biblioteca, tus valoraciones y tus amigos, juntos en VeoVeo.</p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card reveal">
+          <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 4.5h12.5A1.5 1.5 0 0 1 19 6v14H6a2 2 0 0 1-2-2V5.5A1 1 0 0 1 5 4.5Z" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 8h8M7.5 11h8M7.5 14h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+          <h3>Tu biblioteca</h3>
+          <p>Organiza las películas que quieres ver y las que ya has visto.</p>
+        </article>
+        <article class="feature-card reveal">
+          <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 9.6l6.2-.9L12 3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+          <h3>Valoraciones</h3>
+          <p>Puntúa películas y guarda tus valoraciones en tu biblioteca.</p>
+        </article>
+        <article class="feature-card reveal">
+          <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M16 20v-1.5a4.5 4.5 0 0 0-4.5-4.5h-4A4.5 4.5 0 0 0 3 18.5V20m12-16a4 4 0 0 1 0 7.7M21 20v-1.5a4.5 4.5 0 0 0-3.4-4.4M9.5 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+          <h3>Amigos y chats</h3>
+          <p>Conecta con tus amigos y hablad de películas desde la app.</p>
+        </article>
+        <article class="feature-card reveal">
+          <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5 14.2 9l5.8 1.5-5.8 1.6L12 18l-2.2-5.9L4 10.5 9.8 9 12 3.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m19 15 .9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></span>
+          <h3>Movie Match</h3>
+          <p>Encontrad una película en común y decidid juntos qué ver.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="container section download-section" id="descargar" aria-labelledby="download-title">
+      <div class="download-panel reveal">
+        <div class="download-content">
+          <span class="eyebrow">Empieza cuando quieras</span>
+          <h2 id="download-title">VeoVeo, en tu móvil o navegador.</h2>
+          <p>Usa VeoVeo desde el navegador o descarga la aplicación para Android.</p>
+          <div class="download-actions">
+            <a href="/" class="button button-primary">Usar en el navegador <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+            <a href="https://github.com/roblesgg/VeoVeo/releases/latest/download/veoveo-latest.apk" class="button button-secondary" download>Descargar APK <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 16v3h14v-3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
           </div>
-          <div class="card reveal">
-            <span class="card-icon">⭐</span>
-            <h3>Tu crítica real</h3>
-            <p>Puntúa lo que has visto y lleva un registro impecable de tu cine.</p>
-          </div>
-          <div class="card reveal">
-            <span class="card-icon">👀</span>
-            <h3>Ratings Amigos</h3>
-            <p>Descubre qué opinan tus amigos de esa peli antes de darle al play.</p>
-          </div>
-          <div class="card reveal">
-            <span class="card-icon">⚡</span>
-            <h3>Match Social</h3>
-            <p>¿No sabéis que ver? Encuentra coincidencias con tus amigos al instante.</p>
-          </div>
+          <p class="install-note">¿Tenías una versión anterior? Desinstálala antes de instalar esta, o Android dirá «Aplicación no instalada». Tus datos están en tu cuenta y no se pierden.</p>
+          <p class="iphone-note">¿Usas iPhone? Puedes usar la <a href="/">versión web</a> de VeoVeo.</p>
         </div>
-      </section>
+      </div>
+    </section>
+  </main>
 
-      <section class="suggestions reveal">
-        <div class="glass-panel">
-          <h2>¿Algo no va bien?</h2>
-          <p>Ayúdanos a mejorar. Envía un error o una sugerencia en segundos.</p>
-          <a href="mailto:hola@dripdev.dev" style="color: var(--primary); font-weight: 700; text-decoration: none; font-size: 1.2rem; display: block; margin-top: 20px;">Sugerencias y Errores →</a>
-        </div>
-      </section>
-
-      <footer>
-        <p>&copy; 2026 Drip Dev. Crafted with ❤️ for cinema lovers.</p>
-      </footer>
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span class="footer-brand">VeoVeo <span aria-hidden="true">·</span> Una app de DripDev</span>
+      <nav class="footer-links" aria-label="Enlaces legales">
+        <a href="/privacidad">Privacidad</a>
+        <a href="/normas">Normas</a>
+        <a href="/borrar-cuenta">Borrar cuenta</a>
+      </nav>
     </div>
+  </footer>
 
-    <script>
-      // Sticky Header Logic
-      const header = document.getElementById('header');
-      window.onscroll = () => {
-        if (window.scrollY > 50) {
-          header.classList.add('sticky');
-        } else {
-          header.classList.remove('sticky');
-        }
-      };
+  <script>
+    (() => {
+      const header = document.getElementById('site-header');
+      const menuButton = document.getElementById('menu-toggle');
+      const menu = document.getElementById('nav-links');
+      const video = document.querySelector('.video-frame video');
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      let scrollQueued = false;
 
-      // Scroll Reveal Logic
-      const observerOptions = {
-        threshold: 0.1
-      };
-
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('active');
-          }
+      const updateHeader = () => {
+        if (scrollQueued) return;
+        scrollQueued = true;
+        window.requestAnimationFrame(() => {
+          header.classList.toggle('is-scrolled', window.scrollY > 10);
+          scrollQueued = false;
         });
-      }, observerOptions);
+      };
+      window.addEventListener('scroll', updateHeader, { passive: true });
+      updateHeader();
 
-      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-    </script>
-    <a href="https://dripdev.dev" target="_blank" rel="noopener noreferrer" style="display:block;text-align:center;padding:20px;font-family:system-ui,-apple-system,sans-serif;font-size:13px;font-weight:600;letter-spacing:.4px;color:#888;text-decoration:none">DripDev →</a>
-  </body>
+      const closeMenu = () => {
+        menu.classList.remove('is-open');
+        menuButton.setAttribute('aria-expanded', 'false');
+        menuButton.setAttribute('aria-label', 'Abrir menú');
+      };
+      menuButton.addEventListener('click', () => {
+        const open = menuButton.getAttribute('aria-expanded') !== 'true';
+        menu.classList.toggle('is-open', open);
+        menuButton.setAttribute('aria-expanded', String(open));
+        menuButton.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+      });
+      menu.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMenu));
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 680) closeMenu();
+      }, { passive: true });
+
+      const syncMotionPreference = () => {
+        if (reducedMotion.matches) video.pause();
+        else if (!video.ended) video.play().catch(() => {});
+      };
+      syncMotionPreference();
+      if (reducedMotion.addEventListener) reducedMotion.addEventListener('change', syncMotionPreference);
+      else if (reducedMotion.addListener) reducedMotion.addListener(syncMotionPreference);
+
+      const revealItems = document.querySelectorAll('.reveal');
+      if (reducedMotion.matches || !('IntersectionObserver' in window)) {
+        revealItems.forEach(item => item.classList.add('is-visible'));
+      } else {
+        const observer = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          });
+        }, { threshold: 0.12, rootMargin: '0px 0px -28px 0px' });
+        revealItems.forEach(item => observer.observe(item));
+      }
+    })();
+  </script>
+</body>
 </html>
