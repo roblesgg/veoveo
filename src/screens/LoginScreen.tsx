@@ -18,6 +18,7 @@ import type { RootStackParamList } from '../navigation/types';
 import { COLORS } from '../theme/colors';
 import { SHADOWS } from '../theme/theme';
 import { useMontserrat } from '../theme/useMontserrat';
+import { mensajeErrorAuth } from '../utils/mensajesAuth';
 import { AlertModal } from '../components/common/AlertModal';
 import { AvisoLegal } from '../components/common/AvisoLegal';
 import { Cargando } from '../components/common/Cargando';
@@ -104,7 +105,7 @@ export function LoginScreen() {
                 esPruebas && !email.includes('@') ? `${email.trim()}@veoveo-pruebas.test` : email;
               await login(correo, password);
             } catch (e) {
-              setErrorMessage(e instanceof Error ? e.message : 'Error al iniciar sesión');
+              setErrorMessage(mensajeErrorAuth(e, 'correo') ?? '');
             } finally {
               setLoading(false);
             }
@@ -121,13 +122,7 @@ export function LoginScreen() {
             try {
               await signInWithGoogle();
             } catch (e) {
-              const err = e as any;
-              let msg = err?.message || 'Error con Google';
-              // Guía específica para errores de dominio en Web
-              if (msg.includes('unauthorized-domain')) {
-                msg = '⚠️ Dominio no autorizado en Firebase Console.';
-              }
-              setErrorMessage(msg);
+              setErrorMessage(mensajeErrorAuth(e, 'google') ?? '');
             } finally {
               setLoading(false);
             }
