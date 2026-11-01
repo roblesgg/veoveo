@@ -10,6 +10,7 @@ Los datos personales no se apuntan aquí (norma 28).
 | 13-10-2026 | Firestore `(default)`: **protección contra borrado activada** (`deleteProtectionState = DELETE_PROTECTION_ENABLED`). | Jefe de Proyectos | Álvaro, expreso |
 | 14-10-2026 | Borradas `prueba1` y `prueba2` (Auth; no tenían datos). `prueba3` pasa a cuenta de revisión de Play: perfil «Revisor VeoVeo» (sin solicitudes) y biblioteca de ejemplo (`scripts/cuentas-prueba-produccion.mjs`). | Agente VeoVeo | Álvaro, en el chat del agente |
 | 01-11-2026 | **Publicación de la 3.0 en la web** (`veoveo.dripdev.dev`, proyecto de Vercel `veo-veo`, por CLI): copia y migración 3.0 (19 perfiles, 18 con datos privados, 2 solicitudes copiadas, 4 chats, 27 matches cancelados), reglas e índices de Firestore. Copia en `DripDev/_copias/veoveo/migracion-3.0-2026-11-01T21-14-34-787Z/`; **borrarla el 01-12-2026**. Storage no está activado en el proyecto y la 3.0 no sube archivos: sus reglas no se han subido. `min_version` sin cambiar. | Jefe de Proyectos | Álvaro, expreso («yo te autorizo, adelante, hazlo»), con los recuentos delante |
+| 01-11-2026 | **APK 3.0.0 (42) publicado** en GitHub (release `v3.0.0`), firmado con la upload key, y **actualización obligatoria**: `configuracion/app.min_version` = 3.0.0, con aviso de desinstalar antes (la firma cambia respecto a la 2.0.4). SHA-1 de la upload key registrada en la app Android de Firebase. | Jefe de Proyectos | Álvaro, expreso («lánzalo en todos como actualización obligatoria») |
 
 ## Decisiones que no son cambios
 
