@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
+import { useAuth } from '../context/AuthContext';
 
 function isIOSSafari(): boolean {
   if (typeof navigator === 'undefined') return false;
@@ -15,6 +16,7 @@ function isIOSSafari(): boolean {
 const STORAGE_KEY = 'veoveo_ios_prompt_dismissed';
 
 export function IOSInstallPrompt() {
+  const { user } = useAuth();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -27,7 +29,8 @@ export function IOSInstallPrompt() {
     return () => clearTimeout(t);
   }, []);
 
-  if (!visible) return null;
+  // En el login taparía los enlaces: se enseña ya dentro de la app.
+  if (!visible || !user) return null;
 
   const dismiss = () => {
     setVisible(false);

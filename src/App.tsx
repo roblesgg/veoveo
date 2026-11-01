@@ -36,6 +36,12 @@ import { NotificationPermissionPrompt } from './components/NotificationPermissio
 
 import * as Notifications from 'expo-notifications';
 import { useFonts } from 'expo-font';
+import {
+  Montserrat_500Medium,
+  Montserrat_600SemiBold,
+  Montserrat_700Bold,
+  Montserrat_800ExtraBold,
+} from '@expo-google-fonts/montserrat';
 import { Ionicons } from '@expo/vector-icons';
 
 // 🛑 CONFIGURACIÓN DE ACCESIBILIDAD: Cap global de escalado de fuentes
@@ -174,7 +180,15 @@ export default function App() {
   React.useEffect(() => {
     void olvidarPreferenciaAdulto();
   }, []);
-  const [fontsLoaded] = useFonts({ ...Ionicons.font });
+  // Montserrat antes de pintar: en Android, un texto medido con la fuente de reserva (más estrecha)
+  // no se vuelve a medir al cargar la buena y queda cortado con «…».
+  const [fontsLoaded, fontError] = useFonts({
+    ...Ionicons.font,
+    Montserrat_500Medium,
+    Montserrat_600SemiBold,
+    Montserrat_700Bold,
+    Montserrat_800ExtraBold,
+  });
   const [inAppNotif, setInAppNotif] = React.useState<{
     title: string;
     body: string;
@@ -292,6 +306,8 @@ export default function App() {
   }, []);
 
   // RENDER: Arbol de componentes con proveedores de contexto
+  if (Platform.OS !== 'web' && !fontsLoaded && !fontError) return <View style={styles.appWrapper} />;
+
   return (
     <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
       <GestureHandlerRootView style={{ flex: 1 }}>
