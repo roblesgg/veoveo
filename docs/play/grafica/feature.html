@@ -1,23 +1,63 @@
 <!doctype html>
 <meta charset="utf-8">
 <style>
+  @font-face { font-family: M; font-weight: 500; src: url("../../../node_modules/@expo-google-fonts/montserrat/500Medium/Montserrat_500Medium.ttf"); }
+  @font-face { font-family: M; font-weight: 700; src: url("../../../node_modules/@expo-google-fonts/montserrat/700Bold/Montserrat_700Bold.ttf"); }
   @font-face { font-family: M; font-weight: 800; src: url("../../../node_modules/@expo-google-fonts/montserrat/800ExtraBold/Montserrat_800ExtraBold.ttf"); }
   html, body { margin: 0; background: #020617; }
-  #f { width: 1024px; height: 500px; position: relative; overflow: hidden;
+  #f { width: 1024px; height: 500px; position: relative; overflow: hidden; font-family: M, sans-serif; color: #f8fafc;
     background:
-      radial-gradient(circle at 10% 100%, rgba(105,223,217,0.75) 0, rgba(56,189,248,0.25) 38%, rgba(2,6,23,0) 62%),
-      linear-gradient(120deg, #0b3a8a 0%, #0a1f5c 45%, #020617 100%); }
-  h1 { position: absolute; left: 0; right: 0; top: 150px; margin: 0; text-align: center; color: #f8fafc;
-    font: 800 150px/1 M, sans-serif; letter-spacing: -2px; }
-  svg { position: absolute; }
+      radial-gradient(ellipse 560px 380px at 74% 58%, rgba(56,189,248,.42) 0, rgba(13,71,161,.26) 48%, transparent 76%),
+      radial-gradient(circle 420px at 0% 110%, rgba(105,223,217,.5) 0, rgba(56,189,248,.14) 48%, transparent 72%),
+      linear-gradient(115deg, #06194a 0%, #041033 48%, #020617 100%); }
+  /* Haz de proyector */
+  .haz { position: absolute; left: 640px; top: -120px; width: 0; height: 0; border-left: 300px solid transparent; border-right: 300px solid transparent;
+    border-top: 640px solid rgba(154,243,238,.09); filter: blur(14px); transform: rotate(9deg); transform-origin: top center; }
+  .haz.b { left: 520px; transform: rotate(-16deg); border-top-color: rgba(56,189,248,.08); }
+  .texto { position: absolute; left: 58px; top: 118px; width: 440px; z-index: 5; }
+  h1 { margin: 0; font-weight: 800; font-size: 104px; line-height: 1; letter-spacing: -4px; text-shadow: 0 8px 44px rgba(56,189,248,.5); }
+  p { margin: 18px 0 0; font-weight: 700; font-size: 31px; line-height: 1.2; letter-spacing: -.6px; }
+  p span { background: linear-gradient(90deg, #9af3ee, #38bdf8); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  /* Abanico de carteles */
+  .c { position: absolute; width: 186px; height: 278px; left: 640px; top: 104px; border-radius: 20px; overflow: hidden;
+    box-shadow: 0 26px 54px rgba(0,0,0,.62), inset 0 0 0 1.5px rgba(255,255,255,.16); transform-origin: 50% 118%; }
+  .c svg { display: block; width: 100%; height: 100%; }
+  .c1 { transform: rotate(-24deg) translateX(-112px); filter: brightness(.82); }
+  .c2 { transform: rotate(-12deg) translateX(-62px); filter: brightness(.95); }
+  .c4 { transform: rotate(12deg) translateX(62px); filter: brightness(.95); }
+  .c5 { transform: rotate(24deg) translateX(112px); filter: brightness(.82); }
+  .c3 { width: 212px; height: 318px; left: 627px; top: 78px; z-index: 3; transform: none; border-radius: 24px;
+    box-shadow: 0 0 0 3px #69DFD9, 0 0 54px rgba(105,223,217,.8), 0 34px 70px rgba(0,0,0,.72); }
+  .match { position: absolute; z-index: 4; left: 622px; top: 366px; width: 222px; height: 60px; border-radius: 999px; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(90deg, #9af3ee, #38bdf8); color: #020617; font-weight: 800; font-size: 25px; letter-spacing: -.5px;
+    box-shadow: 0 12px 34px rgba(56,189,248,.7); }
+  svg.d { position: absolute; z-index: 6; filter: drop-shadow(0 0 16px rgba(154,243,238,.95)); }
+  .e { position: absolute; border-radius: 50%; background: #fff; z-index: 1; }
 </style>
 <div id="f">
-  <svg width="0" height="0"><defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9af3ee"/><stop offset="1" stop-color="#38bdf8"/></linearGradient>
-    <path id="d" d="M63,37c-6.7-4-4-27-13-27s-6.3,23-13,27-27,4-27,13,20.3,9,27,13,4,27,13,27,6.3-23,13-27,27-4,27-13-20.3-9-27-13Z"/>
-  </defs></svg>
-  <svg style="left:690px;top:40px" width="120" height="120" viewBox="0 0 100 100"><use href="#d" fill="url(#g)"/></svg>
-  <svg style="left:150px;top:350px;opacity:.85" width="70" height="70" viewBox="0 0 100 100"><use href="#d" fill="url(#g)"/></svg>
-  <svg style="left:870px;top:330px;opacity:.7" width="56" height="56" viewBox="0 0 100 100"><use href="#d" fill="url(#g)"/></svg>
-  <h1>VeoVeo</h1>
+  <div class="haz"></div><div class="haz b"></div>
+  <i class="e" style="left:512px;top:48px;width:3px;height:3px;opacity:.8"></i>
+  <i class="e" style="left:580px;top:446px;width:4px;height:4px;opacity:.55"></i>
+  <i class="e" style="left:974px;top:94px;width:3px;height:3px;opacity:.8"></i>
+  <i class="e" style="left:944px;top:452px;width:3px;height:3px;opacity:.6"></i>
+  <i class="e" style="left:400px;top:62px;width:2px;height:2px;opacity:.7"></i>
+  <i class="e" style="left:470px;top:430px;width:2px;height:2px;opacity:.6"></i>
+
+  <div class="texto">
+    <h1>VeoVeo</h1>
+    <p>Elegid peli juntos,<br><span>en un momento.</span></p>
+  </div>
+
+  <!-- Carteles ilustrados, sin películas reales -->
+  <div class="c c1"><svg viewBox="0 0 186 278" preserveAspectRatio="none"><defs><linearGradient id="a" x2="0" y2="1"><stop stop-color="#3b0764"/><stop offset=".6" stop-color="#be185d"/><stop offset="1" stop-color="#fb923c"/></linearGradient></defs><rect width="186" height="278" fill="url(#a)"/><circle cx="93" cy="168" r="50" fill="#fde68a"/><path d="M0 278V198l44-34 40 34 42-50 60 58v72Z" fill="#1e0b36"/></svg></div>
+  <div class="c c2"><svg viewBox="0 0 186 278" preserveAspectRatio="none"><defs><linearGradient id="b" x2="0" y2="1"><stop stop-color="#020617"/><stop offset="1" stop-color="#312e81"/></linearGradient></defs><rect width="186" height="278" fill="url(#b)"/><circle cx="130" cy="62" r="30" fill="#e2e8f0"/><g fill="#0f172a"><rect x="0" y="150" width="42" height="128"/><rect x="48" y="112" width="38" height="166"/><rect x="92" y="170" width="40" height="108"/><rect x="138" y="128" width="48" height="150"/></g><g fill="#fbbf24"><rect x="10" y="168" width="7" height="9"/><rect x="26" y="192" width="7" height="9"/><rect x="58" y="134" width="7" height="9"/><rect x="72" y="172" width="7" height="9"/><rect x="104" y="194" width="7" height="9"/><rect x="150" y="150" width="7" height="9"/><rect x="166" y="196" width="7" height="9"/></g></svg></div>
+  <div class="c c4"><svg viewBox="0 0 186 278" preserveAspectRatio="none"><defs><linearGradient id="d" x2="0" y2="1"><stop stop-color="#064e3b"/><stop offset="1" stop-color="#022c22"/></linearGradient></defs><rect width="186" height="278" fill="url(#d)"/><circle cx="58" cy="66" r="26" fill="#d9f99d"/><g fill="#02140f"><path d="M34 278 62 118l28 160Z"/><path d="M84 278 122 82l38 196Z"/><path d="M0 278 22 170l24 108Z"/><path d="M144 278 170 158l20 120Z"/></g></svg></div>
+  <div class="c c5"><svg viewBox="0 0 186 278" preserveAspectRatio="none"><defs><linearGradient id="g5" x2="0" y2="1"><stop stop-color="#7f1d1d"/><stop offset="1" stop-color="#1c0505"/></linearGradient></defs><rect width="186" height="278" fill="url(#g5)"/><path d="M93 56l15 44 46 1-37 28 13 44-37-26-37 26 13-44-37-28 46-1Z" fill="#fca5a5"/></svg></div>
+  <div class="c c3"><svg viewBox="0 0 212 318" preserveAspectRatio="none"><defs><linearGradient id="c" x2="0" y2="1"><stop stop-color="#0c1d5e"/><stop offset=".55" stop-color="#0284c7"/><stop offset="1" stop-color="#99f6e4"/></linearGradient><radialGradient id="p" cx=".35" cy=".3"><stop stop-color="#fef3c7"/><stop offset="1" stop-color="#f59e0b"/></radialGradient></defs><rect width="212" height="318" fill="url(#c)"/><circle cx="106" cy="104" r="56" fill="url(#p)"/><ellipse cx="106" cy="104" rx="92" ry="17" fill="none" stroke="#fde68a" stroke-width="6" transform="rotate(-16 106 104)"/><path d="M0 318V238c40-34 66-34 106 0s66 34 106 0v80Z" fill="#02102f"/></svg></div>
+
+  <div class="match">¡Es un match!</div>
+
+  <svg class="d" style="left:800px;top:44px" width="74" height="74" viewBox="0 0 100 100"><defs><linearGradient id="s" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#69DFD9"/></linearGradient></defs><path fill="url(#s)" d="M63,37c-6.7-4-4-27-13-27s-6.3,23-13,27-27,4-27,13,20.3,9,27,13,4,27,13,27,6.3-23,13-27,27-4,27-13-20.3-9-27-13Z"/></svg>
+  <svg class="d" style="left:596px;top:60px" width="40" height="40" viewBox="0 0 100 100"><path fill="url(#s)" d="M63,37c-6.7-4-4-27-13-27s-6.3,23-13,27-27,4-27,13,20.3,9,27,13,4,27,13,27,6.3-23,13-27,27-4,27-13-20.3-9-27-13Z"/></svg>
+  <svg class="d" style="left:846px;top:322px" width="46" height="46" viewBox="0 0 100 100"><path fill="url(#s)" d="M63,37c-6.7-4-4-27-13-27s-6.3,23-13,27-27,4-27,13,20.3,9,27,13,4,27,13,27,6.3-23,13-27,27-4,27-13-20.3-9-27-13Z"/></svg>
 </div>
