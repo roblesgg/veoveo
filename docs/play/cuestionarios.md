@@ -18,7 +18,7 @@ de contacto `dripdev.dev@gmail.com`.
   - Nombre: `Cuenta de revisión`
   - Usuario: `veoveo.prueba3@dripdev.dev`
   - Contraseña: *(no se pega aquí; Álvaro la copia de `_copias`)*
-  - Otras instrucciones: `Entra con correo y contraseña. La cuenta ya tiene amigos y pelis para probar el Movie Match y los chats.`
+  - Otras instrucciones: `Entra con correo y contraseña. La cuenta tiene una biblioteca de ejemplo. Amigos, chats y Movie Match necesitan una segunda cuenta: se puede crear gratis desde «Regístrate».`
 
 > **La cuenta `veoveo.prueba3@dripdev.dev` es la cuenta de revisión y NO se borra al publicar.**
 > `prueba1` y `prueba2` sí se borran. La contraseña está en `DripDev/_copias/veoveo/`.
