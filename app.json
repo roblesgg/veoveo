@@ -3,7 +3,7 @@
     "name": "VeoVeo",
     "slug": "veoveo",
     "scheme": "veoveo",
-    "version": "3.0.1",
+    "version": "3.0.2",
     "newArchEnabled": false,
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -24,7 +24,7 @@
         "backgroundImage": "./assets/adaptive-icon-fondo.png"
       },
       "predictiveBackGestureEnabled": false,
-      "versionCode": 45,
+      "versionCode": 46,
       "blockedPermissions": [
         "android.permission.SYSTEM_ALERT_WINDOW",
         "android.permission.READ_EXTERNAL_STORAGE",
