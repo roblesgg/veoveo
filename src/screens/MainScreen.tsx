@@ -161,11 +161,14 @@ export function MainScreen() {
         ) : null}
       </Animated.View>
 
-      <LiquidBottomBar
-        onTabChange={handleTabPress}
-        paginaActual={paginaActual}
-        noLeidos={noLeidos}
-      />
+      {/* La bienvenida ocupa toda la pantalla: la barra taparía su botón */}
+      {!bienvenida && (
+        <LiquidBottomBar
+          onTabChange={handleTabPress}
+          paginaActual={paginaActual}
+          noLeidos={noLeidos}
+        />
+      )}
       {bienvenida && <Bienvenida onTerminar={() => setBienvenida(false)} />}
     </LinearGradient>
   );
