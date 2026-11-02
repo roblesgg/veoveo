@@ -48,6 +48,7 @@ import { MovieProviders } from '../components/movie/MovieProviders';
 import { CollectionSaga } from '../components/movie/CollectionSaga';
 import { MovieRatingModal } from '../components/movie/MovieRatingModal';
 import { MovieSocialProof } from '../components/movie/MovieSocialProof';
+import { SinopsisExpandible } from '../components/movie/SinopsisExpandible';
 import { ocultarOrigen } from '../utils/zoomCartel';
 import Animated, {
   Easing,
@@ -121,7 +122,6 @@ export function PeliculaScreen() {
   const { peliculaBib, bibCargando, accionBib, userError, onPorVer, onMarcarVista, onQuitar } =
     useUserMovieStatus(movieId, detalles, providers?.results?.ES);
 
-  const [descExp, setDescExp] = useState(false); // Control de expansión de sinopsis
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [misPlataformas, setMisPlataformas] = useState<number[]>([]);
   const [showDeferredSections, setShowDeferredSections] = useState(false);
@@ -319,19 +319,11 @@ export function PeliculaScreen() {
           ) : null}
 
           <Text style={[styles.sectionTitle, { fontFamily }]}>Sinopsis</Text>
-          <Text style={[styles.overview, { fontFamily }]} numberOfLines={descExp ? undefined : 3}>
-            {detalles.overview || 'Sinopsis no disponible.'}
-          </Text>
-          {detalles.overview && detalles.overview.length > 150 && (
-            <Pressable
-              onPress={() => setDescExp(!descExp)}
-              style={{ marginTop: -16, marginBottom: 24, alignSelf: 'flex-start' }}
-            >
-              <Text style={{ color: '#38bdf8', fontWeight: '700', fontFamily }}>
-                {descExp ? 'Ver menos' : '... Ver más'}
-              </Text>
-            </Pressable>
-          )}
+          <SinopsisExpandible
+            texto={detalles.overview || 'Sinopsis no disponible.'}
+            fontFamily={fontFamily}
+            colorEnlace="#38bdf8"
+          />
 
           {/* COMPONENTE: Carrusel de películas de la misma saga (si aplica) */}
           {showDeferredSections ? (
@@ -405,7 +397,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     marginTop: 16,
   },
-  overview: { color: '#cbd5e1', fontSize: 15, lineHeight: 24, marginBottom: 24 },
   errTitle: { color: '#fff', fontSize: 28, fontWeight: '800', marginTop: 16 },
   err: { color: 'rgba(255,255,255,0.6)', textAlign: 'center', marginTop: 8, fontSize: 16 },
   errBtn: {
